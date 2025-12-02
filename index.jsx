@@ -428,11 +428,11 @@ export default function BabuMediaLanding() {
           </div>
 
           {/* Mobile Carousel */}
-          <div className="md:hidden relative px-4">
-            <div className="overflow-visible">
-              <div className="flex transition-transform duration-500 ease-in-out gap-4" style={{ transform: `translateX(calc(-${pricingIndex * 85}% + ${(100 - 85) / 2}%))` }}>
+          <div className="md:hidden relative">
+            <div className="overflow-hidden">
+              <div className="flex transition-transform duration-500 ease-in-out" style={{ transform: `translateX(-${pricingIndex * 100}%)` }}>
                 {/* Free Tier */}
-                <div className="min-w-[85%] flex-shrink-0">
+                <div className="min-w-full flex-shrink-0 px-6">
                   <div className={`bg-white/5 border border-white/10 rounded-3xl p-8 hover:bg-white/10 transition-all ${pricingIndex === 0 ? 'scale-100' : 'scale-95 opacity-60'}`}>
                     <div className="text-lg font-semibold mb-2">Explorer</div>
                     <div className="text-4xl font-bold mb-6">$0</div>
@@ -448,7 +448,7 @@ export default function BabuMediaLanding() {
                 </div>
 
                 {/* Premium Tier */}
-                <div className="min-w-[85%] flex-shrink-0">
+                <div className="min-w-full flex-shrink-0 px-6">
                   <div className={`relative bg-gradient-to-br from-purple-900 to-indigo-900 border border-purple-500 rounded-3xl p-8 shadow-2xl shadow-purple-900/50 transition-all ${pricingIndex === 1 ? 'scale-100' : 'scale-95 opacity-60'}`}>
                     <div className="absolute top-0 right-0 bg-amber-400 text-black text-xs font-bold px-3 py-1 rounded-bl-xl rounded-tr-2xl">
                       MOST POPULAR
@@ -467,7 +467,7 @@ export default function BabuMediaLanding() {
                 </div>
 
                 {/* Pro Tier */}
-                <div className="min-w-[85%] flex-shrink-0">
+                <div className="min-w-full flex-shrink-0 px-6">
                   <div className={`relative bg-gradient-to-br from-blue-900/40 to-indigo-900/40 border border-blue-500/30 rounded-3xl p-8 hover:border-blue-500/50 transition-all shadow-xl shadow-blue-900/30 ${pricingIndex === 2 ? 'scale-100' : 'scale-95 opacity-60'}`}>
                     <div className="absolute top-0 right-0 bg-gray-600 text-white text-xs font-bold px-3 py-1 rounded-bl-xl rounded-tr-2xl">
                       COMING SOON
