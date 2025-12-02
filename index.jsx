@@ -239,7 +239,6 @@ export default function BabuMediaLanding() {
                     </button>
                   </div>
                   
-                  <h2 className="text-sm sm:text-xl md:text-2xl lg:text-3xl font-bold mb-2 animate-fade-in w-full break-words overflow-wrap-anywhere leading-snug min-w-0">{characters[characterIndex].name}</h2>
                   <div className={`inline-block px-4 py-1 rounded-full bg-gradient-to-r ${characters[characterIndex].color} text-sm font-bold mb-4`}>
                     {characters[characterIndex].type}
                   </div>
@@ -370,8 +369,12 @@ export default function BabuMediaLanding() {
           </div>
 
           <div className="grid md:grid-cols-3 gap-8 relative">
-            {/* Connecting Line */}
-            <div className="hidden md:block absolute top-12 left-0 right-0 h-0.5 bg-gradient-to-r from-purple-500/0 via-purple-500/50 to-purple-500/0"></div>
+            {/* Connecting Line with Glow */}
+            <div className="hidden md:block absolute top-12 left-0 right-0 h-1">
+              <div className="absolute inset-0 bg-gradient-to-r from-purple-500/0 via-purple-500/80 to-purple-500/0 blur-sm"></div>
+              <div className="absolute inset-0 bg-gradient-to-r from-purple-500/0 via-purple-500/60 to-purple-500/0"></div>
+              <div className="absolute inset-0 bg-gradient-to-r from-pink-500/0 via-pink-500/40 to-pink-500/0 blur-md"></div>
+            </div>
 
             {[
               { step: "01", title: "Create Character", desc: "Pick animal, style, outfit. AI brings it to life.", time: "3 min" },
@@ -394,7 +397,7 @@ export default function BabuMediaLanding() {
       </section>
 
       {/* --- TESTIMONIALS --- */}
-      <section className="py-24 px-6">
+      <section className="py-12 md:py-16 px-6">
         <div className="max-w-4xl mx-auto text-center">
           <div className="mb-8 flex justify-center gap-1">
              {[...Array(5)].map((_, i) => <StarIcon key={i} className="w-6 h-6 text-amber-400" />)}
