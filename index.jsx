@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import fusionLabImage from './Images/Fox Driving a Car .png';
+import fusionLabImage from './Images/Fusion lab.jpg';
 import raccoonImage from './Images/Racoon having fun.png';
-import detectiveDashImage from './Images/Vision Board 1 Detective Dash.png';
+import detectiveDashImage from './Images/Fox Driving a Car .png';
 import shadowHunterImage from './Images/Hunter the fox.png';
-import zoomSquirrelImage from './Images/Vision Board 4 Zoom Squirrel.png';
+import unicornImage from './Images/Unicorn.png';
 import plotWorldImage from './Images/Story time .png';
 
 // --- ICONS (Compacted for cleanliness) ---
@@ -39,7 +39,7 @@ export default function BabuMediaLanding() {
     detectiveDashImage,
     shadowHunterImage,
     raccoonImage,
-    zoomSquirrelImage
+    unicornImage
   ];
 
   // Data Models
@@ -47,7 +47,7 @@ export default function BabuMediaLanding() {
     { name: "Detective Dash", type: "Fox Detective", trait: "Clever & Curious", emoji: "🦊", image: detectiveDashImage, color: "from-amber-500 to-orange-500", bg: "bg-orange-950" },
     { name: "Shadow Hunter", type: "Cyber Wolf", trait: "Brave & Strong", emoji: "🐺", image: shadowHunterImage, color: "from-blue-500 to-cyan-500", bg: "bg-blue-950" },
     { name: "Eco Rocky", type: "Friendly Raccoon", trait: "Kind & Helpful", emoji: "🦝", image: raccoonImage, color: "from-emerald-500 to-teal-500", bg: "bg-emerald-950" },
-    { name: "Zoom The Squirrel", type: "Energetic Squirrel", trait: "Fast & Agile", emoji: "🐿️", image: zoomSquirrelImage, color: "from-purple-500 to-pink-500", bg: "bg-purple-950" }
+    { name: "Uni the Unicorn", type: "Magical Unicorn", trait: "Wise & Magical", emoji: "🦄", image: unicornImage, color: "from-purple-500 to-pink-500", bg: "bg-purple-950" }
   ];
 
   const pillars = [
@@ -145,7 +145,7 @@ export default function BabuMediaLanding() {
             </h1>
             
             <p className="text-xl text-gray-400 mb-8 leading-relaxed max-w-2xl mx-auto lg:mx-0">
-              Transform <span className="text-red-600 font-semibold">Passive Screen Time</span><br /> into <span className="text-purple-400 font-semibold">Active Bonding</span>. 
+              Transform <span className="text-red-500 font-semibold">Passive Screen Time</span><br /> into <span className="text-purple-400 font-semibold">Active Bonding</span>. 
               You and your child build the characters, write the stories, and play the games together.
             </p>
             
@@ -173,34 +173,34 @@ export default function BabuMediaLanding() {
             {/* The "Glow" behind tablet */}
             <div className={`absolute inset-0 bg-gradient-to-r ${characters[characterIndex].color} blur-[60px] opacity-30 transition-all duration-1000`}></div>
             
-            <div className="relative w-full max-w-md bg-slate-900 rounded-[2.5rem] border-[8px] border-slate-800 shadow-2xl overflow-hidden aspect-[3/4]">
+            <div className="relative w-full max-w-md bg-slate-900 rounded-[2.5rem] border-[8px] border-slate-800 shadow-2xl overflow-visible">
               {/* Fake Tablet UI Header */}
-              <div className="absolute top-0 left-0 right-0 h-6 bg-slate-800 z-20 flex justify-center items-center">
+              <div className="absolute top-0 left-0 right-0 h-6 bg-slate-800 z-20 flex justify-center items-center rounded-t-[2rem]">
                  <div className="w-16 h-1 bg-slate-700 rounded-full"></div>
               </div>
 
               {/* Dynamic Screen Content */}
-              <div className={`absolute inset-0 transition-all duration-1000 ${characters[characterIndex].bg} flex flex-col`}>
+              <div className={`relative pt-6 transition-all duration-1000 ${characters[characterIndex].bg} flex flex-col min-h-[600px] rounded-[2.5rem]`}>
                 {/* Top Bar */}
-                <div className="p-6 pt-10 flex justify-between items-center">
+                <div className="p-6 pt-10 flex justify-between items-center gap-2">
                   <button 
                     onClick={() => setCharacterIndex((prev) => (prev - 1 + characters.length) % characters.length)}
-                    className="w-10 h-10 bg-white/10 hover:bg-white/20 rounded-full flex items-center justify-center transition-all cursor-pointer"
+                    className="w-10 h-10 bg-white/10 hover:bg-white/20 rounded-full flex items-center justify-center transition-all cursor-pointer flex-shrink-0"
                     aria-label="Previous character"
                   >
                     <ChevronLeftIcon className="w-6 h-6" />
                   </button>
-                  <div className="text-sm font-semibold tracking-wide uppercase opacity-70">Make Your Best Friend Come to Life</div>
-                  <div className="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center">
+                  <div className="text-base sm:text-lg font-semibold tracking-wide uppercase opacity-70 text-center break-words flex-1 px-2">Make Your Best Friend Come to Life</div>
+                  <div className="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center flex-shrink-0">
                     <SparklesIcon className="w-5 h-5" />
                   </div>
                 </div>
 
                 {/* Character Preview */}
-                <div className="flex-1 flex flex-col items-center justify-center px-4 sm:p-6 text-center relative">
-                  <div className="relative mb-6 sm:mb-8 group">
+                <div className="flex-1 flex flex-col items-center justify-center px-1 sm:px-4 md:px-6 text-center relative overflow-hidden">
+                  <div className="relative mb-4 sm:mb-6 md:mb-8 group">
                     <div className="absolute inset-0 bg-white/20 rounded-full blur-xl animate-pulse"></div>
-                    <div className="relative text-[6rem] sm:text-[8rem] md:text-[10rem] transition-transform duration-500 hover:scale-110 cursor-pointer flex items-center justify-center overflow-hidden">
+                    <div className="relative text-[5rem] sm:text-[8rem] md:text-[10rem] transition-transform duration-500 hover:scale-110 cursor-pointer flex items-center justify-center overflow-hidden">
                       {characters[characterIndex].image ? (
                         <>
                           <div className="absolute inset-0 z-10 pointer-events-none" style={{
@@ -239,7 +239,7 @@ export default function BabuMediaLanding() {
                     </button>
                   </div>
                   
-                  <h2 className="text-lg sm:text-2xl md:text-3xl font-bold mb-2 animate-fade-in px-2 w-full break-words">{characters[characterIndex].name}</h2>
+                  <h2 className="text-sm sm:text-xl md:text-2xl lg:text-3xl font-bold mb-2 animate-fade-in w-full break-words overflow-wrap-anywhere leading-snug min-w-0">{characters[characterIndex].name}</h2>
                   <div className={`inline-block px-4 py-1 rounded-full bg-gradient-to-r ${characters[characterIndex].color} text-sm font-bold mb-4`}>
                     {characters[characterIndex].type}
                   </div>
@@ -468,7 +468,10 @@ export default function BabuMediaLanding() {
 
                 {/* Pro Tier */}
                 <div className="min-w-[85%] flex-shrink-0">
-                  <div className={`bg-gradient-to-br from-blue-900/40 to-indigo-900/40 border border-blue-500/30 rounded-3xl p-8 hover:border-blue-500/50 transition-all shadow-xl shadow-blue-900/30 ${pricingIndex === 2 ? 'scale-100' : 'scale-95 opacity-60'}`}>
+                  <div className={`relative bg-gradient-to-br from-blue-900/40 to-indigo-900/40 border border-blue-500/30 rounded-3xl p-8 hover:border-blue-500/50 transition-all shadow-xl shadow-blue-900/30 ${pricingIndex === 2 ? 'scale-100' : 'scale-95 opacity-60'}`}>
+                    <div className="absolute top-0 right-0 bg-gray-600 text-white text-xs font-bold px-3 py-1 rounded-bl-xl rounded-tr-2xl">
+                      COMING SOON
+                    </div>
                     <div className="text-lg font-semibold mb-2 text-blue-200">Pro</div>
                     <div className="text-4xl font-bold mb-6">$19.99<span className="text-lg font-normal text-blue-300">/mo</span></div>
                     <ul className="space-y-4 mb-8 text-white">
@@ -551,7 +554,10 @@ export default function BabuMediaLanding() {
             </div>
 
             {/* Pro Tier */}
-            <div className="bg-gradient-to-br from-blue-900/40 to-indigo-900/40 border border-blue-500/30 rounded-3xl p-8 hover:border-blue-500/50 transition-colors shadow-xl shadow-blue-900/30">
+            <div className="relative bg-gradient-to-br from-blue-900/40 to-indigo-900/40 border border-blue-500/30 rounded-3xl p-8 hover:border-blue-500/50 transition-colors shadow-xl shadow-blue-900/30">
+              <div className="absolute top-0 right-0 bg-gray-600 text-white text-xs font-bold px-3 py-1 rounded-bl-xl rounded-tr-2xl">
+                COMING SOON
+              </div>
               <div className="text-lg font-semibold mb-2 text-blue-200">Pro</div>
               <div className="text-4xl font-bold mb-6">$19.99<span className="text-lg font-normal text-blue-300">/mo</span></div>
               <ul className="space-y-4 mb-8 text-white">
