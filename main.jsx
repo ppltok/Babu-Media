@@ -49,9 +49,12 @@ function PublicRoute({ children }) {
   return children
 }
 
+// Get basename for GitHub Pages deployment
+const basename = import.meta.env.BASE_URL
+
 function App() {
   return (
-    <BrowserRouter>
+    <BrowserRouter basename={basename}>
       <AuthProvider>
         <Routes>
           {/* Public routes */}
