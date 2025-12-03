@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import fusionLabImage from './Images/Fusion lab.jpg';
 import raccoonImage from './Images/Racoon having fun.png';
 import detectiveDashImage from './Images/Fox Driving a Car .png';
@@ -28,6 +29,7 @@ const ChatIcon = ({ className }) => (<svg className={className} fill="none" view
 const SchoolIcon = ({ className }) => (<svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path d="M12 14l9-5-9-5-9 5 9 5z" /><path d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z" /><path strokeLinecap="round" strokeLinejoin="round" d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14zm-4 6v-7.5l4-2.222" /></svg>);
 
 export default function BabuMediaLanding() {
+  const navigate = useNavigate();
   const [characterIndex, setCharacterIndex] = useState(0);
   const [testimonialIndex, setTestimonialIndex] = useState(0);
   const [fusionLabImageIndex, setFusionLabImageIndex] = useState(0);
@@ -120,7 +122,9 @@ export default function BabuMediaLanding() {
             <a href="#how-it-works" className="text-gray-400 hover:text-white transition-colors text-sm font-medium">How It Works</a>
             <a href="#pricing" className="text-gray-400 hover:text-white transition-colors text-sm font-medium">Pricing</a>
           </div>
-          <button className="bg-white/10 hover:bg-white/20 border border-white/10 px-5 py-2 rounded-full text-sm font-semibold transition-all">
+          <button
+            onClick={() => navigate('/login')}
+            className="bg-white/10 hover:bg-white/20 border border-white/10 px-5 py-2 rounded-full text-sm font-semibold transition-all">
             Login
           </button>
         </div>
@@ -146,11 +150,13 @@ export default function BabuMediaLanding() {
             
             <p className="text-xl text-gray-400 mb-8 leading-relaxed max-w-2xl mx-auto lg:mx-0">
               Transform <span className="text-red-500 font-semibold">Passive Screen Time</span><br /> into <span className="text-purple-400 font-semibold">Active Bonding</span>. 
-              You and your child build the characters, write the stories, and play the games together.
+              <br />You and your child build the characters, write the stories, and play the games together.
             </p>
             
             <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4">
-              <button className="group relative bg-gradient-to-r from-purple-500 to-pink-500 px-8 py-4 rounded-full font-bold text-lg hover:shadow-xl hover:shadow-purple-500/30 transition-all hover:scale-105 flex items-center gap-2">
+              <button
+                onClick={() => navigate('/signup')}
+                className="group relative bg-gradient-to-r from-purple-500 to-pink-500 px-8 py-4 rounded-full font-bold text-lg hover:shadow-xl hover:shadow-purple-500/30 transition-all hover:scale-105 flex items-center gap-2">
                  <span className="absolute inset-0 rounded-full bg-white/20 animate-pulse"></span>
                  <span className="relative flex items-center gap-2">
                    Start Creating Free
