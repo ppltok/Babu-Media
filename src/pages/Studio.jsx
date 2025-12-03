@@ -1,7 +1,42 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { supabase } from '../lib/supabase'
+
+// Optimized Image Component with loading state
+const OptimizedImage = ({ src, alt, className, fallback }) => {
+  const [isLoaded, setIsLoaded] = useState(false)
+  const [hasError, setHasError] = useState(false)
+
+  useEffect(() => {
+    // Reset state when src changes
+    setIsLoaded(false)
+    setHasError(false)
+  }, [src])
+
+  if (!src || hasError) {
+    return fallback || null
+  }
+
+  return (
+    <div className={`relative ${className}`}>
+      {/* Loading skeleton */}
+      {!isLoaded && (
+        <div className="absolute inset-0 bg-gradient-to-br from-purple-900/30 to-blue-900/30 animate-pulse flex items-center justify-center">
+          <div className="w-8 h-8 border-3 border-purple-500 border-t-transparent rounded-full animate-spin" />
+        </div>
+      )}
+      <img
+        src={src}
+        alt={alt}
+        loading="lazy"
+        className={`w-full h-full object-cover transition-opacity duration-300 ${isLoaded ? 'opacity-100' : 'opacity-0'}`}
+        onLoad={() => setIsLoaded(true)}
+        onError={() => setHasError(true)}
+      />
+    </div>
+  )
+}
 
 // Icons
 const SparklesIcon = ({ className }) => (
@@ -73,6 +108,8 @@ const CloseIcon = ({ className }) => (
 export default function Studio() {
   const { user, signOut } = useAuth()
   const navigate = useNavigate()
+  const menuRef = useRef(null)
+  const [showUserMenu, setShowUserMenu] = useState(false)
 
   const [children, setChildren] = useState([])
   const [selectedChild, setSelectedChild] = useState(null)
@@ -86,6 +123,17 @@ export default function Studio() {
 
   useEffect(() => {
     fetchChildren()
+  }, [])
+
+  // Close menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (menuRef.current && !menuRef.current.contains(event.target)) {
+        setShowUserMenu(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
 
   const fetchChildren = async () => {
@@ -459,25 +507,41 @@ export default function Studio() {
         </nav>
 
         {/* User Section */}
-        <div className="p-4 border-t border-white/10">
-          <div className="flex items-center gap-3 mb-4">
+        <div className="p-4 border-t border-white/10 relative" ref={menuRef}>
+          <button
+            onClick={() => setShowUserMenu(!showUserMenu)}
+            className="w-full flex items-center gap-3 p-2 rounded-xl hover:bg-white/10 transition-colors"
+          >
             <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-teal-500 rounded-full flex items-center justify-center flex-shrink-0">
               <span className="text-sm font-bold">{user?.email?.[0]?.toUpperCase()}</span>
             </div>
             {!sidebarCollapsed && (
-              <div className="flex-1 min-w-0">
-                <div className="text-sm font-medium truncate">{user?.email}</div>
-                <div className="text-xs text-gray-500">Parent Account</div>
-              </div>
+              <>
+                <div className="flex-1 min-w-0 text-left">
+                  <div className="text-sm font-medium truncate">{user?.email}</div>
+                  <div className="text-xs text-gray-500">Parent Account</div>
+                </div>
+                <ChevronDownIcon className={`w-4 h-4 text-gray-400 transition-transform ${showUserMenu ? 'rotate-180' : ''}`} />
+              </>
             )}
-          </div>
-          <button
-            onClick={handleSignOut}
-            className={`w-full flex items-center gap-3 p-3 rounded-xl text-gray-400 hover:text-white hover:bg-white/5 transition-colors ${sidebarCollapsed ? 'justify-center' : ''}`}
-          >
-            <LogoutIcon className="w-5 h-5 flex-shrink-0" />
-            {!sidebarCollapsed && <span>Sign Out</span>}
           </button>
+
+          {showUserMenu && (
+            <div className={`absolute bottom-full mb-2 left-4 ${sidebarCollapsed ? 'left-14' : 'right-4'} w-64 bg-[#1a1825] border border-white/10 rounded-xl shadow-xl overflow-hidden z-50`}>
+              <div className="px-4 py-3 border-b border-white/10">
+                <p className="text-sm text-gray-400 truncate">{user?.email}</p>
+              </div>
+
+              {/* Sign Out */}
+              <button
+                onClick={handleSignOut}
+                className="w-full px-4 py-3 text-left text-sm text-red-400 hover:bg-white/5 transition-colors flex items-center gap-2"
+              >
+                <LogoutIcon className="w-4 h-4" />
+                Sign Out
+              </button>
+            </div>
+          )}
         </div>
       </aside>
 
@@ -1240,6 +1304,10 @@ function PlotWorldContent({ childId, child }) {
   const [currentStory, setCurrentStory] = useState(null)
   const [currentPage, setCurrentPage] = useState(0)
 
+  // Delete story state
+  const [deleteStoryConfirm, setDeleteStoryConfirm] = useState(null)
+  const [isDeletingStory, setIsDeletingStory] = useState(false)
+
   // Adventure theme options
   const ADVENTURE_THEMES = [
     { id: 'space', emoji: '🚀', label: 'Space Adventure', desc: 'Journey through the stars and planets' },
@@ -1391,7 +1459,8 @@ function PlotWorldContent({ childId, child }) {
           characterTraits: selectedCharacter.personality_trait,
           adventureTheme: getThemeLabel(),
           moralLesson: wantsMoral ? getMoralLabel() : null,
-          visualStyle: visualStyle
+          visualStyle: visualStyle,
+          animalType: selectedCharacter.animal_type // Pass animal type so Claude knows the character is an animal
         }
       })
 
@@ -1405,62 +1474,59 @@ function PlotWorldContent({ childId, child }) {
 
       const imagePrompts = storyResult.story.imagePrompts || []
 
-      // Generate ONLY the first image and wait for it
-      if (imagePrompts.length > 0) {
-        setGenerationStatus('Creating first illustration...')
+      // Generate ALL images sequentially and preload them for faster display
+      const generatedImageUrls = []
+      for (let i = 0; i < imagePrompts.length; i++) {
+        const imagePrompt = imagePrompts[i]
+        setGenerationStatus(`Creating illustration ${i + 1} of ${imagePrompts.length}...`)
 
-        const firstImageResponse = await supabase.functions.invoke('generate-story-image', {
-          body: {
-            storyId: storyData.id,
-            imageNumber: imagePrompts[0].imageNumber,
-            prompt: imagePrompts[0].prompt,
-            characterImageUrl: selectedCharacter.image_url,
-            visualStyle: visualStyle
-          }
-        })
-
-        if (firstImageResponse.error) {
-          console.error('First image generation error:', firstImageResponse.error)
-        }
-      }
-
-      // Fetch story with first image
-      const { data: storyWithFirstImage } = await supabase
-        .from('stories')
-        .select('*, characters(name, image_url)')
-        .eq('id', storyData.id)
-        .single()
-
-      // Show reader immediately with first image
-      setCurrentStory(storyWithFirstImage)
-      setCurrentPage(0)
-      setStep(6)
-      setStories([storyWithFirstImage, ...stories])
-      setIsGenerating(false)
-
-      // Generate remaining images in background (don't await)
-      const remainingPrompts = imagePrompts.slice(1)
-      remainingPrompts.forEach((imagePrompt) => {
-        supabase.functions.invoke('generate-story-image', {
+        const imageResponse = await supabase.functions.invoke('generate-story-image', {
           body: {
             storyId: storyData.id,
             imageNumber: imagePrompt.imageNumber,
             prompt: imagePrompt.prompt,
             characterImageUrl: selectedCharacter.image_url,
-            visualStyle: visualStyle
+            visualStyle: visualStyle,
+            animalType: selectedCharacter.animal_type
           }
-        }).then(() => {
-          console.log(`Image ${imagePrompt.imageNumber} generated in background`)
-        }).catch((err) => {
-          console.error(`Background image ${imagePrompt.imageNumber} error:`, err)
         })
-      })
+
+        if (imageResponse.error) {
+          console.error(`Image ${i + 1} generation error:`, imageResponse.error)
+        } else {
+          console.log(`Image ${i + 1} generated successfully`)
+          // Preload the image into browser cache
+          if (imageResponse.data?.imageUrl) {
+            generatedImageUrls.push(imageResponse.data.imageUrl)
+            const img = new Image()
+            img.src = imageResponse.data.imageUrl
+          }
+        }
+      }
+
+      // Wait a moment for preloading to complete
+      setGenerationStatus('Preparing your story book...')
+      await new Promise(resolve => setTimeout(resolve, 500))
 
       // Update story status to completed
       await supabase
         .from('stories')
         .update({ status: 'completed' })
         .eq('id', storyData.id)
+
+      // Fetch complete story with all images
+      const { data: completeStory } = await supabase
+        .from('stories')
+        .select('*, characters(name, image_url)')
+        .eq('id', storyData.id)
+        .single()
+
+      // Show reader with all images ready
+      setCurrentStory(completeStory)
+      setCurrentPage(0)
+      setStep(6)
+      setStories([completeStory, ...stories])
+      setIsGenerating(false)
 
     } catch (error) {
       console.error('Story creation error:', error)
@@ -1484,6 +1550,26 @@ function PlotWorldContent({ childId, child }) {
     setCurrentStory(null)
     setCurrentPage(0)
     setGenerationStatus('')
+  }
+
+  const handleDeleteStory = async (storyId) => {
+    setIsDeletingStory(true)
+    try {
+      const { error } = await supabase
+        .from('stories')
+        .delete()
+        .eq('id', storyId)
+
+      if (error) {
+        console.error('Error deleting story:', error)
+      } else {
+        setStories(stories.filter(s => s.id !== storyId))
+      }
+    } catch (err) {
+      console.error('Delete error:', err)
+    }
+    setIsDeletingStory(false)
+    setDeleteStoryConfirm(null)
   }
 
   const openStory = (story) => {
@@ -1554,30 +1640,49 @@ function PlotWorldContent({ childId, child }) {
               {stories.map((story) => (
                 <div
                   key={story.id}
-                  onClick={() => openStory(story)}
-                  className="bg-white/5 border border-white/10 rounded-2xl overflow-hidden hover:bg-white/10 transition-colors cursor-pointer group"
+                  className="relative bg-white/5 border border-white/10 rounded-2xl overflow-hidden hover:bg-white/10 transition-colors group"
                 >
-                  {story.images?.[0]?.url ? (
-                    <img
-                      src={story.images[0].url}
-                      alt={story.title}
-                      className="w-full h-36 sm:h-48 object-cover"
-                    />
-                  ) : (
-                    <div className="w-full h-36 sm:h-48 bg-gradient-to-br from-blue-900/50 to-cyan-900/50 flex items-center justify-center">
-                      <span className="text-5xl sm:text-6xl">📖</span>
+                  {/* Delete button */}
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      setDeleteStoryConfirm(story)
+                    }}
+                    className="absolute top-2 right-2 z-10 p-2 bg-black/50 hover:bg-red-500 rounded-full text-gray-300 hover:text-white transition-all opacity-0 group-hover:opacity-100"
+                    title="Delete story"
+                  >
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                  </button>
+                  <div onClick={() => openStory(story)} className="cursor-pointer">
+                    {story.images?.[0]?.url ? (
+                      <OptimizedImage
+                        src={story.images[0].url}
+                        alt={story.title}
+                        className="w-full h-36 sm:h-48"
+                        fallback={
+                          <div className="w-full h-36 sm:h-48 bg-gradient-to-br from-blue-900/50 to-cyan-900/50 flex items-center justify-center">
+                            <span className="text-5xl sm:text-6xl">📖</span>
+                          </div>
+                        }
+                      />
+                    ) : (
+                      <div className="w-full h-36 sm:h-48 bg-gradient-to-br from-blue-900/50 to-cyan-900/50 flex items-center justify-center">
+                        <span className="text-5xl sm:text-6xl">📖</span>
+                      </div>
+                    )}
+                    <div className="p-3 sm:p-4">
+                      <h3 className="font-bold text-base sm:text-lg mb-1 group-hover:text-blue-400 transition-colors truncate">
+                        {story.title || 'Untitled Story'}
+                      </h3>
+                      <p className="text-xs sm:text-sm text-gray-400 mb-1 sm:mb-2 truncate">
+                        Starring {story.characters?.name || 'Unknown'}
+                      </p>
+                      <p className="text-xs text-gray-500">
+                        {new Date(story.created_at).toLocaleDateString()}
+                      </p>
                     </div>
-                  )}
-                  <div className="p-3 sm:p-4">
-                    <h3 className="font-bold text-base sm:text-lg mb-1 group-hover:text-blue-400 transition-colors truncate">
-                      {story.title || 'Untitled Story'}
-                    </h3>
-                    <p className="text-xs sm:text-sm text-gray-400 mb-1 sm:mb-2 truncate">
-                      Starring {story.characters?.name || 'Unknown'}
-                    </p>
-                    <p className="text-xs text-gray-500">
-                      {new Date(story.created_at).toLocaleDateString()}
-                    </p>
                   </div>
                 </div>
               ))}
@@ -1606,10 +1711,15 @@ function PlotWorldContent({ childId, child }) {
                   }`}
                 >
                   {char.image_url ? (
-                    <img
+                    <OptimizedImage
                       src={char.image_url}
                       alt={char.name}
-                      className="w-14 h-14 sm:w-20 sm:h-20 rounded-xl object-cover mx-auto mb-2 sm:mb-3"
+                      className="w-14 h-14 sm:w-20 sm:h-20 rounded-xl mx-auto mb-2 sm:mb-3"
+                      fallback={
+                        <div className="w-14 h-14 sm:w-20 sm:h-20 bg-white/10 rounded-xl flex items-center justify-center mx-auto mb-2 sm:mb-3 text-3xl sm:text-4xl">
+                          🎭
+                        </div>
+                      }
                     />
                   ) : (
                     <div className="w-14 h-14 sm:w-20 sm:h-20 bg-white/10 rounded-xl flex items-center justify-center mx-auto mb-2 sm:mb-3 text-3xl sm:text-4xl">
@@ -1887,10 +1997,16 @@ function PlotWorldContent({ childId, child }) {
             <div className="w-full md:w-1/2 bg-gradient-to-br from-amber-100 to-orange-100 p-3 sm:p-4 md:p-6 flex items-center justify-center">
               <div className="relative w-full aspect-square sm:aspect-[4/3] md:aspect-square rounded-xl overflow-hidden shadow-lg border-4 border-amber-200/50">
                 {currentStory.images?.[imageIndex]?.url ? (
-                  <img
+                  <OptimizedImage
                     src={currentStory.images[imageIndex].url}
                     alt={`Illustration ${imageIndex + 1}`}
-                    className="w-full h-full object-cover"
+                    className="w-full h-full"
+                    fallback={
+                      <div className="w-full h-full flex flex-col items-center justify-center gap-4 bg-gradient-to-br from-blue-100 to-purple-100">
+                        <div className="w-10 h-10 sm:w-12 sm:h-12 border-4 border-purple-500 border-t-transparent rounded-full animate-spin" />
+                        <p className="text-purple-600 font-medium text-sm sm:text-base">Loading illustration...</p>
+                      </div>
+                    }
                   />
                 ) : (
                   <div className="w-full h-full flex flex-col items-center justify-center gap-4 bg-gradient-to-br from-blue-100 to-purple-100">
@@ -1975,10 +2091,10 @@ function PlotWorldContent({ childId, child }) {
                     </h1>
                   </div>
 
-                  {/* Book content */}
+                  {/* Book content - Fixed height for consistency */}
                   {isTheEndPage ? (
                     /* THE END page - Full width, centered */
-                    <div className="flex flex-col items-center justify-center min-h-[400px] md:min-h-[500px] bg-gradient-to-br from-amber-100 via-orange-50 to-pink-100 p-8">
+                    <div className="flex flex-col items-center justify-center h-[450px] sm:h-[500px] md:h-[550px] bg-gradient-to-br from-amber-100 via-orange-50 to-pink-100 p-8">
                       {/* Decorative stars */}
                       <div className="absolute top-20 left-10 text-4xl animate-pulse">✨</div>
                       <div className="absolute top-32 right-16 text-3xl animate-pulse delay-300">⭐</div>
@@ -2031,8 +2147,8 @@ function PlotWorldContent({ childId, child }) {
                       </div>
                     </div>
                   ) : (
-                    /* Regular story pages with alternating image position */
-                    <div className="flex flex-col md:flex-row min-h-[400px] md:min-h-[500px]">
+                    /* Regular story pages with alternating image position - Fixed height */
+                    <div className="flex flex-col md:flex-row h-[450px] sm:h-[500px] md:h-[550px]">
                       {isImageOnLeft ? (
                         <>
                           <ImageSection />
@@ -2081,6 +2197,46 @@ function PlotWorldContent({ childId, child }) {
           )
         })()
       ) : null}
+
+      {/* Delete Story Confirmation Modal */}
+      {deleteStoryConfirm && (
+        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4" onClick={() => setDeleteStoryConfirm(null)}>
+          <div
+            className="bg-slate-900 border border-white/10 rounded-2xl p-6 max-w-md w-full"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="text-center mb-6">
+              <div className="text-5xl mb-4">🗑️</div>
+              <h3 className="text-xl font-bold mb-2">Delete Story?</h3>
+              <p className="text-gray-400">
+                Are you sure you want to delete "{deleteStoryConfirm.title || 'Untitled Story'}"? This action cannot be undone.
+              </p>
+            </div>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setDeleteStoryConfirm(null)}
+                className="flex-1 py-3 border border-white/20 rounded-xl font-semibold hover:bg-white/5 transition-all"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => handleDeleteStory(deleteStoryConfirm.id)}
+                disabled={isDeletingStory}
+                className="flex-1 py-3 bg-red-500 hover:bg-red-600 rounded-xl font-semibold transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+              >
+                {isDeletingStory ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    Deleting...
+                  </>
+                ) : (
+                  'Delete Story'
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

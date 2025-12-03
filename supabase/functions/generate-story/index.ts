@@ -13,7 +13,7 @@ serve(async (req) => {
   }
 
   try {
-    const { storyId, characterName, characterTraits, adventureTheme, moralLesson, visualStyle } = await req.json()
+    const { storyId, characterName, characterTraits, adventureTheme, moralLesson, visualStyle, animalType } = await req.json()
 
     if (!storyId || !characterName || !adventureTheme) {
       throw new Error('Missing required fields: storyId, characterName, adventureTheme')
@@ -36,7 +36,14 @@ serve(async (req) => {
       ? `The story should teach a valuable lesson about: ${moralLesson}. Weave this lesson naturally into the narrative without being preachy.`
       : ''
 
+    // Build character description - IMPORTANT: Tell Claude what type of animal the character is
+    const animalDescription = animalType
+      ? `${characterName} is a cute, anthropomorphic ${animalType} character (an animal, NOT a human). Always describe ${characterName} as "the ${animalType}" or "the little ${animalType}" in the story.`
+      : `${characterName} is the main character.`
+
     console.log('Generating story with Claude...')
+    console.log('Animal type:', animalType)
+    console.log('Character description:', animalDescription)
 
     const claudeResponse = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
@@ -55,9 +62,16 @@ serve(async (req) => {
 Create an illustrated children's story with the following details:
 
 MAIN CHARACTER: ${characterName}
+CHARACTER TYPE: ${animalDescription}
 CHARACTER TRAITS: ${characterTraits || 'Brave and curious'}
 ADVENTURE THEME: ${adventureTheme}
 ${moralInstruction}
+
+CRITICAL CHARACTER REQUIREMENT:
+- ${characterName} is a ${animalType || 'character'}, NOT a human child or person
+- Always refer to ${characterName} as "the ${animalType}" or "the little ${animalType}" throughout the story
+- Describe ${characterName} with animal features (paws, fur, tail, whiskers, etc. as appropriate for a ${animalType})
+- ${characterName} should act like a cute animated animal character (like in Pixar/Disney movies)
 
 REQUIREMENTS:
 - Create exactly 6 pages (scenes) for the story
@@ -76,31 +90,33 @@ ALSO create image prompts for 3 illustrations (one for every 2 pages):
 - Image 3: For pages 5-6 (story resolution/ending)
 
 CRITICAL IMAGE PROMPT REQUIREMENTS:
-- ${characterName} MUST be the ONLY character in EVERY image - no other characters, people, or creatures
-- ${characterName} MUST be prominently placed in the CENTER of the image, taking up a significant portion of the frame
-- The image should be a close-up or medium shot focusing on ${characterName}
-- Do NOT include any other named characters, sidekicks, friends, or companions in any image
+- Describe ${characterName} as "the ${animalType}" or "a cute ${animalType}" in EVERY image prompt - NEVER as a human
+- The ${animalType} MUST be the ONLY character in EVERY image - no other characters, people, or creatures
+- The ${animalType} MUST be prominently placed in the CENTER of the image
+- Include ${animalType}-specific features (fur color, paws, ears, tail, etc.)
+- The image should be a close-up or medium shot focusing on the ${animalType}
+- Do NOT include any other characters, sidekicks, friends, or companions in any image
 - Be detailed enough for AI image generation
 - Match the ${visualStyle || 'Pixar/Disney'} animation style
 - Be child-friendly and colorful
 - Include the setting and action from those pages
-- Always start the prompt with: "A ${visualStyle || 'Pixar/Disney'} style illustration with ${characterName} prominently centered in the frame..."
+- Always start the prompt with: "A ${visualStyle || 'Pixar/Disney'} style illustration of a cute ${animalType}..."
 
 Return your response in this exact JSON format:
 {
   "title": "The story title",
   "pages": [
-    {"pageNumber": 1, "text": "First sentence.\\nSecond sentence.\\nThird sentence.\\nFourth sentence."},
-    {"pageNumber": 2, "text": "First sentence.\\nSecond sentence.\\nThird sentence.\\nFourth sentence."},
-    {"pageNumber": 3, "text": "First sentence.\\nSecond sentence.\\nThird sentence.\\nFourth sentence."},
-    {"pageNumber": 4, "text": "First sentence.\\nSecond sentence.\\nThird sentence.\\nFourth sentence."},
-    {"pageNumber": 5, "text": "First sentence.\\nSecond sentence.\\nThird sentence.\\nFourth sentence."},
-    {"pageNumber": 6, "text": "First sentence.\\nSecond sentence.\\nThird sentence.\\nFourth sentence."}
+    {"pageNumber": 1, "text": "First sentence.\\\\nSecond sentence.\\\\nThird sentence.\\\\nFourth sentence."},
+    {"pageNumber": 2, "text": "..."},
+    {"pageNumber": 3, "text": "..."},
+    {"pageNumber": 4, "text": "..."},
+    {"pageNumber": 5, "text": "..."},
+    {"pageNumber": 6, "text": "..."}
   ],
   "imagePrompts": [
-    {"imageNumber": 1, "forPages": [1, 2], "prompt": "A ${visualStyle || 'Pixar/Disney'} style illustration with ${characterName} prominently centered in the frame..."},
-    {"imageNumber": 2, "forPages": [3, 4], "prompt": "A ${visualStyle || 'Pixar/Disney'} style illustration with ${characterName} prominently centered in the frame..."},
-    {"imageNumber": 3, "forPages": [5, 6], "prompt": "A ${visualStyle || 'Pixar/Disney'} style illustration with ${characterName} prominently centered in the frame..."}
+    {"imageNumber": 1, "forPages": [1, 2], "prompt": "A ${visualStyle || 'Pixar/Disney'} style illustration of a cute ${animalType}..."},
+    {"imageNumber": 2, "forPages": [3, 4], "prompt": "A ${visualStyle || 'Pixar/Disney'} style illustration of a cute ${animalType}..."},
+    {"imageNumber": 3, "forPages": [5, 6], "prompt": "A ${visualStyle || 'Pixar/Disney'} style illustration of a cute ${animalType}..."}
   ]
 }
 

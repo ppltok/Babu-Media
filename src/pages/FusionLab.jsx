@@ -2,6 +2,16 @@ import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 
+// Import art style images
+import pixarStyle from '../../Images/art style/pixar-style.jpg'
+import dreamworksStyle from '../../Images/art style/dreamworks-style.jpg'
+import ghibliStyle from '../../Images/art style/ghibli-style.jpg'
+import cartoonNetworkStyle from '../../Images/art style/Cartoon Network.jpg'
+import nickelodeonStyle from '../../Images/art style/Nickelodeon.jpeg'
+import animeStyle from '../../Images/art style/Anime Style.jpeg'
+import disneyClassicStyle from '../../Images/art style/Disney Classic.jpg'
+import illuminationStyle from '../../Images/art style/Illumination.jpeg'
+
 // Animal types
 const ANIMAL_TYPES = [
   { id: 'fox', emoji: '🦊', name: 'Fox' },
@@ -16,18 +26,19 @@ const ANIMAL_TYPES = [
   { id: 'dog', emoji: '🐕', name: 'Dog' },
   { id: 'bear', emoji: '🐻', name: 'Bear' },
   { id: 'panda', emoji: '🐼', name: 'Panda' },
+  { id: 'custom', emoji: '✨', name: 'Custom', isCustom: true },
 ]
 
-// Visual styles based on popular shows
+// Visual styles based on popular shows with local images
 const VISUAL_STYLES = [
-  { id: 'pixar', name: 'Pixar/Disney', shows: 'Toy Story, Finding Nemo, Coco', color: 'from-blue-500 to-cyan-500' },
-  { id: 'dreamworks', name: 'DreamWorks', shows: 'Shrek, Kung Fu Panda, How to Train Your Dragon', color: 'from-green-500 to-emerald-500' },
-  { id: 'ghibli', name: 'Studio Ghibli', shows: 'Totoro, Spirited Away, Ponyo', color: 'from-sky-400 to-blue-500' },
-  { id: 'cartoon-network', name: 'Cartoon Network', shows: 'Adventure Time, Powerpuff Girls, Steven Universe', color: 'from-pink-500 to-rose-500' },
-  { id: 'nickelodeon', name: 'Nickelodeon', shows: 'SpongeBob, Paw Patrol, Dora', color: 'from-orange-500 to-amber-500' },
-  { id: 'anime', name: 'Anime Style', shows: 'Pokemon, Naruto, Dragon Ball', color: 'from-purple-500 to-violet-500' },
-  { id: 'disney-classic', name: 'Disney Classic', shows: 'Lion King, Aladdin, Little Mermaid', color: 'from-yellow-500 to-orange-500' },
-  { id: 'illumination', name: 'Illumination', shows: 'Minions, Sing, Secret Life of Pets', color: 'from-yellow-400 to-yellow-600' },
+  { id: 'pixar', name: 'Pixar/Disney', shows: 'Toy Story, Finding Nemo, Coco', color: 'from-blue-500 to-cyan-500', emoji: '🎬', image: pixarStyle },
+  { id: 'dreamworks', name: 'DreamWorks', shows: 'Shrek, Kung Fu Panda, How to Train Your Dragon', color: 'from-green-500 to-emerald-500', emoji: '🐲', image: dreamworksStyle },
+  { id: 'ghibli', name: 'Studio Ghibli', shows: 'Totoro, Spirited Away, Ponyo', color: 'from-sky-400 to-blue-500', emoji: '🌸', image: ghibliStyle },
+  { id: 'cartoon-network', name: 'Cartoon Network', shows: 'Adventure Time, Powerpuff Girls, Steven Universe', color: 'from-pink-500 to-rose-500', emoji: '⭐', image: cartoonNetworkStyle },
+  { id: 'nickelodeon', name: 'Nickelodeon', shows: 'SpongeBob, Paw Patrol, Dora', color: 'from-orange-500 to-amber-500', emoji: '🧽', image: nickelodeonStyle },
+  { id: 'anime', name: 'Anime Style', shows: 'Pokemon, Naruto, Dragon Ball', color: 'from-purple-500 to-violet-500', emoji: '⚡', image: animeStyle },
+  { id: 'disney-classic', name: 'Disney Classic', shows: 'Lion King, Aladdin, Little Mermaid', color: 'from-yellow-500 to-orange-500', emoji: '🦁', image: disneyClassicStyle },
+  { id: 'illumination', name: 'Illumination', shows: 'Minions, Sing, Secret Life of Pets', color: 'from-yellow-400 to-yellow-600', emoji: '🍌', image: illuminationStyle },
 ]
 
 // Personality traits (multi-select)
@@ -78,6 +89,7 @@ export default function FusionLab() {
   const [step, setStep] = useState(1)
   const [characterName, setCharacterName] = useState('')
   const [selectedAnimal, setSelectedAnimal] = useState(null)
+  const [customAnimalName, setCustomAnimalName] = useState('')
   const [selectedStyle, setSelectedStyle] = useState(null)
   const [selectedTraits, setSelectedTraits] = useState([])
   const [selectedOutfit, setSelectedOutfit] = useState(null)
@@ -134,19 +146,38 @@ export default function FusionLab() {
     return ''
   }
 
+  // Get the actual animal name (handles custom animals)
+  const getAnimalName = () => {
+    if (selectedAnimal?.isCustom && customAnimalName.trim()) {
+      return customAnimalName.trim()
+    }
+    return selectedAnimal?.name || ''
+  }
+
+  // Check if animal selection is valid
+  const isAnimalValid = () => {
+    if (!selectedAnimal) return false
+    if (selectedAnimal.isCustom) return customAnimalName.trim().length > 0
+    return true
+  }
+
   const handleGenerate = async () => {
-    if (!characterName || !selectedAnimal || !selectedStyle || selectedTraits.length === 0) {
+    if (!characterName || !isAnimalValid() || !selectedStyle || selectedTraits.length === 0) {
       return
     }
 
     setIsGenerating(true)
 
+    const animalName = getAnimalName()
     const traitLabels = selectedTraits.map(t => PERSONALITY_TRAITS.find(p => p.id === t)?.label).join(', ')
     const styleName = VISUAL_STYLES.find(s => s.id === selectedStyle)?.name || selectedStyle
     const outfitDesc = getOutfitDescription()
 
     // Build the prompt
-    const prompt = `A ${styleName} style illustration of a cute anthropomorphic ${selectedAnimal.name.toLowerCase()} character named ${characterName}. The character has these personality traits: ${traitLabels}. ${outfitDesc ? `Wearing ${outfitDesc}.` : ''} Child-friendly, colorful, expressive face, full body shot, white background, high quality character design.`
+    const prompt = `A ${styleName} style illustration of a cute anthropomorphic ${animalName.toLowerCase()} character named ${characterName}. The character has these personality traits: ${traitLabels}. ${outfitDesc ? `Wearing ${outfitDesc}.` : ''} Child-friendly, colorful, expressive face, full body shot, white background, high quality character design.`
+
+    // Store the animal type - use custom name for custom animals
+    const animalTypeId = selectedAnimal.isCustom ? `custom:${animalName}` : selectedAnimal.id
 
     try {
       // First, save character to database
@@ -155,7 +186,7 @@ export default function FusionLab() {
         .insert({
           child_id: childId,
           name: characterName,
-          animal_type: selectedAnimal.id,
+          animal_type: animalTypeId,
           personality_trait: traitLabels,
           visual_style: selectedStyle,
           outfit_description: outfitDesc,
@@ -180,7 +211,7 @@ export default function FusionLab() {
         body: {
           characterId: data.id,
           prompt: prompt,
-          animalType: selectedAnimal.name,
+          animalType: animalName,
           styleName: styleName
         }
       })
@@ -230,6 +261,7 @@ export default function FusionLab() {
     setStep(1)
     setCharacterName('')
     setSelectedAnimal(null)
+    setCustomAnimalName('')
     setSelectedStyle(null)
     setSelectedTraits([])
     setSelectedOutfit(null)
@@ -347,7 +379,10 @@ export default function FusionLab() {
                       {ANIMAL_TYPES.map((animal) => (
                         <button
                           key={animal.id}
-                          onClick={() => setSelectedAnimal(animal)}
+                          onClick={() => {
+                            setSelectedAnimal(animal)
+                            if (!animal.isCustom) setCustomAnimalName('')
+                          }}
                           className={`p-3 rounded-xl text-center transition-all ${
                             selectedAnimal?.id === animal.id
                               ? 'bg-purple-500/30 border-2 border-purple-500'
@@ -359,11 +394,28 @@ export default function FusionLab() {
                         </button>
                       ))}
                     </div>
+
+                    {/* Custom animal input */}
+                    {selectedAnimal?.isCustom && (
+                      <div className="mt-4">
+                        <input
+                          type="text"
+                          value={customAnimalName}
+                          onChange={(e) => setCustomAnimalName(e.target.value)}
+                          className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 transition-colors"
+                          placeholder="Enter any animal (e.g., Dinosaur, Border Collie, Penguin...)"
+                          autoFocus
+                        />
+                        <p className="text-xs text-gray-500 mt-2">
+                          Type any animal you can imagine - real or fantasy!
+                        </p>
+                      </div>
+                    )}
                   </div>
 
                   <button
                     onClick={() => setStep(2)}
-                    disabled={!characterName || !selectedAnimal}
+                    disabled={!characterName || !isAnimalValid()}
                     className="w-full py-4 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl font-bold disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-lg hover:shadow-purple-500/30 transition-all"
                   >
                     Next: Choose Style
@@ -384,16 +436,34 @@ export default function FusionLab() {
                         <button
                           key={style.id}
                           onClick={() => setSelectedStyle(style.id)}
-                          className={`p-4 rounded-xl text-left transition-all ${
+                          className={`rounded-xl text-left transition-all overflow-hidden ${
                             selectedStyle === style.id
-                              ? 'bg-purple-500/30 border-2 border-purple-500'
-                              : 'bg-white/5 border-2 border-transparent hover:bg-white/10'
+                              ? 'ring-2 ring-purple-500 ring-offset-2 ring-offset-[#0B0A16]'
+                              : 'hover:bg-white/10'
                           }`}
                         >
-                          <div className={`text-sm font-bold mb-1 bg-gradient-to-r ${style.color} bg-clip-text text-transparent`}>
-                            {style.name}
+                          <div className="flex">
+                            {/* Style image with emoji fallback */}
+                            <div className={`w-20 h-20 sm:w-24 sm:h-24 flex-shrink-0 bg-gradient-to-br ${style.color} overflow-hidden flex items-center justify-center relative`}>
+                              <span className="text-4xl sm:text-5xl absolute">{style.emoji}</span>
+                              <img
+                                src={style.image}
+                                alt={style.name}
+                                className="w-full h-full object-cover relative z-10"
+                                loading="lazy"
+                                onError={(e) => {
+                                  e.target.style.display = 'none'
+                                }}
+                              />
+                            </div>
+                            {/* Style info */}
+                            <div className={`flex-1 p-3 bg-white/5 ${selectedStyle === style.id ? 'bg-purple-500/20' : ''}`}>
+                              <div className={`text-sm font-bold mb-1 bg-gradient-to-r ${style.color} bg-clip-text text-transparent`}>
+                                {style.name}
+                              </div>
+                              <div className="text-xs text-gray-400 line-clamp-2">{style.shows}</div>
+                            </div>
                           </div>
-                          <div className="text-xs text-gray-400">{style.shows}</div>
                         </button>
                       ))}
                     </div>
@@ -518,7 +588,10 @@ export default function FusionLab() {
                   <div className="bg-black/20 rounded-xl p-6">
                     <h3 className="text-sm font-medium text-gray-400 mb-4">Character Preview</h3>
                     <div className="flex items-center gap-4">
-                      <div className="text-6xl">{selectedAnimal?.emoji}</div>
+                      <div className="text-center">
+                        <div className="text-6xl">{selectedAnimal?.emoji}</div>
+                        <div className="text-xs text-gray-500 mt-1">{getAnimalName()}</div>
+                      </div>
                       <div>
                         <div className="text-xl font-bold">{characterName}</div>
                         <div className="text-gray-400 text-sm">

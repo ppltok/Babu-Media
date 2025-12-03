@@ -6,6 +6,8 @@ import detectiveDashImage from './Images/Fox Driving a Car .png';
 import shadowHunterImage from './Images/Hunter the fox.png';
 import unicornImage from './Images/Unicorn.png';
 import plotWorldImage from './Images/Story time .png';
+import charlieImage from './Images/Charlie Brave, Curious.png';
+import jackyImage from './Images/Jack Shy.png';
 
 // --- ICONS (Compacted for cleanliness) ---
 const SparklesIcon = ({ className }) => (<svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" /></svg>);
@@ -49,7 +51,9 @@ export default function BabuMediaLanding() {
     { name: "Detective Dash", type: "Fox Detective", trait: "Clever & Curious", emoji: "🦊", image: detectiveDashImage, color: "from-amber-500 to-orange-500", bg: "bg-orange-950" },
     { name: "Shadow Hunter", type: "Cyber Wolf", trait: "Brave & Strong", emoji: "🐺", image: shadowHunterImage, color: "from-blue-500 to-cyan-500", bg: "bg-blue-950" },
     { name: "Eco Rocky", type: "Friendly Raccoon", trait: "Kind & Helpful", emoji: "🦝", image: raccoonImage, color: "from-emerald-500 to-teal-500", bg: "bg-emerald-950" },
-    { name: "Uni the Unicorn", type: "Magical Unicorn", trait: "Wise & Magical", emoji: "🦄", image: unicornImage, color: "from-purple-500 to-pink-500", bg: "bg-purple-950" }
+    { name: "Uni the Unicorn", type: "Magical Unicorn", trait: "Wise & Magical", emoji: "🦄", image: unicornImage, color: "from-purple-500 to-pink-500", bg: "bg-purple-950" },
+    { name: "Charlie", type: "King Charles Cavalier", trait: "Brave & Curious", emoji: "🐕", image: charlieImage, color: "from-sky-500 to-indigo-500", bg: "bg-indigo-950" },
+    { name: "Jacky", type: "Shy Dragon", trait: "Shy & Gentle", emoji: "🐉", image: jackyImage, color: "from-violet-500 to-purple-500", bg: "bg-violet-950" }
   ];
 
   const pillars = [
@@ -206,24 +210,13 @@ export default function BabuMediaLanding() {
                 <div className="flex-1 flex flex-col items-center justify-center px-1 sm:px-4 md:px-6 text-center relative overflow-hidden">
                   <div className="relative mb-4 sm:mb-6 md:mb-8 group">
                     <div className="absolute inset-0 bg-white/20 rounded-full blur-xl animate-pulse"></div>
-                    <div className="relative text-[5rem] sm:text-[8rem] md:text-[10rem] transition-transform duration-500 hover:scale-110 cursor-pointer flex items-center justify-center overflow-hidden">
+                    <div className="relative text-[5rem] sm:text-[8rem] md:text-[10rem] cursor-pointer flex items-center justify-center overflow-hidden">
                       {characters[characterIndex].image ? (
-                        <>
-                          <div className="absolute inset-0 z-10 pointer-events-none" style={{
-                            maskImage: 'radial-gradient(ellipse 70% 70% at center, transparent 50%, black 100%)',
-                            WebkitMaskImage: 'radial-gradient(ellipse 70% 70% at center, transparent 50%, black 100%)',
-                            backdropFilter: 'blur(40px)',
-                          }}></div>
-                          <img 
-                            src={characters[characterIndex].image} 
-                            alt={characters[characterIndex].name}
-                            className="w-full h-full object-contain relative z-0 rounded-2xl"
-                            style={{
-                              maskImage: 'radial-gradient(ellipse 75% 75% at center, black 60%, transparent 100%)',
-                              WebkitMaskImage: 'radial-gradient(ellipse 75% 75% at center, black 60%, transparent 100%)',
-                            }}
-                          />
-                        </>
+                        <img
+                          src={characters[characterIndex].image}
+                          alt={characters[characterIndex].name}
+                          className="w-full h-full object-contain rounded-2xl"
+                        />
                       ) : (
                         characters[characterIndex].emoji
                       )}
@@ -310,20 +303,11 @@ export default function BabuMediaLanding() {
               </div>
               <h3 className="text-2xl font-bold mb-3">{pillars[0].title}</h3>
               <p className="text-gray-400 leading-relaxed mb-6">{pillars[0].desc}</p>
-              <div className="mt-auto aspect-square rounded-xl bg-black/30 border border-white/5 overflow-hidden relative">
-                 <div className="absolute inset-0 z-10 pointer-events-none" style={{
-                   maskImage: 'radial-gradient(ellipse 70% 70% at center, transparent 50%, black 100%)',
-                   WebkitMaskImage: 'radial-gradient(ellipse 70% 70% at center, transparent 50%, black 100%)',
-                   backdropFilter: 'blur(40px)',
-                 }}></div>
-                 <img 
-                   src={fusionLabImage} 
-                   alt="Character Fusion Lab UI Preview" 
+              <div className="mt-auto aspect-square rounded-xl bg-black/30 border border-white/5 overflow-hidden">
+                 <img
+                   src={fusionLabImage}
+                   alt="Character Fusion Lab UI Preview"
                    className="w-full h-full object-cover rounded-xl"
-                   style={{
-                     maskImage: 'radial-gradient(ellipse 75% 75% at center, black 60%, transparent 100%)',
-                     WebkitMaskImage: 'radial-gradient(ellipse 75% 75% at center, black 60%, transparent 100%)',
-                   }}
                  />
               </div>
             </div>
@@ -335,20 +319,11 @@ export default function BabuMediaLanding() {
               </div>
               <h3 className="text-2xl font-bold mb-3">{pillars[1].title}</h3>
               <p className="text-gray-400 leading-relaxed mb-6">{pillars[1].desc}</p>
-               <div className="mt-auto aspect-square rounded-xl bg-black/30 border border-white/5 overflow-hidden relative">
-                 <div className="absolute inset-0 z-10 pointer-events-none" style={{
-                   maskImage: 'radial-gradient(ellipse 70% 70% at center, transparent 50%, black 100%)',
-                   WebkitMaskImage: 'radial-gradient(ellipse 70% 70% at center, transparent 50%, black 100%)',
-                   backdropFilter: 'blur(40px)',
-                 }}></div>
-                 <img 
-                   src={plotWorldImage} 
-                   alt="Plot World Story Book Preview" 
+               <div className="mt-auto aspect-square rounded-xl bg-black/30 border border-white/5 overflow-hidden">
+                 <img
+                   src={plotWorldImage}
+                   alt="Plot World Story Book Preview"
                    className="w-full h-full object-cover rounded-xl"
-                   style={{
-                     maskImage: 'radial-gradient(ellipse 75% 75% at center, black 60%, transparent 100%)',
-                     WebkitMaskImage: 'radial-gradient(ellipse 75% 75% at center, black 60%, transparent 100%)',
-                   }}
                  />
               </div>
             </div>
