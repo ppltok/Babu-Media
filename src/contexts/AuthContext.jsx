@@ -27,11 +27,15 @@ export function AuthProvider({ children }) {
   }, [])
 
   const signUp = async (email, password, fullName) => {
+    // Get the current origin for redirect URL (works for both local and production)
+    const redirectUrl = `${window.location.origin}${import.meta.env.BASE_URL}login`
+
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
-        data: { full_name: fullName }
+        data: { full_name: fullName },
+        emailRedirectTo: redirectUrl
       }
     })
     return { data, error }
