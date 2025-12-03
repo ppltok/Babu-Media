@@ -1918,11 +1918,11 @@ function PlotWorldContent({ childId, child }) {
               {/* Story text */}
               <div className="flex-1 flex items-center justify-center">
                 <div
-                  className="text-base sm:text-lg md:text-xl text-gray-800 text-center leading-relaxed space-y-2 sm:space-y-3"
-                  style={{ fontFamily: '"Comic Sans MS", "Chalkboard", "Comic Neue", cursive' }}
+                  className="text-lg sm:text-xl md:text-2xl text-center leading-relaxed space-y-3 sm:space-y-4"
+                  style={{ fontFamily: 'Georgia, "Times New Roman", serif', lineHeight: '1.8' }}
                 >
                   {(currentStory.pages?.[currentPage]?.text || 'Loading...').split('\n').map((line, idx) => (
-                    <p key={idx} className="text-gray-700">{line}</p>
+                    <p key={idx} className="text-gray-900 font-medium">{line}</p>
                   ))}
                 </div>
               </div>
