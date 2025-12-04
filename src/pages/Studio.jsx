@@ -586,6 +586,37 @@ function FusionLabContent({ childId, child, onGoToStory }) {
   const [customOutfit, setCustomOutfit] = useState('')
   const [isGenerating, setIsGenerating] = useState(false)
   const [generatedCharacter, setGeneratedCharacter] = useState(null)
+  const [generatingMessage, setGeneratingMessage] = useState('')
+
+  // Fun loading messages for character creation
+  const CHARACTER_LOADING_MESSAGES = [
+    "Mixing the magic ingredients...",
+    "Adding a sprinkle of personality...",
+    "Painting with imagination...",
+    "Bringing your character to life...",
+    "Almost ready to meet you...",
+    "The magic is happening...",
+    "Creating something amazing...",
+    "Your character is waking up..."
+  ]
+
+  // Cycle through fun messages while generating
+  useEffect(() => {
+    if (!isGenerating) {
+      setGeneratingMessage('')
+      return
+    }
+
+    let messageIndex = 0
+    setGeneratingMessage(CHARACTER_LOADING_MESSAGES[0])
+
+    const interval = setInterval(() => {
+      messageIndex = (messageIndex + 1) % CHARACTER_LOADING_MESSAGES.length
+      setGeneratingMessage(CHARACTER_LOADING_MESSAGES[messageIndex])
+    }, 2500)
+
+    return () => clearInterval(interval)
+  }, [isGenerating])
 
   // Delete confirmation
   const [deleteConfirm, setDeleteConfirm] = useState(null)
@@ -1174,94 +1205,106 @@ function FusionLabContent({ childId, child, onGoToStory }) {
             {/* Step 4: Outfit & Generate */}
             {step === 4 && (
               <div className="space-y-4 sm:space-y-6">
-                <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2 sm:mb-3">Choose an Outfit</label>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5 sm:gap-2 mb-3 sm:mb-4">
-                    {OUTFIT_PRESETS.map((outfit) => (
-                      <button
-                        key={outfit.id}
-                        onClick={() => {
-                          setSelectedOutfit(outfit.id)
-                          setCustomOutfit('')
+                {isGenerating ? (
+                  /* Fun Loading State */
+                  <div className="py-8 sm:py-12 text-center">
+                    <div className="relative w-24 h-24 sm:w-32 sm:h-32 mx-auto mb-6">
+                      <div className="absolute inset-0 border-4 border-purple-500/30 rounded-full"></div>
+                      <div className="absolute inset-0 border-4 border-purple-500 border-t-transparent rounded-full animate-spin"></div>
+                      <div className="absolute inset-0 flex items-center justify-center text-4xl sm:text-5xl animate-bounce">
+                        {selectedAnimal?.emoji || '✨'}
+                      </div>
+                    </div>
+                    <h3 className="text-xl sm:text-2xl font-bold mb-3 bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
+                      {generatingMessage || 'Creating magic...'}
+                    </h3>
+                    <p className="text-gray-400 text-sm sm:text-base mb-2">
+                      {characterName} is coming to life!
+                    </p>
+                    <p className="text-xs sm:text-sm text-gray-500">This usually takes 10-20 seconds</p>
+                  </div>
+                ) : (
+                  <>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-300 mb-2 sm:mb-3">Choose an Outfit</label>
+                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5 sm:gap-2 mb-3 sm:mb-4">
+                        {OUTFIT_PRESETS.map((outfit) => (
+                          <button
+                            key={outfit.id}
+                            onClick={() => {
+                              setSelectedOutfit(outfit.id)
+                              setCustomOutfit('')
+                            }}
+                            className={`p-2 sm:p-3 rounded-xl text-left transition-all ${
+                              selectedOutfit === outfit.id && !customOutfit
+                                ? 'bg-purple-500/30 border-2 border-purple-500'
+                                : 'bg-white/5 border-2 border-transparent hover:bg-white/10'
+                            }`}
+                          >
+                            <div className="flex items-center gap-1.5 sm:gap-2">
+                              <span className="text-lg sm:text-xl">{outfit.emoji}</span>
+                              <span className="text-xs sm:text-sm font-medium">{outfit.label}</span>
+                            </div>
+                          </button>
+                        ))}
+                      </div>
+
+                      <div className="relative my-3 sm:my-4">
+                        <div className="absolute inset-0 flex items-center">
+                          <div className="w-full border-t border-white/10"></div>
+                        </div>
+                        <div className="relative flex justify-center text-xs sm:text-sm">
+                          <span className="px-2 bg-[#0B0A16] text-gray-500">or describe your own</span>
+                        </div>
+                      </div>
+
+                      <input
+                        type="text"
+                        value={customOutfit}
+                        onChange={(e) => {
+                          setCustomOutfit(e.target.value)
+                          if (e.target.value) setSelectedOutfit(null)
                         }}
-                        className={`p-2 sm:p-3 rounded-xl text-left transition-all ${
-                          selectedOutfit === outfit.id && !customOutfit
-                            ? 'bg-purple-500/30 border-2 border-purple-500'
-                            : 'bg-white/5 border-2 border-transparent hover:bg-white/10'
-                        }`}
-                      >
-                        <div className="flex items-center gap-1.5 sm:gap-2">
-                          <span className="text-lg sm:text-xl">{outfit.emoji}</span>
-                          <span className="text-xs sm:text-sm font-medium">{outfit.label}</span>
+                        className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 transition-colors text-sm sm:text-base"
+                        placeholder="Describe a custom outfit..."
+                      />
+                    </div>
+
+                    {/* Preview */}
+                    <div className="bg-black/20 rounded-xl p-4 sm:p-6">
+                      <h3 className="text-xs sm:text-sm font-medium text-gray-400 mb-3 sm:mb-4">Character Preview</h3>
+                      <div className="flex items-center gap-3 sm:gap-4">
+                        <div className="text-4xl sm:text-6xl">{selectedAnimal?.emoji}</div>
+                        <div className="min-w-0 flex-1">
+                          <div className="text-lg sm:text-xl font-bold truncate">{characterName}</div>
+                          <div className="text-gray-400 text-xs sm:text-sm truncate">
+                            {selectedTraits.map(t => PERSONALITY_TRAITS.find(p => p.id === t)?.label).join(', ')}
+                          </div>
+                          <div className="text-purple-400 text-xs sm:text-sm mt-0.5 sm:mt-1">
+                            {VISUAL_STYLES.find(s => s.id === selectedStyle)?.name} Style
+                          </div>
+                          {getOutfitDescription() && (
+                            <div className="text-emerald-400 text-xs sm:text-sm mt-0.5 sm:mt-1 truncate">
+                              Outfit: {getOutfitDescription()}
+                            </div>
+                          )}
                         </div>
+                      </div>
+                    </div>
+
+                    <div className="flex gap-2 sm:gap-3">
+                      <button onClick={() => setStep(3)} className="flex-1 py-3 sm:py-4 border border-white/20 rounded-xl font-semibold text-sm sm:text-base hover:bg-white/5 transition-all">
+                        Back
                       </button>
-                    ))}
-                  </div>
-
-                  <div className="relative my-3 sm:my-4">
-                    <div className="absolute inset-0 flex items-center">
-                      <div className="w-full border-t border-white/10"></div>
-                    </div>
-                    <div className="relative flex justify-center text-xs sm:text-sm">
-                      <span className="px-2 bg-[#0B0A16] text-gray-500">or describe your own</span>
-                    </div>
-                  </div>
-
-                  <input
-                    type="text"
-                    value={customOutfit}
-                    onChange={(e) => {
-                      setCustomOutfit(e.target.value)
-                      if (e.target.value) setSelectedOutfit(null)
-                    }}
-                    className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 transition-colors text-sm sm:text-base"
-                    placeholder="Describe a custom outfit..."
-                  />
-                </div>
-
-                {/* Preview */}
-                <div className="bg-black/20 rounded-xl p-4 sm:p-6">
-                  <h3 className="text-xs sm:text-sm font-medium text-gray-400 mb-3 sm:mb-4">Character Preview</h3>
-                  <div className="flex items-center gap-3 sm:gap-4">
-                    <div className="text-4xl sm:text-6xl">{selectedAnimal?.emoji}</div>
-                    <div className="min-w-0 flex-1">
-                      <div className="text-lg sm:text-xl font-bold truncate">{characterName}</div>
-                      <div className="text-gray-400 text-xs sm:text-sm truncate">
-                        {selectedTraits.map(t => PERSONALITY_TRAITS.find(p => p.id === t)?.label).join(', ')}
-                      </div>
-                      <div className="text-purple-400 text-xs sm:text-sm mt-0.5 sm:mt-1">
-                        {VISUAL_STYLES.find(s => s.id === selectedStyle)?.name} Style
-                      </div>
-                      {getOutfitDescription() && (
-                        <div className="text-emerald-400 text-xs sm:text-sm mt-0.5 sm:mt-1 truncate">
-                          Outfit: {getOutfitDescription()}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-
-                <div className="flex gap-2 sm:gap-3">
-                  <button onClick={() => setStep(3)} className="flex-1 py-3 sm:py-4 border border-white/20 rounded-xl font-semibold text-sm sm:text-base hover:bg-white/5 transition-all">
-                    Back
-                  </button>
-                  <button
-                    onClick={handleGenerate}
-                    disabled={isGenerating}
-                    className="flex-1 py-3 sm:py-4 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl font-bold text-sm sm:text-base disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-lg hover:shadow-purple-500/30 transition-all flex items-center justify-center gap-1.5 sm:gap-2"
-                  >
-                    {isGenerating ? (
-                      <>
-                        <div className="w-4 h-4 sm:w-5 sm:h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                        <span>Creating...</span>
-                      </>
-                    ) : (
-                      <>
+                      <button
+                        onClick={handleGenerate}
+                        className="flex-1 py-3 sm:py-4 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl font-bold text-sm sm:text-base hover:shadow-lg hover:shadow-purple-500/30 transition-all flex items-center justify-center gap-1.5 sm:gap-2"
+                      >
                         <span>✨</span> <span>Bring to Life!</span>
-                      </>
-                    )}
-                  </button>
-                </div>
+                      </button>
+                    </div>
+                  </>
+                )}
               </div>
             )}
 
@@ -1512,10 +1555,27 @@ function PlotWorldContent({ childId, child, initialCharacter, onCharacterUsed })
     { id: 'illumination', name: 'Illumination' },
   ]
 
+  // Fun loading messages for story generation
+  const STORY_LOADING_MESSAGES = [
+    { phase: 'writing', messages: [
+      "Once upon a time...",
+      "The adventure is being written...",
+      "Crafting magical moments...",
+      `${selectedCharacter?.name || 'Your hero'} is getting ready...`
+    ]},
+    { phase: 'illustration', messages: [
+      "Painting the scenes...",
+      "The artists are at work...",
+      "Adding colors to the magic...",
+      "Almost ready for the show...",
+      "The story is coming to life..."
+    ]}
+  ]
+
   const handleCreateStory = async () => {
     setIsGenerating(true)
     setStep(5)
-    setGenerationStatus('Creating your magical story...')
+    setGenerationStatus(`✨ ${selectedCharacter?.name}'s adventure begins...`)
 
     try {
       // Get visual style from character and convert ID to name
@@ -1540,7 +1600,7 @@ function PlotWorldContent({ childId, child, initialCharacter, onCharacterUsed })
         throw new Error('Failed to create story')
       }
 
-      setGenerationStatus('Writing the story with AI magic...')
+      setGenerationStatus('📝 Once upon a time... the story is being written!')
 
       // Call generate-story edge function
       const storyResponse = await supabase.functions.invoke('generate-story', {
@@ -1565,11 +1625,18 @@ function PlotWorldContent({ childId, child, initialCharacter, onCharacterUsed })
 
       const imagePrompts = storyResult.story.imagePrompts || []
 
+      // Fun messages for each illustration
+      const illustrationMessages = [
+        '🎨 Painting the opening scene...',
+        '🖌️ Creating the adventure moment...',
+        '✨ Adding the magical finale...'
+      ]
+
       // Generate ALL images sequentially and preload them for faster display
       const generatedImageUrls = []
       for (let i = 0; i < imagePrompts.length; i++) {
         const imagePrompt = imagePrompts[i]
-        setGenerationStatus(`Creating illustration ${i + 1} of ${imagePrompts.length}...`)
+        setGenerationStatus(illustrationMessages[i] || `🎨 Creating illustration ${i + 1}...`)
 
         const imageResponse = await supabase.functions.invoke('generate-story-image', {
           body: {
@@ -1596,7 +1663,7 @@ function PlotWorldContent({ childId, child, initialCharacter, onCharacterUsed })
       }
 
       // Wait a moment for preloading to complete
-      setGenerationStatus('Preparing your story book...')
+      setGenerationStatus('📖 The show is about to begin!')
       await new Promise(resolve => setTimeout(resolve, 500))
 
       // Update story status to completed
@@ -2062,15 +2129,27 @@ function PlotWorldContent({ childId, child, initialCharacter, onCharacterUsed })
       ) : step === 5 ? (
         /* Step 5: Generating */
         <div className="max-w-2xl mx-auto px-2 sm:px-0">
-          <div className="bg-white/5 border border-white/10 rounded-2xl p-6 sm:p-12 text-center">
-            <div className="w-16 h-16 sm:w-24 sm:h-24 mx-auto mb-6 sm:mb-8 relative">
+          <div className="bg-gradient-to-br from-blue-900/20 to-purple-900/20 border border-blue-500/20 rounded-2xl p-6 sm:p-12 text-center">
+            <div className="w-20 h-20 sm:w-28 sm:h-28 mx-auto mb-6 sm:mb-8 relative">
               <div className="absolute inset-0 border-4 border-blue-500/30 rounded-full"></div>
               <div className="absolute inset-0 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
-              <div className="absolute inset-3 sm:inset-4 flex items-center justify-center text-3xl sm:text-4xl">📖</div>
+              <div className="absolute inset-0 flex items-center justify-center">
+                {selectedCharacter?.image_url ? (
+                  <img
+                    src={selectedCharacter.image_url}
+                    alt={selectedCharacter.name}
+                    className="w-12 h-12 sm:w-16 sm:h-16 rounded-full object-cover animate-pulse"
+                  />
+                ) : (
+                  <span className="text-3xl sm:text-4xl animate-bounce">📖</span>
+                )}
+              </div>
             </div>
-            <h2 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4">Creating Your Story...</h2>
-            <p className="text-gray-400 text-sm sm:text-base mb-3 sm:mb-4">{generationStatus}</p>
-            <p className="text-xs sm:text-sm text-gray-500">This may take a minute or two</p>
+            <h2 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4 bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
+              {selectedCharacter?.name}'s Story is Being Created!
+            </h2>
+            <p className="text-gray-300 text-sm sm:text-base mb-3 sm:mb-4 font-medium">{generationStatus}</p>
+            <p className="text-xs sm:text-sm text-gray-500">Babu is working hard on something magical...</p>
           </div>
         </div>
       ) : step === 6 && currentStory ? (
