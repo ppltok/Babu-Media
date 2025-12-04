@@ -567,6 +567,7 @@ function FusionLabContent({ childId, child }) {
   const [step, setStep] = useState(1)
   const [characterName, setCharacterName] = useState('')
   const [selectedAnimal, setSelectedAnimal] = useState(null)
+  const [customAnimalName, setCustomAnimalName] = useState('')
   const [selectedStyle, setSelectedStyle] = useState(null)
   const [selectedTraits, setSelectedTraits] = useState([])
   const [selectedOutfit, setSelectedOutfit] = useState(null)
@@ -595,7 +596,23 @@ function FusionLabContent({ childId, child }) {
     { id: 'dog', emoji: '🐕', name: 'Dog' },
     { id: 'bear', emoji: '🐻', name: 'Bear' },
     { id: 'panda', emoji: '🐼', name: 'Panda' },
+    { id: 'custom', emoji: '✨', name: 'Custom', isCustom: true },
   ]
+
+  // Get the actual animal name (handles custom animals)
+  const getAnimalName = () => {
+    if (selectedAnimal?.isCustom && customAnimalName.trim()) {
+      return customAnimalName.trim()
+    }
+    return selectedAnimal?.name || ''
+  }
+
+  // Check if animal selection is valid
+  const isAnimalValid = () => {
+    if (!selectedAnimal) return false
+    if (selectedAnimal.isCustom) return customAnimalName.trim().length > 0
+    return true
+  }
 
   const VISUAL_STYLES = [
     { id: 'pixar', name: 'Pixar/Disney', shows: 'Toy Story, Finding Nemo, Coco', color: 'from-blue-500 to-cyan-500' },
@@ -677,17 +694,21 @@ function FusionLabContent({ childId, child }) {
   }
 
   const handleGenerate = async () => {
-    if (!characterName || !selectedAnimal || !selectedStyle || selectedTraits.length === 0) {
+    if (!characterName || !isAnimalValid() || !selectedStyle || selectedTraits.length === 0) {
       return
     }
 
     setIsGenerating(true)
 
+    const animalName = getAnimalName()
     const traitLabels = selectedTraits.map(t => PERSONALITY_TRAITS.find(p => p.id === t)?.label).join(', ')
     const styleName = VISUAL_STYLES.find(s => s.id === selectedStyle)?.name || selectedStyle
     const outfitDesc = getOutfitDescription()
 
-    const prompt = `A ${styleName} style illustration of a cute anthropomorphic ${selectedAnimal.name.toLowerCase()} character named ${characterName}. The character has these personality traits: ${traitLabels}. ${outfitDesc ? `Wearing ${outfitDesc}.` : ''} Child-friendly, colorful, expressive face, full body shot, high quality character design.`
+    const prompt = `A ${styleName} style illustration of a cute anthropomorphic ${animalName.toLowerCase()} character named ${characterName}. The character has these personality traits: ${traitLabels}. ${outfitDesc ? `Wearing ${outfitDesc}.` : ''} Child-friendly, colorful, expressive face, full body shot, high quality character design.`
+
+    // Store the animal type - use custom name for custom animals
+    const animalTypeId = selectedAnimal.isCustom ? `custom:${animalName}` : selectedAnimal.id
 
     try {
       const { data, error } = await supabase
@@ -695,7 +716,7 @@ function FusionLabContent({ childId, child }) {
         .insert({
           child_id: childId,
           name: characterName,
-          animal_type: selectedAnimal.id,
+          animal_type: animalTypeId,
           personality_trait: traitLabels,
           visual_style: selectedStyle,
           outfit_description: outfitDesc,
@@ -718,7 +739,7 @@ function FusionLabContent({ childId, child }) {
         body: {
           characterId: data.id,
           prompt: prompt,
-          animalType: selectedAnimal.name,
+          animalType: animalName,
           styleName: styleName
         }
       })
@@ -766,6 +787,7 @@ function FusionLabContent({ childId, child }) {
     setStep(1)
     setCharacterName('')
     setSelectedAnimal(null)
+    setCustomAnimalName('')
     setSelectedStyle(null)
     setSelectedTraits([])
     setSelectedOutfit(null)
@@ -993,7 +1015,10 @@ function FusionLabContent({ childId, child }) {
                     {ANIMAL_TYPES.map((animal) => (
                       <button
                         key={animal.id}
-                        onClick={() => setSelectedAnimal(animal)}
+                        onClick={() => {
+                          setSelectedAnimal(animal)
+                          if (!animal.isCustom) setCustomAnimalName('')
+                        }}
                         className={`p-2 sm:p-3 rounded-xl text-center transition-all ${
                           selectedAnimal?.id === animal.id
                             ? 'bg-purple-500/30 border-2 border-purple-500'
@@ -1005,11 +1030,40 @@ function FusionLabContent({ childId, child }) {
                       </button>
                     ))}
                   </div>
+
+                  {/* Custom animal input - always visible */}
+                  <div className="mt-4 pt-4 border-t border-white/10">
+                    <div className="relative">
+                      <div className="absolute inset-0 flex items-center">
+                        <div className="w-full border-t border-white/10"></div>
+                      </div>
+                      <div className="relative flex justify-center text-sm">
+                        <span className="px-2 bg-[#0B0A16] text-gray-500">or type your own</span>
+                      </div>
+                    </div>
+                    <input
+                      type="text"
+                      value={customAnimalName}
+                      onChange={(e) => {
+                        setCustomAnimalName(e.target.value)
+                        // Auto-select custom when typing
+                        if (e.target.value.trim()) {
+                          const customAnimal = ANIMAL_TYPES.find(a => a.isCustom)
+                          if (customAnimal) setSelectedAnimal(customAnimal)
+                        }
+                      }}
+                      className="w-full mt-3 px-3 sm:px-4 py-2.5 sm:py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 transition-colors text-sm sm:text-base"
+                      placeholder="Border Collie, Dinosaur, Phoenix, Penguin..."
+                    />
+                    <p className="text-xs text-gray-500 mt-2">
+                      Type any specific animal breed or creature - real or fantasy!
+                    </p>
+                  </div>
                 </div>
 
                 <button
                   onClick={() => setStep(2)}
-                  disabled={!characterName || !selectedAnimal}
+                  disabled={!characterName || !isAnimalValid()}
                   className="w-full py-3 sm:py-4 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl font-bold text-sm sm:text-base disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-lg hover:shadow-purple-500/30 transition-all"
                 >
                   Next: Choose Style
