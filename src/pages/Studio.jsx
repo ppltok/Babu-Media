@@ -885,9 +885,22 @@ function FusionLabContent({ childId, child, onGoToStory }) {
 
             {/* Character Details */}
             <div className="p-6">
-              <h2 className="text-3xl font-bold mb-2">{selectedCharacter.name}</h2>
+              <div className="flex items-start justify-between gap-4 mb-6">
+                <h2 className="text-3xl font-bold">{selectedCharacter.name}</h2>
+                <button
+                  onClick={() => {
+                    if (onGoToStory) {
+                      onGoToStory(selectedCharacter)
+                    }
+                    setSelectedCharacter(null)
+                  }}
+                  className="shrink-0 px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl font-bold text-sm hover:shadow-lg hover:shadow-purple-500/30 transition-all"
+                >
+                  Create a story
+                </button>
+              </div>
 
-              <div className="space-y-4 mt-6">
+              <div className="space-y-4">
                 {/* Animal Type */}
                 <div className="flex items-center gap-3">
                   <span className="text-2xl">
@@ -958,35 +971,22 @@ function FusionLabContent({ childId, child, onGoToStory }) {
               </div>
 
               {/* Action Buttons */}
-              <div className="flex flex-col gap-3 mt-8">
+              <div className="flex gap-3 mt-8">
+                <button
+                  onClick={() => setSelectedCharacter(null)}
+                  className="flex-1 py-3 border border-white/20 rounded-xl font-semibold hover:bg-white/5 transition-all"
+                >
+                  Close
+                </button>
                 <button
                   onClick={() => {
-                    if (onGoToStory) {
-                      onGoToStory(selectedCharacter)
-                    }
+                    setDeleteConfirm(selectedCharacter)
                     setSelectedCharacter(null)
                   }}
-                  className="w-full py-3 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl font-bold hover:shadow-lg hover:shadow-purple-500/30 transition-all"
+                  className="py-3 px-6 bg-red-500/20 border border-red-500/30 text-red-400 hover:bg-red-500/30 rounded-xl font-semibold transition-all"
                 >
-                  Create a story with {selectedCharacter.name}
+                  Delete
                 </button>
-                <div className="flex gap-3">
-                  <button
-                    onClick={() => setSelectedCharacter(null)}
-                    className="flex-1 py-3 border border-white/20 rounded-xl font-semibold hover:bg-white/5 transition-all"
-                  >
-                    Close
-                  </button>
-                  <button
-                    onClick={() => {
-                      setDeleteConfirm(selectedCharacter)
-                      setSelectedCharacter(null)
-                    }}
-                    className="py-3 px-6 bg-red-500/20 border border-red-500/30 text-red-400 hover:bg-red-500/30 rounded-xl font-semibold transition-all"
-                  >
-                    Delete
-                  </button>
-                </div>
               </div>
             </div>
           </div>
