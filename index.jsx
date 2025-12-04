@@ -1,5 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from './src/contexts/AuthContext';
+
+// Lemon Squeezy Payment URLs
+const LEMON_SQUEEZY_CREATOR_URL = 'https://babumedia.lemonsqueezy.com/buy/870ca6c4-80e6-440f-8bb4-a795be72ce39';
+const LEMON_SQUEEZY_PRO_URL = 'https://babumedia.lemonsqueezy.com/buy/a1a0c205-5ab5-49d4-b628-c2f3d43101b3';
+
 import fusionLabImage from './Images/Fusion lab.jpg';
 import raccoonImage from './Images/Racoon having fun.png';
 import detectiveDashImage from './Images/Fox Driving a Car .png';
@@ -32,6 +38,7 @@ const SchoolIcon = ({ className }) => (<svg className={className} fill="none" vi
 
 export default function BabuMediaLanding() {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [characterIndex, setCharacterIndex] = useState(0);
   const [testimonialIndex, setTestimonialIndex] = useState(0);
   const [fusionLabImageIndex, setFusionLabImageIndex] = useState(0);
@@ -126,11 +133,21 @@ export default function BabuMediaLanding() {
             <a href="#how-it-works" className="text-gray-400 hover:text-white transition-colors text-sm font-medium">How It Works</a>
             <a href="#pricing" className="text-gray-400 hover:text-white transition-colors text-sm font-medium">Pricing</a>
           </div>
-          <button
-            onClick={() => navigate('/login')}
-            className="bg-white/10 hover:bg-white/20 border border-white/10 px-5 py-2 rounded-full text-sm font-semibold transition-all">
-            Login
-          </button>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => navigate(user ? '/dashboard' : '/signup')}
+              className="group relative bg-gradient-to-r from-purple-500 to-pink-500 px-6 py-2.5 rounded-full text-sm font-semibold transition-all overflow-hidden hover:shadow-xl hover:shadow-purple-500/30 hover:scale-105">
+              <span className="absolute inset-0 rounded-full bg-white/20 animate-pulse"></span>
+              <span className="relative">
+                {user ? 'Create' : 'Sign in'}
+              </span>
+            </button>
+            <button
+              onClick={() => navigate('/login')}
+              className="bg-white/10 hover:bg-white/20 border border-white/10 px-5 py-2 rounded-full text-sm font-semibold transition-all">
+              Login
+            </button>
+          </div>
         </div>
       </nav>
 
@@ -183,14 +200,14 @@ export default function BabuMediaLanding() {
             {/* The "Glow" behind tablet */}
             <div className={`absolute inset-0 bg-gradient-to-r ${characters[characterIndex].color} blur-[60px] opacity-30 transition-all duration-1000`}></div>
             
-            <div className="relative w-full max-w-md bg-slate-900 rounded-[2.5rem] border-[8px] border-slate-800 shadow-2xl overflow-visible">
+            <div className="relative w-full max-w-md bg-slate-900 rounded-[2.5rem] border-[8px] border-slate-800 shadow-2xl overflow-hidden">
               {/* Fake Tablet UI Header */}
               <div className="absolute top-0 left-0 right-0 h-6 bg-slate-800 z-20 flex justify-center items-center rounded-t-[2rem]">
                  <div className="w-16 h-1 bg-slate-700 rounded-full"></div>
               </div>
 
               {/* Dynamic Screen Content */}
-              <div className={`relative pt-6 transition-all duration-1000 ${characters[characterIndex].bg} flex flex-col min-h-[600px] rounded-[2.5rem]`}>
+              <div className={`relative pt-6 transition-all duration-1000 ${characters[characterIndex].bg} flex flex-col min-h-[600px] rounded-[2.5rem] overflow-hidden`}>
                 {/* Top Bar */}
                 <div className="p-6 pt-10 flex justify-between items-center gap-2">
                   <button 
@@ -252,10 +269,12 @@ export default function BabuMediaLanding() {
                 </div>
 
                 {/* Bottom Action */}
-                <div className="p-6 pb-8 bg-gradient-to-t from-black/50 to-transparent">
-                  <div className="w-full py-4 bg-white text-black font-bold rounded-xl text-center shadow-lg transform active:scale-95 transition-transform">
+                <div className="p-6 pb-8 bg-gradient-to-t from-black/50 to-transparent rounded-b-[2.5rem]">
+                  <button
+                    onClick={() => navigate(user ? '/dashboard' : '/login')}
+                    className="w-full py-4 bg-white text-black font-bold rounded-xl text-center shadow-lg transform active:scale-95 transition-transform cursor-pointer hover:bg-gray-100">
                     Bring to Life
-                  </div>
+                  </button>
                 </div>
               </div>
             </div>
@@ -417,15 +436,18 @@ export default function BabuMediaLanding() {
               <div className="flex transition-transform duration-500 ease-in-out" style={{ transform: `translateX(-${pricingIndex * 100}%)` }}>
                 {/* Free Tier */}
                 <div className="min-w-full flex-shrink-0 px-6">
-                  <div className={`bg-white/5 border border-white/10 rounded-3xl p-8 hover:bg-white/10 transition-all ${pricingIndex === 0 ? 'scale-100' : 'scale-95 opacity-60'}`}>
+                  <div className={`bg-white/5 border border-white/10 rounded-3xl p-8 hover:bg-white/10 transition-all h-[420px] flex flex-col ${pricingIndex === 0 ? 'scale-100' : 'scale-95 opacity-60'}`}>
                     <div className="text-lg font-semibold mb-2">Explorer</div>
                     <div className="text-4xl font-bold mb-6">$0</div>
-                    <ul className="space-y-4 mb-8 text-gray-300">
-                      <li className="flex gap-3"><CheckIcon className="w-5 h-5 text-gray-500" /> 1 Character Creation</li>
-                      <li className="flex gap-3"><CheckIcon className="w-5 h-5 text-gray-500" /> 1 Story per week</li>
-                      <li className="flex gap-3"><CheckIcon className="w-5 h-5 text-gray-500" /> Standard Generation Speed</li>
+                    <ul className="space-y-4 mb-8 text-gray-300 flex-grow">
+                      <li className="flex gap-3"><CheckIcon className="w-5 h-5 text-gray-500 flex-shrink-0" /> 1 Child Profile</li>
+                      <li className="flex gap-3"><CheckIcon className="w-5 h-5 text-gray-500 flex-shrink-0" /> 2 Characters</li>
+                      <li className="flex gap-3"><CheckIcon className="w-5 h-5 text-gray-500 flex-shrink-0" /> 1 Story</li>
                     </ul>
-                    <button className="w-full py-3 rounded-full border border-white/20 hover:bg-white/10 font-semibold transition-all">
+                    <button
+                      onClick={() => navigate('/signup')}
+                      className="w-full py-3 rounded-full border border-white/20 hover:bg-white/10 font-semibold transition-all mt-auto"
+                    >
                       Start Free
                     </button>
                   </div>
@@ -433,18 +455,21 @@ export default function BabuMediaLanding() {
 
                 {/* Premium Tier */}
                 <div className="min-w-full flex-shrink-0 px-6">
-                  <div className={`relative bg-gradient-to-br from-purple-900 to-indigo-900 border border-purple-500 rounded-3xl p-8 shadow-2xl shadow-purple-900/50 transition-all ${pricingIndex === 1 ? 'scale-100' : 'scale-95 opacity-60'}`}>
+                  <div className={`relative bg-gradient-to-br from-purple-900 to-indigo-900 border border-purple-500 rounded-3xl p-8 shadow-2xl shadow-purple-900/50 transition-all h-[420px] flex flex-col ${pricingIndex === 1 ? 'scale-100' : 'scale-95 opacity-60'}`}>
                     <div className="absolute top-0 right-0 bg-amber-400 text-black text-xs font-bold px-3 py-1 rounded-bl-xl rounded-tr-2xl">
                       MOST POPULAR
                     </div>
                     <div className="text-lg font-semibold mb-2 text-purple-200">Creator</div>
                     <div className="text-4xl font-bold mb-6">$9.99<span className="text-lg font-normal text-purple-300">/mo</span></div>
-                    <ul className="space-y-4 mb-8 text-white">
-                      <li className="flex gap-3"><CheckIcon className="w-5 h-5 text-emerald-400" /> 5 Characters</li>
-                      <li className="flex gap-3"><CheckIcon className="w-5 h-5 text-emerald-400" /> 10 Stories per week</li>
-                      <li className="flex gap-3"><CheckIcon className="w-5 h-5 text-emerald-400" /> Animated "Climax" Scenes</li>
+                    <ul className="space-y-4 mb-8 text-white flex-grow">
+                      <li className="flex gap-3"><CheckIcon className="w-5 h-5 text-emerald-400 flex-shrink-0" /> Unlimited Children</li>
+                      <li className="flex gap-3"><CheckIcon className="w-5 h-5 text-emerald-400 flex-shrink-0" /> 5 Characters/month</li>
+                      <li className="flex gap-3"><CheckIcon className="w-5 h-5 text-emerald-400 flex-shrink-0" /> 10 Stories/week</li>
                     </ul>
-                    <button className="w-full py-3 rounded-full bg-white text-purple-900 font-bold hover:shadow-lg hover:shadow-white/20 transition-all">
+                    <button
+                      onClick={() => window.open(LEMON_SQUEEZY_CREATOR_URL, '_blank')}
+                      className="w-full py-3 rounded-full bg-white text-purple-900 font-bold hover:shadow-lg hover:shadow-white/20 transition-all mt-auto"
+                    >
                       Start 7-Day Free Trial
                     </button>
                   </div>
@@ -452,18 +477,29 @@ export default function BabuMediaLanding() {
 
                 {/* Pro Tier */}
                 <div className="min-w-full flex-shrink-0 px-6">
-                  <div className={`relative bg-gradient-to-br from-blue-900/40 to-indigo-900/40 border border-blue-500/30 rounded-3xl p-8 hover:border-blue-500/50 transition-all shadow-xl shadow-blue-900/30 ${pricingIndex === 2 ? 'scale-100' : 'scale-95 opacity-60'}`}>
-                    <div className="absolute top-0 right-0 bg-gray-600 text-white text-xs font-bold px-3 py-1 rounded-bl-xl rounded-tr-2xl">
-                      COMING SOON
+                  <div className={`relative bg-gradient-to-br from-amber-900/40 to-orange-900/40 border border-amber-500/30 rounded-3xl p-8 hover:border-amber-500/50 transition-all shadow-xl shadow-amber-900/30 h-[420px] flex flex-col ${pricingIndex === 2 ? 'scale-100' : 'scale-95 opacity-60'}`}>
+                    <div className="absolute top-0 right-0 bg-amber-500 text-black text-xs font-bold px-3 py-1 rounded-bl-xl rounded-tr-2xl">
+                      BEST VALUE
                     </div>
-                    <div className="text-lg font-semibold mb-2 text-blue-200">Pro</div>
-                    <div className="text-4xl font-bold mb-6">$19.99<span className="text-lg font-normal text-blue-300">/mo</span></div>
-                    <ul className="space-y-4 mb-8 text-white">
-                      <li className="flex gap-3"><CheckIcon className="w-5 h-5 text-emerald-400" /> Unlimited Characters</li>
-                      <li className="flex gap-3"><CheckIcon className="w-5 h-5 text-emerald-400" /> Access to Classroom & Games</li>
-                      <li className="flex gap-3"><CheckIcon className="w-5 h-5 text-emerald-400" /> Comm Rooms</li>
+                    <div className="text-lg font-semibold mb-2 text-amber-200">Pro</div>
+                    <div className="text-4xl font-bold mb-6">$19.99<span className="text-lg font-normal text-amber-300">/mo</span></div>
+                    <ul className="space-y-4 mb-8 text-white flex-grow">
+                      <li className="flex gap-3"><CheckIcon className="w-5 h-5 text-emerald-400 flex-shrink-0" /> Unlimited Characters</li>
+                      <li className="flex gap-3"><CheckIcon className="w-5 h-5 text-emerald-400 flex-shrink-0" /> Unlimited Stories</li>
+                      <li className="flex gap-3"><CheckIcon className="w-5 h-5 text-emerald-400 flex-shrink-0" /> Unlimited Storage</li>
+                      <li className="flex flex-wrap items-center gap-2 text-gray-400">
+                        <span className="px-2 py-0.5 bg-gray-600 text-white text-xs font-bold rounded flex-shrink-0 self-center">SOON</span>
+                        <span className="flex-1">Access to Classroom & Games</span>
+                      </li>
+                      <li className="flex flex-wrap items-center gap-2 text-gray-400">
+                        <span className="px-2 py-0.5 bg-gray-600 text-white text-xs font-bold rounded flex-shrink-0 self-center">SOON</span>
+                        <span className="flex-1">Comm Rooms</span>
+                      </li>
                     </ul>
-                    <button className="w-full py-3 rounded-full bg-gradient-to-r from-blue-500 to-indigo-500 text-white font-bold hover:shadow-lg hover:shadow-blue-500/30 transition-all">
+                    <button
+                      onClick={() => window.open(LEMON_SQUEEZY_PRO_URL, '_blank')}
+                      className="w-full py-3 rounded-full bg-gradient-to-r from-amber-500 to-orange-500 text-white font-bold hover:shadow-lg hover:shadow-amber-500/30 transition-all mt-auto"
+                    >
                       Start 7-Day Free Trial
                     </button>
                   </div>
@@ -505,51 +541,68 @@ export default function BabuMediaLanding() {
           </div>
 
           {/* Desktop Grid */}
-          <div className="hidden md:grid md:grid-cols-3 gap-8 items-center">
+          <div className="hidden md:grid md:grid-cols-3 gap-8 items-stretch">
             {/* Free Tier */}
-            <div className="bg-white/5 border border-white/10 rounded-3xl p-8 hover:bg-white/10 transition-colors">
+            <div className="bg-white/5 border border-white/10 rounded-3xl p-8 hover:bg-white/10 transition-colors flex flex-col">
               <div className="text-lg font-semibold mb-2">Explorer</div>
               <div className="text-4xl font-bold mb-6">$0</div>
-              <ul className="space-y-4 mb-8 text-gray-300">
-                <li className="flex gap-3"><CheckIcon className="w-5 h-5 text-gray-500" /> 1 Character Creation</li>
-                <li className="flex gap-3"><CheckIcon className="w-5 h-5 text-gray-500" /> 1 Story per week</li>
-                <li className="flex gap-3"><CheckIcon className="w-5 h-5 text-gray-500" /> Standard Generation Speed</li>
+              <ul className="space-y-4 mb-8 text-gray-300 flex-grow">
+                <li className="flex gap-3"><CheckIcon className="w-5 h-5 text-gray-500 flex-shrink-0" /> 1 Child Profile</li>
+                <li className="flex gap-3"><CheckIcon className="w-5 h-5 text-gray-500 flex-shrink-0" /> 2 Characters</li>
+                <li className="flex gap-3"><CheckIcon className="w-5 h-5 text-gray-500 flex-shrink-0" /> 1 Story</li>
               </ul>
-              <button className="w-full py-3 rounded-full border border-white/20 hover:bg-white/10 font-semibold transition-all">
+              <button
+                onClick={() => navigate('/signup')}
+                className="w-full py-3 rounded-full border border-white/20 hover:bg-white/10 font-semibold transition-all mt-auto"
+              >
                 Start Free
               </button>
             </div>
 
             {/* Premium Tier */}
-            <div className="relative bg-gradient-to-br from-purple-900 to-indigo-900 border border-purple-500 rounded-3xl p-8 shadow-2xl shadow-purple-900/50 transform md:scale-105">
+            <div className="relative bg-gradient-to-br from-purple-900 to-indigo-900 border border-purple-500 rounded-3xl p-8 shadow-2xl shadow-purple-900/50 transform md:scale-105 flex flex-col">
               <div className="absolute top-0 right-0 bg-amber-400 text-black text-xs font-bold px-3 py-1 rounded-bl-xl rounded-tr-2xl">
                 MOST POPULAR
               </div>
               <div className="text-lg font-semibold mb-2 text-purple-200">Creator</div>
               <div className="text-4xl font-bold mb-6">$9.99<span className="text-lg font-normal text-purple-300">/mo</span></div>
-              <ul className="space-y-4 mb-8 text-white">
-                <li className="flex gap-3"><CheckIcon className="w-5 h-5 text-emerald-400" /> 5 Characters</li>
-                <li className="flex gap-3"><CheckIcon className="w-5 h-5 text-emerald-400" /> 10 Stories per week</li>
-                <li className="flex gap-3"><CheckIcon className="w-5 h-5 text-emerald-400" /> Animated "Climax" Scenes</li>
+              <ul className="space-y-4 mb-8 text-white flex-grow">
+                <li className="flex gap-3"><CheckIcon className="w-5 h-5 text-emerald-400 flex-shrink-0" /> Unlimited Children</li>
+                <li className="flex gap-3"><CheckIcon className="w-5 h-5 text-emerald-400 flex-shrink-0" /> 5 Characters/month</li>
+                <li className="flex gap-3"><CheckIcon className="w-5 h-5 text-emerald-400 flex-shrink-0" /> 10 Stories/week</li>
               </ul>
-              <button className="w-full py-3 rounded-full bg-white text-purple-900 font-bold hover:shadow-lg hover:shadow-white/20 transition-all">
+              <button
+                onClick={() => window.open(LEMON_SQUEEZY_CREATOR_URL, '_blank')}
+                className="w-full py-3 rounded-full bg-white text-purple-900 font-bold hover:shadow-lg hover:shadow-white/20 transition-all mt-auto"
+              >
                 Start 7-Day Free Trial
               </button>
             </div>
 
             {/* Pro Tier */}
-            <div className="relative bg-gradient-to-br from-blue-900/40 to-indigo-900/40 border border-blue-500/30 rounded-3xl p-8 hover:border-blue-500/50 transition-colors shadow-xl shadow-blue-900/30">
-              <div className="absolute top-0 right-0 bg-gray-600 text-white text-xs font-bold px-3 py-1 rounded-bl-xl rounded-tr-2xl">
-                COMING SOON
+            <div className="relative bg-gradient-to-br from-amber-900/40 to-orange-900/40 border border-amber-500/30 rounded-3xl p-8 hover:border-amber-500/50 transition-colors shadow-xl shadow-amber-900/30 flex flex-col">
+              <div className="absolute top-0 right-0 bg-amber-500 text-black text-xs font-bold px-3 py-1 rounded-bl-xl rounded-tr-2xl">
+                BEST VALUE
               </div>
-              <div className="text-lg font-semibold mb-2 text-blue-200">Pro</div>
-              <div className="text-4xl font-bold mb-6">$19.99<span className="text-lg font-normal text-blue-300">/mo</span></div>
-              <ul className="space-y-4 mb-8 text-white">
-                <li className="flex gap-3"><CheckIcon className="w-5 h-5 text-emerald-400" /> Unlimited Characters</li>
-                <li className="flex gap-3"><CheckIcon className="w-5 h-5 text-emerald-400" /> Access to Classroom & Games</li>
-                <li className="flex gap-3"><CheckIcon className="w-5 h-5 text-emerald-400" /> Comm Rooms</li>
+              <div className="text-lg font-semibold mb-2 text-amber-200">Pro</div>
+              <div className="text-4xl font-bold mb-6">$19.99<span className="text-lg font-normal text-amber-300">/mo</span></div>
+              <ul className="space-y-4 mb-8 text-white flex-grow">
+                <li className="flex gap-3"><CheckIcon className="w-5 h-5 text-emerald-400 flex-shrink-0" /> Unlimited Characters</li>
+                <li className="flex gap-3"><CheckIcon className="w-5 h-5 text-emerald-400 flex-shrink-0" /> Unlimited Stories</li>
+                <li className="flex gap-3"><CheckIcon className="w-5 h-5 text-emerald-400 flex-shrink-0" /> Unlimited Storage</li>
+                <li className="flex flex-wrap items-center gap-2 text-gray-400">
+                  <span className="px-2 py-0.5 bg-gray-600 text-white text-xs font-bold rounded flex-shrink-0 self-center">SOON</span>
+                  <span className="flex-1">Access to Classroom & Games</span>
+                </li>
+                <li className="flex flex-wrap items-center gap-2 text-gray-400">
+                  <span className="px-2 py-0.5 bg-gray-600 text-white text-xs font-bold rounded flex-shrink-0 self-center">SOON</span>
+                  <span className="flex-1">Comm Rooms</span>
+                </li>
               </ul>
-              <button className="w-full py-3 rounded-full bg-gradient-to-r from-blue-500 to-indigo-500 text-white font-bold hover:shadow-lg hover:shadow-blue-500/30 transition-all">
+              <button
+                onClick={() => window.open(LEMON_SQUEEZY_PRO_URL, '_blank')}
+                className="w-full py-3 rounded-full bg-gradient-to-r from-amber-500 to-orange-500 text-white font-bold hover:shadow-lg hover:shadow-amber-500/30 transition-all mt-auto"
+              >
                 Start 7-Day Free Trial
               </button>
             </div>

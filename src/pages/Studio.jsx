@@ -2,6 +2,9 @@ import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { supabase } from '../lib/supabase'
+import { canCreate, trackCreation, getUsageSummary } from '../lib/usageTracking'
+import { checkDevBypass } from '../lib/devBypass'
+import PaymentWall from '../components/PaymentWall'
 
 // Optimized Image Component with loading state
 const OptimizedImage = ({ src, alt, className, fallback }) => {
@@ -75,6 +78,13 @@ const LogoutIcon = ({ className }) => (
   </svg>
 )
 
+const SettingsIcon = ({ className }) => (
+  <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+    <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+  </svg>
+)
+
 const PlusIcon = ({ className }) => (
   <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
     <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
@@ -131,6 +141,13 @@ export default function Studio() {
   useEffect(() => {
     fetchChildren()
   }, [])
+
+  // Check dev bypass on mount
+  useEffect(() => {
+    if (user?.id && user?.email) {
+      checkDevBypass(user.id, user.email)
+    }
+  }, [user?.id, user?.email])
 
   // Close menu when clicking outside
   useEffect(() => {
@@ -377,8 +394,18 @@ export default function Studio() {
               </div>
             </div>
             <button
-              onClick={handleSignOut}
+              onClick={() => {
+                navigate('/settings')
+                setMobileMenuOpen(false)
+              }}
               className="w-full flex items-center gap-3 p-3 rounded-xl text-gray-400 hover:text-white hover:bg-white/5 transition-colors"
+            >
+              <SettingsIcon className="w-5 h-5" />
+              <span>Settings & Subscription</span>
+            </button>
+            <button
+              onClick={handleSignOut}
+              className="w-full flex items-center gap-3 p-3 rounded-xl text-red-400 hover:text-red-300 hover:bg-white/5 transition-colors"
             >
               <LogoutIcon className="w-5 h-5" />
               <span>Sign Out</span>
@@ -539,10 +566,19 @@ export default function Studio() {
                 <p className="text-sm text-gray-400 truncate">{user?.email}</p>
               </div>
 
+              {/* Settings */}
+              <button
+                onClick={() => navigate('/settings')}
+                className="w-full px-4 py-3 text-left text-sm text-gray-300 hover:bg-white/5 transition-colors flex items-center gap-2"
+              >
+                <SettingsIcon className="w-4 h-4" />
+                Settings & Subscription
+              </button>
+
               {/* Sign Out */}
               <button
                 onClick={handleSignOut}
-                className="w-full px-4 py-3 text-left text-sm text-red-400 hover:bg-white/5 transition-colors flex items-center gap-2"
+                className="w-full px-4 py-3 text-left text-sm text-red-400 hover:bg-white/5 transition-colors flex items-center gap-2 border-t border-white/10"
               >
                 <LogoutIcon className="w-4 h-4" />
                 Sign Out
@@ -555,7 +591,7 @@ export default function Studio() {
       {/* Main Content */}
       <main className="flex-1 overflow-auto">
         {activeSection === 'fusion-lab' && selectedChild && (
-          <FusionLabContent childId={selectedChild.id} child={selectedChild} onGoToStory={goToPlotWorldWithCharacter} />
+          <FusionLabContent childId={selectedChild.id} child={selectedChild} onGoToStory={goToPlotWorldWithCharacter} user={user} />
         )}
         {activeSection === 'plot-world' && selectedChild && (
           <PlotWorldContent
@@ -563,6 +599,7 @@ export default function Studio() {
             child={selectedChild}
             initialCharacter={initialCharacterForStory}
             onCharacterUsed={() => setInitialCharacterForStory(null)}
+            user={user}
           />
         )}
       </main>
@@ -571,7 +608,7 @@ export default function Studio() {
 }
 
 // Embedded Fusion Lab Content (without the full page wrapper)
-function FusionLabContent({ childId, child, onGoToStory }) {
+function FusionLabContent({ childId, child, onGoToStory, user }) {
   const [characters, setCharacters] = useState([])
   const [loading, setLoading] = useState(true)
 
@@ -587,6 +624,11 @@ function FusionLabContent({ childId, child, onGoToStory }) {
   const [isGenerating, setIsGenerating] = useState(false)
   const [generatedCharacter, setGeneratedCharacter] = useState(null)
   const [generatingMessage, setGeneratingMessage] = useState('')
+
+  // Payment wall state
+  const [showPaymentWall, setShowPaymentWall] = useState(false)
+  const [usageSummary, setUsageSummary] = useState(null)
+  const [paymentWallReason, setPaymentWallReason] = useState('')
 
   // Fun loading messages for character creation
   const CHARACTER_LOADING_MESSAGES = [
@@ -741,6 +783,19 @@ function FusionLabContent({ childId, child, onGoToStory }) {
       return
     }
 
+    // Check usage limits before generating
+    if (user?.id) {
+      const canCreateResult = await canCreate(user.id, 'character', childId)
+      if (!canCreateResult.allowed) {
+        // Show payment wall
+        const summary = await getUsageSummary(user.id)
+        setUsageSummary(summary)
+        setPaymentWallReason(canCreateResult.reason)
+        setShowPaymentWall(true)
+        return
+      }
+    }
+
     setIsGenerating(true)
 
     const animalName = getAnimalName()
@@ -773,6 +828,11 @@ function FusionLabContent({ childId, child, onGoToStory }) {
         console.error('Error saving character:', error)
         setIsGenerating(false)
         return
+      }
+
+      // Track usage after successful creation
+      if (user?.id) {
+        await trackCreation(user.id, 'character')
       }
 
       setGeneratedCharacter(data)
@@ -848,6 +908,16 @@ function FusionLabContent({ childId, child, onGoToStory }) {
 
   return (
     <div className="p-4 sm:p-6 lg:p-8">
+      {/* Payment Wall Modal */}
+      <PaymentWall
+        isOpen={showPaymentWall}
+        onClose={() => setShowPaymentWall(false)}
+        title="Upgrade to Creator Tier"
+        reason={paymentWallReason}
+        usage={usageSummary}
+        userEmail={user?.email || ''}
+      />
+
       {/* Delete Confirmation Modal */}
       {deleteConfirm && (
         <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
@@ -1405,7 +1475,7 @@ function FusionLabContent({ childId, child, onGoToStory }) {
 }
 
 // Plot World Content - Story Creation Wizard
-function PlotWorldContent({ childId, child, initialCharacter, onCharacterUsed }) {
+function PlotWorldContent({ childId, child, initialCharacter, onCharacterUsed, user }) {
   const [characters, setCharacters] = useState([])
   const [stories, setStories] = useState([])
   const [loading, setLoading] = useState(true)
@@ -1413,6 +1483,11 @@ function PlotWorldContent({ childId, child, initialCharacter, onCharacterUsed })
   // Story creation wizard state
   const [step, setStep] = useState(0) // 0 = story list, 1-4 = wizard steps, 5 = generating, 6 = reading
   const [selectedCharacter, setSelectedCharacter] = useState(null)
+
+  // Payment wall state
+  const [showPaymentWall, setShowPaymentWall] = useState(false)
+  const [usageSummary, setUsageSummary] = useState(null)
+  const [paymentWallReason, setPaymentWallReason] = useState('')
 
   // Handle initial character from Fusion Lab navigation
   useEffect(() => {
@@ -1573,6 +1648,19 @@ function PlotWorldContent({ childId, child, initialCharacter, onCharacterUsed })
   ]
 
   const handleCreateStory = async () => {
+    // Check usage limits before generating
+    if (user?.id) {
+      const canCreateResult = await canCreate(user.id, 'story')
+      if (!canCreateResult.allowed) {
+        // Show payment wall
+        const summary = await getUsageSummary(user.id)
+        setUsageSummary(summary)
+        setPaymentWallReason(canCreateResult.reason)
+        setShowPaymentWall(true)
+        return
+      }
+    }
+
     setIsGenerating(true)
     setStep(5)
     setGenerationStatus(`✨ ${selectedCharacter?.name}'s adventure begins...`)
@@ -1598,6 +1686,11 @@ function PlotWorldContent({ childId, child, initialCharacter, onCharacterUsed })
       if (createError) {
         console.error('Error creating story:', createError)
         throw new Error('Failed to create story')
+      }
+
+      // Track usage after successful creation
+      if (user?.id) {
+        await trackCreation(user.id, 'story')
       }
 
       setGenerationStatus('📝 Once upon a time... the story is being written!')
@@ -1746,6 +1839,16 @@ function PlotWorldContent({ childId, child, initialCharacter, onCharacterUsed })
 
   return (
     <div className="p-4 sm:p-6 lg:p-8">
+      {/* Payment Wall Modal */}
+      <PaymentWall
+        isOpen={showPaymentWall}
+        onClose={() => setShowPaymentWall(false)}
+        title="Upgrade to Creator Tier"
+        reason={paymentWallReason}
+        usage={usageSummary}
+        userEmail={user?.email || ''}
+      />
+
       {/* Header */}
       <div className="mb-6 sm:mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>

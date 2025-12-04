@@ -10,6 +10,7 @@ import Signup from './src/pages/Signup'
 import AddChild from './src/pages/AddChild'
 import FusionLab from './src/pages/FusionLab'
 import Studio from './src/pages/Studio'
+import Settings from './src/pages/Settings'
 
 // Protected Route wrapper
 function ProtectedRoute({ children }) {
@@ -106,6 +107,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <FusionLab />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/settings"
+            element={
+              <ProtectedRoute>
+                <Settings />
               </ProtectedRoute>
             }
           />
