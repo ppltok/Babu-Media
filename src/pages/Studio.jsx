@@ -1384,7 +1384,7 @@ function PlotWorldContent({ childId, child, initialCharacter, onCharacterUsed })
       const char = characters.find(c => c.id === initialCharacter.id)
       if (char) {
         setSelectedCharacter(char)
-        setStep(1) // Go to step 1 (adventure theme selection)
+        setStep(2) // Go to step 2 - "What's Today's Adventure?" (adventure theme selection)
         if (onCharacterUsed) onCharacterUsed()
       }
     }
