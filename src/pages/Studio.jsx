@@ -120,6 +120,13 @@ export default function Studio() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [deleteChildConfirm, setDeleteChildConfirm] = useState(null)
   const [isDeletingChild, setIsDeletingChild] = useState(false)
+  const [initialCharacterForStory, setInitialCharacterForStory] = useState(null)
+
+  // Navigate to Plot World with a pre-selected character
+  const goToPlotWorldWithCharacter = (character) => {
+    setInitialCharacterForStory(character)
+    setActiveSection('plot-world')
+  }
 
   useEffect(() => {
     fetchChildren()
@@ -548,10 +555,15 @@ export default function Studio() {
       {/* Main Content */}
       <main className="flex-1 overflow-auto">
         {activeSection === 'fusion-lab' && selectedChild && (
-          <FusionLabContent childId={selectedChild.id} child={selectedChild} />
+          <FusionLabContent childId={selectedChild.id} child={selectedChild} onGoToStory={goToPlotWorldWithCharacter} />
         )}
         {activeSection === 'plot-world' && selectedChild && (
-          <PlotWorldContent childId={selectedChild.id} child={selectedChild} />
+          <PlotWorldContent
+            childId={selectedChild.id}
+            child={selectedChild}
+            initialCharacter={initialCharacterForStory}
+            onCharacterUsed={() => setInitialCharacterForStory(null)}
+          />
         )}
       </main>
     </div>
@@ -559,7 +571,7 @@ export default function Studio() {
 }
 
 // Embedded Fusion Lab Content (without the full page wrapper)
-function FusionLabContent({ childId, child }) {
+function FusionLabContent({ childId, child, onGoToStory }) {
   const [characters, setCharacters] = useState([])
   const [loading, setLoading] = useState(true)
 
@@ -1267,10 +1279,15 @@ function FusionLabContent({ childId, child }) {
                     : "Your character has been saved. Image generation may take a moment."}
                 </p>
                 <button
-                  onClick={resetForm}
+                  onClick={() => {
+                    if (onGoToStory) {
+                      onGoToStory(generatedCharacter)
+                    }
+                    resetForm()
+                  }}
                   className="px-6 sm:px-8 py-3 sm:py-4 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl font-bold text-sm sm:text-base hover:shadow-lg hover:shadow-purple-500/30 transition-all"
                 >
-                  Create Another Character
+                  Let's build your first story with {generatedCharacter.name}
                 </button>
               </div>
             )}
@@ -1338,7 +1355,7 @@ function FusionLabContent({ childId, child }) {
 }
 
 // Plot World Content - Story Creation Wizard
-function PlotWorldContent({ childId, child }) {
+function PlotWorldContent({ childId, child, initialCharacter, onCharacterUsed }) {
   const [characters, setCharacters] = useState([])
   const [stories, setStories] = useState([])
   const [loading, setLoading] = useState(true)
@@ -1346,6 +1363,19 @@ function PlotWorldContent({ childId, child }) {
   // Story creation wizard state
   const [step, setStep] = useState(0) // 0 = story list, 1-4 = wizard steps, 5 = generating, 6 = reading
   const [selectedCharacter, setSelectedCharacter] = useState(null)
+
+  // Handle initial character from Fusion Lab navigation
+  useEffect(() => {
+    if (initialCharacter && characters.length > 0) {
+      // Find the character in the loaded characters list
+      const char = characters.find(c => c.id === initialCharacter.id)
+      if (char) {
+        setSelectedCharacter(char)
+        setStep(1) // Go to step 1 (adventure theme selection)
+        if (onCharacterUsed) onCharacterUsed()
+      }
+    }
+  }, [initialCharacter, characters])
   const [adventureTheme, setAdventureTheme] = useState('')
   const [customTheme, setCustomTheme] = useState('')
   const [wantsMoral, setWantsMoral] = useState(false)
