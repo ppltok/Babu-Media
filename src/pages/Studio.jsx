@@ -1992,37 +1992,37 @@ function PlotWorldContent({ childId, child }) {
           const imageIndex = Math.floor(currentPage / 2)
           const isImageOnLeft = imageIndex % 2 === 0 // 0, 2 = left; 1 = right
 
-          // Image component
+          // Image component - responsive with proper aspect ratio
           const ImageSection = () => (
-            <div className="w-full md:w-1/2 bg-gradient-to-br from-amber-100 to-orange-100 p-3 sm:p-4 md:p-6 flex items-center justify-center">
-              <div className="relative w-full aspect-square sm:aspect-[4/3] md:aspect-square rounded-xl overflow-hidden shadow-lg border-4 border-amber-200/50">
+            <div className="w-full md:w-1/2 bg-gradient-to-br from-amber-100 to-orange-100 p-3 sm:p-4 flex items-center justify-center h-full">
+              <div className="relative w-full max-w-[280px] sm:max-w-[320px] md:max-w-none md:w-full aspect-square rounded-xl overflow-hidden shadow-lg border-4 border-amber-200/50">
                 {currentStory.images?.[imageIndex]?.url ? (
                   <OptimizedImage
                     src={currentStory.images[imageIndex].url}
                     alt={`Illustration ${imageIndex + 1}`}
                     className="w-full h-full"
                     fallback={
-                      <div className="w-full h-full flex flex-col items-center justify-center gap-4 bg-gradient-to-br from-blue-100 to-purple-100">
-                        <div className="w-10 h-10 sm:w-12 sm:h-12 border-4 border-purple-500 border-t-transparent rounded-full animate-spin" />
-                        <p className="text-purple-600 font-medium text-sm sm:text-base">Loading illustration...</p>
+                      <div className="w-full h-full flex flex-col items-center justify-center gap-3 bg-gradient-to-br from-blue-100 to-purple-100">
+                        <div className="w-8 h-8 sm:w-10 sm:h-10 border-4 border-purple-500 border-t-transparent rounded-full animate-spin" />
+                        <p className="text-purple-600 font-medium text-xs sm:text-sm">Loading...</p>
                       </div>
                     }
                   />
                 ) : (
-                  <div className="w-full h-full flex flex-col items-center justify-center gap-4 bg-gradient-to-br from-blue-100 to-purple-100">
-                    <div className="w-10 h-10 sm:w-12 sm:h-12 border-4 border-purple-500 border-t-transparent rounded-full animate-spin" />
-                    <p className="text-purple-600 font-medium text-sm sm:text-base">Creating illustration...</p>
+                  <div className="w-full h-full flex flex-col items-center justify-center gap-3 bg-gradient-to-br from-blue-100 to-purple-100">
+                    <div className="w-8 h-8 sm:w-10 sm:h-10 border-4 border-purple-500 border-t-transparent rounded-full animate-spin" />
+                    <p className="text-purple-600 font-medium text-xs sm:text-sm">Creating...</p>
                   </div>
                 )}
               </div>
             </div>
           )
 
-          // Text component
+          // Text component - with overflow protection and responsive text sizing
           const TextSection = () => (
-            <div className="w-full md:w-1/2 bg-gradient-to-br from-amber-50 to-orange-50 p-4 sm:p-6 md:p-8 flex flex-col">
+            <div className="w-full md:w-1/2 bg-gradient-to-br from-amber-50 to-orange-50 p-3 sm:p-4 md:p-6 flex flex-col h-full overflow-hidden">
               {/* Page number */}
-              <div className="text-center mb-3 sm:mb-4">
+              <div className="text-center mb-2 sm:mb-3 flex-shrink-0">
                 <span
                   className="inline-block px-3 sm:px-4 py-1 bg-purple-500/20 text-purple-700 rounded-full text-xs sm:text-sm font-bold"
                   style={{ fontFamily: '"Comic Sans MS", "Chalkboard", cursive' }}
@@ -2031,11 +2031,11 @@ function PlotWorldContent({ childId, child }) {
                 </span>
               </div>
 
-              {/* Story text */}
-              <div className="flex-1 flex items-center justify-center">
+              {/* Story text - contained within boundaries */}
+              <div className="flex-1 flex items-center justify-center overflow-hidden min-h-0">
                 <div
-                  className="text-lg sm:text-xl md:text-2xl text-center leading-relaxed space-y-3 sm:space-y-4"
-                  style={{ fontFamily: 'Georgia, "Times New Roman", serif', lineHeight: '1.8' }}
+                  className="text-sm sm:text-base md:text-lg lg:text-xl text-center leading-relaxed space-y-2 sm:space-y-3 px-2 max-h-full overflow-y-auto"
+                  style={{ fontFamily: 'Georgia, "Times New Roman", serif', lineHeight: '1.7' }}
                 >
                   {(currentStory.pages?.[currentPage]?.text || 'Loading...').split('\n').map((line, idx) => (
                     <p key={idx} className="text-gray-900 font-medium">{line}</p>
@@ -2044,12 +2044,12 @@ function PlotWorldContent({ childId, child }) {
               </div>
 
               {/* Navigation dots */}
-              <div className="flex justify-center gap-1.5 sm:gap-2 mt-4">
+              <div className="flex justify-center gap-1.5 sm:gap-2 mt-2 sm:mt-3 flex-shrink-0">
                 {Array.from({ length: totalPages }).map((_, idx) => (
                   <button
                     key={idx}
                     onClick={() => setCurrentPage(idx)}
-                    className={`w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full transition-all ${
+                    className={`w-2 h-2 sm:w-2.5 sm:h-2.5 md:w-3 md:h-3 rounded-full transition-all ${
                       idx === currentPage
                         ? 'bg-purple-500 scale-125'
                         : 'bg-purple-300 hover:bg-purple-400'
@@ -2061,9 +2061,9 @@ function PlotWorldContent({ childId, child }) {
           )
 
           return (
-            <div className="w-full max-w-6xl mx-auto px-2 sm:px-4">
-              {/* Book Container with frame */}
-              <div className="relative bg-gradient-to-br from-amber-800/20 to-amber-700/20 rounded-3xl p-2 sm:p-3 md:p-4 shadow-2xl border-4 border-amber-600/40">
+            <div className="w-full max-w-5xl mx-auto px-2 sm:px-4 md:h-[calc(100vh-120px)] md:flex md:items-center md:justify-center">
+              {/* Book Container with frame - fits viewport on tablet/desktop */}
+              <div className="relative bg-gradient-to-br from-amber-800/20 to-amber-700/20 rounded-3xl p-2 sm:p-3 shadow-2xl border-4 border-amber-600/40 w-full md:max-h-[calc(100vh-140px)]">
 
                 {/* Close button - Red X in upper left */}
                 <button
@@ -2076,11 +2076,11 @@ function PlotWorldContent({ childId, child }) {
                 </button>
 
                 {/* Inner book pages */}
-                <div className="bg-gradient-to-br from-amber-50 to-orange-50 rounded-2xl overflow-hidden shadow-inner">
+                <div className="bg-gradient-to-br from-amber-50 to-orange-50 rounded-2xl overflow-hidden shadow-inner flex flex-col md:max-h-[calc(100vh-180px)]">
                   {/* Story Title - Cute childish font style */}
-                  <div className="bg-gradient-to-r from-pink-400 via-purple-400 to-blue-400 py-3 sm:py-4 px-4 sm:px-6">
+                  <div className="bg-gradient-to-r from-pink-400 via-purple-400 to-blue-400 py-2 sm:py-3 px-4 sm:px-6 flex-shrink-0">
                     <h1
-                      className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-black text-white text-center drop-shadow-lg"
+                      className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-black text-white text-center drop-shadow-lg"
                       style={{
                         fontFamily: '"Comic Sans MS", "Chalkboard", "Comic Neue", cursive',
                         textShadow: '3px 3px 0 rgba(0,0,0,0.2), -1px -1px 0 rgba(255,255,255,0.3)',
@@ -2091,10 +2091,10 @@ function PlotWorldContent({ childId, child }) {
                     </h1>
                   </div>
 
-                  {/* Book content - Fixed height for consistency */}
+                  {/* Book content - Flexible height that fits viewport */}
                   {isTheEndPage ? (
                     /* THE END page - Full width, centered */
-                    <div className="flex flex-col items-center justify-center h-[450px] sm:h-[500px] md:h-[550px] bg-gradient-to-br from-amber-100 via-orange-50 to-pink-100 p-8">
+                    <div className="flex flex-col items-center justify-center min-h-[350px] sm:min-h-[400px] md:min-h-[300px] md:flex-1 bg-gradient-to-br from-amber-100 via-orange-50 to-pink-100 p-6 sm:p-8 relative overflow-hidden">
                       {/* Decorative stars */}
                       <div className="absolute top-20 left-10 text-4xl animate-pulse">✨</div>
                       <div className="absolute top-32 right-16 text-3xl animate-pulse delay-300">⭐</div>
@@ -2147,8 +2147,8 @@ function PlotWorldContent({ childId, child }) {
                       </div>
                     </div>
                   ) : (
-                    /* Regular story pages with alternating image position - Fixed height */
-                    <div className="flex flex-col md:flex-row h-[450px] sm:h-[500px] md:h-[550px]">
+                    /* Regular story pages with alternating image position - Flexible height */
+                    <div className="flex flex-col md:flex-row min-h-[350px] sm:min-h-[400px] md:min-h-[300px] md:flex-1">
                       {isImageOnLeft ? (
                         <>
                           <ImageSection />
@@ -2166,11 +2166,11 @@ function PlotWorldContent({ childId, child }) {
                   )}
 
                   {/* Navigation buttons - Below the book pages */}
-                  <div className="bg-gradient-to-r from-amber-100 via-orange-100 to-amber-100 px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between border-t-2 border-amber-200">
+                  <div className="bg-gradient-to-r from-amber-100 via-orange-100 to-amber-100 px-4 sm:px-6 py-2 sm:py-3 flex items-center justify-between border-t-2 border-amber-200 flex-shrink-0">
                     <button
                       onClick={() => setCurrentPage(Math.max(0, currentPage - 1))}
                       disabled={currentPage === 0}
-                      className="flex items-center gap-1 sm:gap-2 px-3 sm:px-5 py-2 sm:py-3 bg-purple-500 hover:bg-purple-600 text-white rounded-full font-bold text-sm sm:text-base transition-all disabled:opacity-30 disabled:cursor-not-allowed shadow-lg hover:shadow-xl disabled:hover:shadow-lg"
+                      className="flex items-center gap-1 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 bg-purple-500 hover:bg-purple-600 text-white rounded-full font-bold text-sm transition-all disabled:opacity-30 disabled:cursor-not-allowed shadow-lg hover:shadow-xl disabled:hover:shadow-lg"
                       style={{ fontFamily: '"Comic Sans MS", "Chalkboard", cursive' }}
                     >
                       <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
@@ -2179,10 +2179,15 @@ function PlotWorldContent({ childId, child }) {
                       <span className="hidden sm:inline">Previous</span>
                     </button>
 
+                    {/* Page indicator */}
+                    <span className="text-purple-700 font-bold text-xs sm:text-sm" style={{ fontFamily: '"Comic Sans MS", "Chalkboard", cursive' }}>
+                      {currentPage + 1} / {totalPages}
+                    </span>
+
                     <button
                       onClick={() => setCurrentPage(Math.min(totalPages - 1, currentPage + 1))}
                       disabled={currentPage >= totalPages - 1}
-                      className="flex items-center gap-1 sm:gap-2 px-3 sm:px-5 py-2 sm:py-3 bg-purple-500 hover:bg-purple-600 text-white rounded-full font-bold text-sm sm:text-base transition-all disabled:opacity-30 disabled:cursor-not-allowed shadow-lg hover:shadow-xl disabled:hover:shadow-lg"
+                      className="flex items-center gap-1 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 bg-purple-500 hover:bg-purple-600 text-white rounded-full font-bold text-sm transition-all disabled:opacity-30 disabled:cursor-not-allowed shadow-lg hover:shadow-xl disabled:hover:shadow-lg"
                       style={{ fontFamily: '"Comic Sans MS", "Chalkboard", cursive' }}
                     >
                       <span className="hidden sm:inline">Next</span>
