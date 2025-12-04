@@ -2,15 +2,16 @@ import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 
-// Import art style images
-import pixarStyle from '../../Images/art style/pixar-style.jpg'
-import dreamworksStyle from '../../Images/art style/dreamworks-style.jpg'
-import ghibliStyle from '../../Images/art style/ghibli-style.jpg'
-import cartoonNetworkStyle from '../../Images/art style/Cartoon Network.jpg'
-import nickelodeonStyle from '../../Images/art style/Nickelodeon.jpeg'
-import animeStyle from '../../Images/art style/Anime Style.jpeg'
-import disneyClassicStyle from '../../Images/art style/Disney Classic.jpg'
-import illuminationStyle from '../../Images/art style/Illumination.jpeg'
+// Art style images from public folder (using BASE_URL for production compatibility)
+const baseUrl = import.meta.env.BASE_URL
+const pixarStyle = `${baseUrl}art-styles/pixar-style.jpg`
+const dreamworksStyle = `${baseUrl}art-styles/dreamworks-style.jpg`
+const ghibliStyle = `${baseUrl}art-styles/ghibli-style.jpg`
+const cartoonNetworkStyle = `${baseUrl}art-styles/Cartoon Network.jpg`
+const nickelodeonStyle = `${baseUrl}art-styles/Nickelodeon.jpeg`
+const animeStyle = `${baseUrl}art-styles/Anime Style.jpeg`
+const disneyClassicStyle = `${baseUrl}art-styles/Disney Classic.jpg`
+const illuminationStyle = `${baseUrl}art-styles/Illumination.jpeg`
 
 // Animal types
 const ANIMAL_TYPES = [
