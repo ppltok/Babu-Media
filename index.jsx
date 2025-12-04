@@ -139,7 +139,7 @@ export default function BabuMediaLanding() {
               className="group relative bg-gradient-to-r from-purple-500 to-pink-500 px-6 py-2.5 rounded-full text-sm font-semibold transition-all overflow-hidden hover:shadow-xl hover:shadow-purple-500/30 hover:scale-105">
               <span className="absolute inset-0 rounded-full bg-white/20 animate-pulse"></span>
               <span className="relative">
-                {user ? 'Create' : 'Sign in'}
+                Create
               </span>
             </button>
             <button
