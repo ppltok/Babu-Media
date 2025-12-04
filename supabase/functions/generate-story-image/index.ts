@@ -108,9 +108,9 @@ serve(async (req) => {
       }
     } else {
       // No character image - use ByteDance Seedream v4.5 text-to-image
-      console.log('No character image, using ByteDance Seedream v4.5...')
+      console.log('No character image, using ByteDance Seedream v4.5 text-to-image...')
 
-      falResponse = await fetch('https://fal.run/fal-ai/bytedance/seedream/v4.5', {
+      falResponse = await fetch('https://fal.run/fal-ai/bytedance/seedream/v4.5/text-to-image', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -118,15 +118,15 @@ serve(async (req) => {
         },
         body: JSON.stringify({
           prompt: finalPrompt,
-          image_size: 'square',
+          image_size: 'square_hd',
           num_images: 1
         })
       })
 
-      // Fallback to nano-banana if Seedream fails
+      // Fallback to standard Seedream endpoint if text-to-image fails
       if (!falResponse.ok) {
-        console.log('Seedream text-to-image failed, trying nano-banana...')
-        falResponse = await fetch('https://fal.run/fal-ai/nano-banana', {
+        console.log('Seedream text-to-image failed, trying standard Seedream endpoint...')
+        falResponse = await fetch('https://fal.run/fal-ai/bytedance/seedream/v4.5', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -134,9 +134,8 @@ serve(async (req) => {
           },
           body: JSON.stringify({
             prompt: finalPrompt,
-            image_size: 'square',
-            num_images: 1,
-            enable_safety_checker: true
+            image_size: 'square_hd',
+            num_images: 1
           })
         })
       }

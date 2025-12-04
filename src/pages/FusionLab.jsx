@@ -396,22 +396,34 @@ export default function FusionLab() {
                       ))}
                     </div>
 
-                    {/* Custom animal input */}
-                    {selectedAnimal?.isCustom && (
-                      <div className="mt-4">
-                        <input
-                          type="text"
-                          value={customAnimalName}
-                          onChange={(e) => setCustomAnimalName(e.target.value)}
-                          className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 transition-colors"
-                          placeholder="Enter any animal (e.g., Dinosaur, Border Collie, Penguin...)"
-                          autoFocus
-                        />
-                        <p className="text-xs text-gray-500 mt-2">
-                          Type any animal you can imagine - real or fantasy!
-                        </p>
+                    {/* Custom animal input - always visible */}
+                    <div className="mt-4 pt-4 border-t border-white/10">
+                      <div className="relative">
+                        <div className="absolute inset-0 flex items-center">
+                          <div className="w-full border-t border-white/10"></div>
+                        </div>
+                        <div className="relative flex justify-center text-sm">
+                          <span className="px-2 bg-[#0B0A16] text-gray-500">or type your own</span>
+                        </div>
                       </div>
-                    )}
+                      <input
+                        type="text"
+                        value={customAnimalName}
+                        onChange={(e) => {
+                          setCustomAnimalName(e.target.value)
+                          // Auto-select custom when typing
+                          if (e.target.value.trim()) {
+                            const customAnimal = ANIMAL_TYPES.find(a => a.isCustom)
+                            if (customAnimal) setSelectedAnimal(customAnimal)
+                          }
+                        }}
+                        className="w-full mt-3 px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 transition-colors"
+                        placeholder="Border Collie, Dinosaur, Phoenix, Penguin..."
+                      />
+                      <p className="text-xs text-gray-500 mt-2">
+                        Type any specific animal breed or creature - real or fantasy!
+                      </p>
+                    </div>
                   </div>
 
                   <button
