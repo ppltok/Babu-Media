@@ -958,22 +958,35 @@ function FusionLabContent({ childId, child, onGoToStory }) {
               </div>
 
               {/* Action Buttons */}
-              <div className="flex gap-3 mt-8">
-                <button
-                  onClick={() => setSelectedCharacter(null)}
-                  className="flex-1 py-3 border border-white/20 rounded-xl font-semibold hover:bg-white/5 transition-all"
-                >
-                  Close
-                </button>
+              <div className="flex flex-col gap-3 mt-8">
                 <button
                   onClick={() => {
-                    setDeleteConfirm(selectedCharacter)
+                    if (onGoToStory) {
+                      onGoToStory(selectedCharacter)
+                    }
                     setSelectedCharacter(null)
                   }}
-                  className="py-3 px-6 bg-red-500/20 border border-red-500/30 text-red-400 hover:bg-red-500/30 rounded-xl font-semibold transition-all"
+                  className="w-full py-3 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl font-bold hover:shadow-lg hover:shadow-purple-500/30 transition-all"
                 >
-                  Delete
+                  Create a story with {selectedCharacter.name}
                 </button>
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => setSelectedCharacter(null)}
+                    className="flex-1 py-3 border border-white/20 rounded-xl font-semibold hover:bg-white/5 transition-all"
+                  >
+                    Close
+                  </button>
+                  <button
+                    onClick={() => {
+                      setDeleteConfirm(selectedCharacter)
+                      setSelectedCharacter(null)
+                    }}
+                    className="py-3 px-6 bg-red-500/20 border border-red-500/30 text-red-400 hover:bg-red-500/30 rounded-xl font-semibold transition-all"
+                  >
+                    Delete
+                  </button>
+                </div>
               </div>
             </div>
           </div>
