@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from './src/contexts/AuthContext';
+import { useLanguage } from './src/contexts/LanguageContext';
 
 // Lemon Squeezy Payment URLs
 const LEMON_SQUEEZY_CREATOR_URL = 'https://babumedia.lemonsqueezy.com/buy/870ca6c4-80e6-440f-8bb4-a795be72ce39';
@@ -24,14 +25,8 @@ const PlayIcon = ({ className }) => (<svg className={className} fill="none" view
 const StarIcon = ({ className }) => (<svg className={className} fill="currentColor" viewBox="0 0 24 24"><path d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" /></svg>);
 const ChevronLeftIcon = ({ className }) => (<svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" /></svg>);
 const ChevronRightIcon = ({ className }) => (<svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" /></svg>);
-const HeartIcon = ({ className }) => (<svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" /></svg>);
-const ZapIcon = ({ className }) => (<svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>);
-const ShieldIcon = ({ className }) => (<svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>);
-const UsersIcon = ({ className }) => (<svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" /></svg>);
 const ClockIcon = ({ className }) => (<svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>);
-const WandIcon = ({ className }) => (<svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>);
 const CheckIcon = ({ className }) => (<svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>);
-const InfinityIcon = ({ className }) => (<svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M18.178 8c5.096 0 5.096 8 0 8-5.095 0-7.133-8-12.739-8-4.781 0-4.781 8 0 8 5.606 0 7.644-8 12.74-8z" /></svg>);
 const GameIcon = ({ className }) => (<svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M11 4a2 2 0 114 0v1a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-1a2 2 0 100 4h1a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-1a2 2 0 10-4 0v1a1 1 0 01-1 1H7a1 1 0 01-1-1v-3a1 1 0 00-1-1H4a2 2 0 110-4h1a1 1 0 001-1V7a1 1 0 011-1h3a1 1 0 001-1V4z" /></svg>);
 const ChatIcon = ({ className }) => (<svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>);
 const SchoolIcon = ({ className }) => (<svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path d="M12 14l9-5-9-5-9 5 9 5z" /><path d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z" /><path strokeLinecap="round" strokeLinejoin="round" d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14zm-4 6v-7.5l4-2.222" /></svg>);
@@ -39,9 +34,9 @@ const SchoolIcon = ({ className }) => (<svg className={className} fill="none" vi
 export default function BabuMediaLanding() {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { t, isRTL, localizedHref } = useLanguage();
   const [characterIndex, setCharacterIndex] = useState(0);
   const [testimonialIndex, setTestimonialIndex] = useState(0);
-  const [fusionLabImageIndex, setFusionLabImageIndex] = useState(0);
   const [pricingIndex, setPricingIndex] = useState(1);
 
   // Fusion Lab Images Array
@@ -55,51 +50,71 @@ export default function BabuMediaLanding() {
 
   // Data Models
   const characters = [
-    { name: "Detective Dash", type: "Fox Detective", trait: "Clever & Curious", emoji: "🦊", image: detectiveDashImage, color: "from-amber-500 to-orange-500", bg: "bg-orange-950" },
-    { name: "Shadow Hunter", type: "Cyber Wolf", trait: "Brave & Strong", emoji: "🐺", image: shadowHunterImage, color: "from-blue-500 to-cyan-500", bg: "bg-blue-950" },
-    { name: "Eco Rocky", type: "Friendly Raccoon", trait: "Kind & Helpful", emoji: "🦝", image: raccoonImage, color: "from-emerald-500 to-teal-500", bg: "bg-emerald-950" },
-    { name: "Uni the Unicorn", type: "Magical Unicorn", trait: "Wise & Magical", emoji: "🦄", image: unicornImage, color: "from-purple-500 to-pink-500", bg: "bg-purple-950" },
-    { name: "Charlie", type: "King Charles Cavalier", trait: "Brave & Curious", emoji: "🐕", image: charlieImage, color: "from-sky-500 to-indigo-500", bg: "bg-indigo-950" },
-    { name: "Jacky", type: "Shy Dragon", trait: "Shy & Gentle", emoji: "🐉", image: jackyImage, color: "from-violet-500 to-purple-500", bg: "bg-violet-950" }
+    { name: "Detective Dash", type: t('homepage.character.types.foxDetective'), trait: t('homepage.character.traits.cleverCurious'), emoji: "🦊", image: detectiveDashImage, color: "from-amber-500 to-orange-500", bg: "bg-orange-950" },
+    { name: "Shadow Hunter", type: t('homepage.character.types.cyberWolf'), trait: t('homepage.character.traits.braveStrong'), emoji: "🐺", image: shadowHunterImage, color: "from-blue-500 to-cyan-500", bg: "bg-blue-950" },
+    { name: "Eco Rocky", type: t('homepage.character.types.friendlyRaccoon'), trait: t('homepage.character.traits.kindHelpful'), emoji: "🦝", image: raccoonImage, color: "from-emerald-500 to-teal-500", bg: "bg-emerald-950" },
+    { name: "Uni the Unicorn", type: t('homepage.character.types.magicalUnicorn'), trait: t('homepage.character.traits.wiseMagical'), emoji: "🦄", image: unicornImage, color: "from-purple-500 to-pink-500", bg: "bg-purple-950" },
+    { name: "Charlie", type: t('homepage.character.types.kingCharles'), trait: t('homepage.character.traits.braveCurious'), emoji: "🐕", image: charlieImage, color: "from-sky-500 to-indigo-500", bg: "bg-indigo-950" },
+    { name: "Jacky", type: t('homepage.character.types.shyDragon'), trait: t('homepage.character.traits.shyGentle'), emoji: "🐉", image: jackyImage, color: "from-violet-500 to-purple-500", bg: "bg-violet-950" }
   ];
 
+  // Pillars with translations
   const pillars = [
     {
       icon: <PaletteIcon className="w-6 h-6" />,
-      title: "1. The Fusion Lab",
-      desc: "Don't just choose a character. Build one. Your child's imagination + our AI = A 3D hero that lasts forever.",
+      title: t('homepage.pillars.fusionLab.title'),
+      desc: t('homepage.pillars.fusionLab.description'),
       color: "from-purple-500 to-pink-500"
     },
     {
       icon: <BookIcon className="w-6 h-6" />,
-      title: "2. The Plot World",
-      desc: "Bedtime reimagined. You and your child co-direct the plot, and we generate a 5-page book with animated climaxes.",
+      title: t('homepage.pillars.plotWorld.title'),
+      desc: t('homepage.pillars.plotWorld.description'),
       color: "from-blue-500 to-cyan-500"
     },
     {
       icon: <SchoolIcon className="w-6 h-6" />,
-      title: "3. The Classroom",
-      desc: "Learning is easier when it's fun. Your custom character teaches math, reading, and science lessons.",
+      title: t('homepage.pillars.classroom.title'),
+      desc: t('homepage.pillars.classroom.description'),
+      badge: t('homepage.pillars.classroom.badge'),
       color: "from-emerald-500 to-teal-500"
     },
     {
       icon: <GameIcon className="w-6 h-6" />,
-      title: "4. The Playground",
-      desc: "Play casual games starring YOUR character. Why play Mario when you can play as 'Detective Dash'?",
+      title: t('homepage.pillars.playground.title'),
+      desc: t('homepage.pillars.playground.description'),
+      badge: t('homepage.pillars.playground.badge'),
       color: "from-amber-500 to-orange-500"
     },
     {
       icon: <ChatIcon className="w-6 h-6" />,
-      title: "5. Comm Rooms",
-      desc: "Build confidence. Your child can text or FaceTime their character to practice social skills in a safe space.",
+      title: t('homepage.pillars.commRooms.title'),
+      desc: t('homepage.pillars.commRooms.description'),
+      badge: t('homepage.pillars.commRooms.badge'),
       color: "from-rose-500 to-red-500"
     }
   ];
 
+  // Testimonials with translations
   const testimonials = [
-    { quote: "For the first time, bedtime isn't a battle. My daughter asks for 'Sparkle stories' every night.", author: "David M.", role: "Father of Emma, 6", rating: 5 },
-    { quote: "The 'Ikea Effect' is real. Because he built the Raccoon himself, he listens to it when it teaches him math.", author: "Michael R.", role: "Father of James, 5", rating: 5 },
-    { quote: "Finally, an app that makes ME the hero sidekick instead of replacing me with a screen.", author: "Sarah K.", role: "Mother of Lily, 7", rating: 5 }
+    {
+      quote: t('homepage.testimonials.testimonial1.quote'),
+      author: t('homepage.testimonials.testimonial1.author'),
+      role: t('homepage.testimonials.testimonial1.role'),
+      rating: 5
+    },
+    {
+      quote: t('homepage.testimonials.testimonial2.quote'),
+      author: t('homepage.testimonials.testimonial2.author'),
+      role: t('homepage.testimonials.testimonial2.role'),
+      rating: 5
+    },
+    {
+      quote: t('homepage.testimonials.testimonial3.quote'),
+      author: t('homepage.testimonials.testimonial3.author'),
+      role: t('homepage.testimonials.testimonial3.role'),
+      rating: 5
+    }
   ];
 
   // Auto-advance hero character on tablet to show "Live" demo feel
@@ -111,7 +126,7 @@ export default function BabuMediaLanding() {
 
   return (
     <div className="min-h-screen bg-[#0B0A16] text-white selection:bg-purple-500 selection:text-white font-sans overflow-x-hidden">
-      
+
       {/* --- BACKGROUND EFFECTS --- */}
       <div className="fixed inset-0 pointer-events-none">
         <div className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-purple-600/20 rounded-full blur-[120px]" />
@@ -129,23 +144,23 @@ export default function BabuMediaLanding() {
             <span className="text-xl font-bold tracking-tight">Babu Media</span>
           </div>
           <div className="hidden md:flex items-center gap-8">
-            <a href="#pillars" className="text-gray-400 hover:text-white transition-colors text-sm font-medium">The 5 Pillars</a>
-            <a href="#how-it-works" className="text-gray-400 hover:text-white transition-colors text-sm font-medium">How It Works</a>
-            <a href="#pricing" className="text-gray-400 hover:text-white transition-colors text-sm font-medium">Pricing</a>
+            <a href="#pillars" className="text-gray-400 hover:text-white transition-colors text-sm font-medium">{t('homepage.nav.pillars')}</a>
+            <a href="#how-it-works" className="text-gray-400 hover:text-white transition-colors text-sm font-medium">{t('homepage.nav.howItWorks')}</a>
+            <a href="#pricing" className="text-gray-400 hover:text-white transition-colors text-sm font-medium">{t('homepage.nav.pricing')}</a>
           </div>
           <div className="flex items-center gap-3">
             <button
-              onClick={() => navigate(user ? '/dashboard' : '/signup')}
+              onClick={() => navigate(user ? localizedHref('/dashboard') : localizedHref('/signup'))}
               className="group relative bg-gradient-to-r from-purple-500 to-pink-500 px-6 py-2.5 rounded-full text-sm font-semibold transition-all overflow-hidden hover:shadow-xl hover:shadow-purple-500/30 hover:scale-105">
               <span className="absolute inset-0 rounded-full bg-white/20 animate-pulse"></span>
               <span className="relative">
-                Create
+                {t('homepage.nav.create')}
               </span>
             </button>
             <button
-              onClick={() => navigate('/login')}
+              onClick={() => navigate(localizedHref('/login'))}
               className="bg-white/10 hover:bg-white/20 border border-white/10 px-5 py-2 rounded-full text-sm font-semibold transition-all">
-              Login
+              {t('homepage.nav.login')}
             </button>
           </div>
         </div>
@@ -154,52 +169,52 @@ export default function BabuMediaLanding() {
       {/* --- HERO SECTION --- */}
       <section className="relative pt-32 pb-20 px-6">
         <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-12 items-center">
-          
+
           {/* Left: Copy */}
-          <div className="text-center lg:text-left z-10">
+          <div className={`text-center lg:text-${isRTL ? 'right' : 'left'} z-10`}>
             <div className="inline-flex items-center gap-2 bg-purple-500/10 border border-purple-500/20 rounded-full px-4 py-2 mb-6 animate-fade-in-up">
               <MoonIcon className="w-4 h-4 text-purple-400" />
-              <span className="text-purple-200 text-sm font-medium">Reimagining Bedtime Stories</span>
+              <span className="text-purple-200 text-sm font-medium">{t('homepage.hero.tagline')}</span>
             </div>
-            
+
             <h1 className="text-5xl md:text-7xl font-bold mb-6 leading-tight tracking-tight">
-              Build Your Own <br />
+              {t('homepage.hero.titleLine1')}
+              <br />
               <span className="bg-gradient-to-r from-purple-400 via-pink-400 to-amber-400 bg-clip-text text-transparent">
-                Disney World
+                {t('homepage.hero.titleLine2')}
               </span>
             </h1>
-            
+
             <p className="text-xl text-gray-400 mb-8 leading-relaxed max-w-2xl mx-auto lg:mx-0">
-              Transform <span className="text-red-500 font-semibold">Passive Screen Time</span><br /> into <span className="text-purple-400 font-semibold">Active Bonding</span>. 
-              <br />You and your child build the characters, write the stories, and play the games together.
+              {t('homepage.hero.subtitle')}
             </p>
-            
-            <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4">
+
+            <div className={`flex flex-col sm:flex-row items-center justify-center lg:justify-${isRTL ? 'end' : 'start'} gap-4`}>
               <button
-                onClick={() => navigate('/signup')}
+                onClick={() => navigate(localizedHref('/signup'))}
                 className="group relative bg-gradient-to-r from-purple-500 to-pink-500 px-8 py-4 rounded-full font-bold text-lg hover:shadow-xl hover:shadow-purple-500/30 transition-all hover:scale-105 flex items-center gap-2">
                  <span className="absolute inset-0 rounded-full bg-white/20 animate-pulse"></span>
                  <span className="relative flex items-center gap-2">
-                   Start Creating Free
-                   <ChevronRightIcon className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                   {t('homepage.hero.cta')}
+                   <ChevronRightIcon className={`w-5 h-5 group-hover:translate-x-1 transition-transform ${isRTL ? 'rotate-180' : ''}`} />
                  </span>
               </button>
               <button className="flex items-center gap-2 px-8 py-4 rounded-full font-semibold border border-white/10 hover:bg-white/5 transition-all">
                 <PlayIcon className="w-5 h-5" />
-                See the Magic
+                {t('homepage.hero.secondaryCta')}
               </button>
             </div>
-            
+
             <p className="mt-6 text-sm text-gray-500">
-              <span className="text-emerald-400">★ 4.9/5</span> from 1,000+ Fathers
+              <span className="text-emerald-400">★ 4.9/5</span> {t('homepage.hero.socialProof')}
             </p>
           </div>
 
           {/* Right: Dynamic Tablet Demo */}
-          <div className="relative z-10 flex justify-center lg:justify-end">
+          <div className={`relative z-10 flex justify-center lg:justify-${isRTL ? 'start' : 'end'}`}>
             {/* The "Glow" behind tablet */}
             <div className={`absolute inset-0 bg-gradient-to-r ${characters[characterIndex].color} blur-[60px] opacity-30 transition-all duration-1000`}></div>
-            
+
             <div className="relative w-full max-w-md bg-slate-900 rounded-[2.5rem] border-[8px] border-slate-800 shadow-2xl overflow-hidden">
               {/* Fake Tablet UI Header */}
               <div className="absolute top-0 left-0 right-0 h-6 bg-slate-800 z-20 flex justify-center items-center rounded-t-[2rem]">
@@ -210,14 +225,14 @@ export default function BabuMediaLanding() {
               <div className={`relative pt-6 transition-all duration-1000 ${characters[characterIndex].bg} flex flex-col min-h-[600px] rounded-[2.5rem] overflow-hidden`}>
                 {/* Top Bar */}
                 <div className="p-6 pt-10 flex justify-between items-center gap-2">
-                  <button 
+                  <button
                     onClick={() => setCharacterIndex((prev) => (prev - 1 + characters.length) % characters.length)}
                     className="w-10 h-10 bg-white/10 hover:bg-white/20 rounded-full flex items-center justify-center transition-all cursor-pointer flex-shrink-0"
                     aria-label="Previous character"
                   >
                     <ChevronLeftIcon className="w-6 h-6" />
                   </button>
-                  <div className="text-base sm:text-lg font-semibold tracking-wide uppercase opacity-70 text-center break-words flex-1 px-2">Make Your Best Friend Come to Life</div>
+                  <div className="text-base sm:text-lg font-semibold tracking-wide uppercase opacity-70 text-center break-words flex-1 px-2">{t('homepage.tablet.header')}</div>
                   <div className="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center flex-shrink-0">
                     <SparklesIcon className="w-5 h-5" />
                   </div>
@@ -254,15 +269,15 @@ export default function BabuMediaLanding() {
                       <ChevronRightIcon className="w-6 h-6 text-white" />
                     </button>
                   </div>
-                  
+
                   <div className={`inline-block px-4 py-1 rounded-full bg-gradient-to-r ${characters[characterIndex].color} text-sm font-bold mb-4`}>
                     {characters[characterIndex].type}
                   </div>
-                  
+
                   {/* Stats/Traits */}
                   <div className="w-full max-w-xs">
                     <div className="bg-black/20 rounded-xl p-3 backdrop-blur-sm">
-                      <div className="text-xs opacity-60 uppercase mb-1">Trait</div>
+                      <div className="text-xs opacity-60 uppercase mb-1">{t('homepage.character.trait')}</div>
                       <div className="font-semibold">{characters[characterIndex].trait}</div>
                     </div>
                   </div>
@@ -271,9 +286,9 @@ export default function BabuMediaLanding() {
                 {/* Bottom Action */}
                 <div className="p-6 pb-8 bg-gradient-to-t from-black/50 to-transparent rounded-b-[2.5rem]">
                   <button
-                    onClick={() => navigate(user ? '/dashboard' : '/login')}
+                    onClick={() => navigate(user ? localizedHref('/dashboard') : localizedHref('/login'))}
                     className="w-full py-4 bg-white text-black font-bold rounded-xl text-center shadow-lg transform active:scale-95 transition-transform cursor-pointer hover:bg-gray-100">
-                    Bring to Life
+                    {t('homepage.cta.bringToLife')}
                   </button>
                 </div>
               </div>
@@ -288,15 +303,15 @@ export default function BabuMediaLanding() {
           <div className="grid grid-cols-3 gap-8 text-center divide-x divide-white/10">
             <div>
               <div className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">20m</div>
-              <div className="text-gray-400 text-sm mt-1">Avg. Bonding Time</div>
+              <div className="text-gray-400 text-sm mt-1">{t('homepage.stats.bondingTime')}</div>
             </div>
             <div>
               <div className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">3-10</div>
-              <div className="text-gray-400 text-sm mt-1">Prime Imagination Years</div>
+              <div className="text-gray-400 text-sm mt-1">{t('homepage.stats.imaginationYears')}</div>
             </div>
             <div>
               <div className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-emerald-400 to-teal-400 bg-clip-text text-transparent">∞</div>
-              <div className="text-gray-400 text-sm mt-1">Story Possibilities</div>
+              <div className="text-gray-400 text-sm mt-1">{t('homepage.stats.storyPossibilities')}</div>
             </div>
           </div>
         </div>
@@ -307,10 +322,10 @@ export default function BabuMediaLanding() {
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-5xl font-bold mb-4">
-              The <span className="bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">5 Pillars</span> of Imagination
+              {t('homepage.pillars.title')}
             </h2>
             <p className="text-gray-400 max-w-2xl mx-auto">
-              Babu Media isn't just a story app. It's a complete digital ecosystem designed to spark creativity and build confidence.
+              {t('homepage.pillars.subtitle')}
             </p>
           </div>
 
@@ -350,8 +365,13 @@ export default function BabuMediaLanding() {
             {/* Feature 3, 4, 5: Smaller Bottom Row */}
             {pillars.slice(2).map((pillar, i) => (
               <div key={i} className="md:col-span-2 bg-slate-900/40 border border-white/10 rounded-3xl p-6 hover:bg-slate-800/40 transition-colors">
-                <div className={`w-10 h-10 rounded-lg bg-gradient-to-br ${pillar.color} flex items-center justify-center mb-4`}>
-                  {pillar.icon}
+                <div className="flex items-center gap-3 mb-4">
+                  <div className={`w-10 h-10 rounded-lg bg-gradient-to-br ${pillar.color} flex items-center justify-center`}>
+                    {pillar.icon}
+                  </div>
+                  {pillar.badge && (
+                    <span className="px-2 py-0.5 bg-gray-600 text-white text-xs font-bold rounded">{pillar.badge}</span>
+                  )}
                 </div>
                 <h3 className="text-lg font-bold mb-2">{pillar.title}</h3>
                 <p className="text-sm text-gray-400">{pillar.desc}</p>
@@ -365,7 +385,7 @@ export default function BabuMediaLanding() {
       <section id="how-it-works" className="py-24 px-6 bg-white/[0.02]">
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-5xl font-bold">Magic in <span className="text-purple-400">3 Steps</span></h2>
+            <h2 className="text-3xl md:text-5xl font-bold">{t('homepage.howItWorks.title')}</h2>
           </div>
 
           <div className="grid md:grid-cols-3 gap-8 relative">
@@ -377,13 +397,13 @@ export default function BabuMediaLanding() {
             </div>
 
             {[
-              { step: "01", title: "Create Character", desc: "Pick animal, style, outfit. AI brings it to life.", time: "3 min" },
-              { step: "02", title: "Choose Adventure", desc: "Any idea becomes a 5-page illustrated story.", time: "2 min" },
-              { step: "03", title: "Read Together", desc: "Swipe through pages. Watch the animated climax.", time: "10 min" }
+              { step: "01", title: t('homepage.howItWorks.step1.title'), desc: t('homepage.howItWorks.step1.description'), time: t('homepage.howItWorks.step1.time') },
+              { step: "02", title: t('homepage.howItWorks.step2.title'), desc: t('homepage.howItWorks.step2.description'), time: t('homepage.howItWorks.step2.time') },
+              { step: "03", title: t('homepage.howItWorks.step3.title'), desc: t('homepage.howItWorks.step3.description'), time: t('homepage.howItWorks.step3.time') }
             ].map((item, index) => (
               <div key={index} className="relative bg-slate-950 border border-white/10 p-8 rounded-2xl text-center z-10">
                 <div className="w-24 h-8 bg-slate-900 border border-purple-500/30 rounded-full flex items-center justify-center mx-auto mb-6 text-purple-400 font-mono text-sm shadow-lg shadow-purple-900/20">
-                  STEP {item.step}
+                  {t('homepage.howItWorks.step')} {item.step}
                 </div>
                 <h3 className="text-xl font-bold mb-3">{item.title}</h3>
                 <p className="text-gray-400 text-sm mb-4">{item.desc}</p>
@@ -409,7 +429,7 @@ export default function BabuMediaLanding() {
             <div className="font-bold text-lg text-white">{testimonials[testimonialIndex].author}</div>
             <div className="text-purple-400">{testimonials[testimonialIndex].role}</div>
           </div>
-          
+
           <div className="flex justify-center gap-2 mt-8">
             {testimonials.map((_, index) => (
               <button
@@ -426,29 +446,29 @@ export default function BabuMediaLanding() {
       <section id="pricing" className="py-24 px-6 bg-gradient-to-b from-[#0B0A16] to-[#1a1630]">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-12">
-            <h2 className="text-4xl font-bold mb-4">Simple Pricing</h2>
-            <p className="text-gray-400">Invest in their imagination for less than a movie ticket.</p>
+            <h2 className="text-4xl font-bold mb-4">{t('homepage.pricing.title')}</h2>
+            <p className="text-gray-400">{t('homepage.pricing.subtitle')}</p>
           </div>
 
           {/* Mobile Carousel */}
           <div className="md:hidden relative">
             <div className="overflow-hidden">
-              <div className="flex transition-transform duration-500 ease-in-out" style={{ transform: `translateX(-${pricingIndex * 100}%)` }}>
+              <div className="flex transition-transform duration-500 ease-in-out" style={{ transform: `translateX(${isRTL ? '' : '-'}${pricingIndex * 100}%)` }}>
                 {/* Free Tier */}
                 <div className="min-w-full flex-shrink-0 px-6">
                   <div className={`bg-white/5 border border-white/10 rounded-3xl p-8 hover:bg-white/10 transition-all h-[420px] flex flex-col ${pricingIndex === 0 ? 'scale-100' : 'scale-95 opacity-60'}`}>
-                    <div className="text-lg font-semibold mb-2">Explorer</div>
-                    <div className="text-4xl font-bold mb-6">$0</div>
+                    <div className="text-lg font-semibold mb-2">{t('homepage.pricing.explorer.name')}</div>
+                    <div className="text-4xl font-bold mb-6">{t('homepage.pricing.explorer.price')}</div>
                     <ul className="space-y-4 mb-8 text-gray-300 flex-grow">
-                      <li className="flex gap-3"><CheckIcon className="w-5 h-5 text-gray-500 flex-shrink-0" /> 1 Child Profile</li>
-                      <li className="flex gap-3"><CheckIcon className="w-5 h-5 text-gray-500 flex-shrink-0" /> 2 Characters</li>
-                      <li className="flex gap-3"><CheckIcon className="w-5 h-5 text-gray-500 flex-shrink-0" /> 1 Story</li>
+                      <li className="flex gap-3"><CheckIcon className="w-5 h-5 text-gray-500 flex-shrink-0" /> {t('homepage.pricing.explorer.features.children')}</li>
+                      <li className="flex gap-3"><CheckIcon className="w-5 h-5 text-gray-500 flex-shrink-0" /> {t('homepage.pricing.explorer.features.characters')}</li>
+                      <li className="flex gap-3"><CheckIcon className="w-5 h-5 text-gray-500 flex-shrink-0" /> {t('homepage.pricing.explorer.features.stories')}</li>
                     </ul>
                     <button
-                      onClick={() => navigate('/signup')}
+                      onClick={() => navigate(localizedHref('/signup'))}
                       className="w-full py-3 rounded-full border border-white/20 hover:bg-white/10 font-semibold transition-all mt-auto"
                     >
-                      Start Free
+                      {t('homepage.pricing.explorer.cta')}
                     </button>
                   </div>
                 </div>
@@ -456,21 +476,21 @@ export default function BabuMediaLanding() {
                 {/* Premium Tier */}
                 <div className="min-w-full flex-shrink-0 px-6">
                   <div className={`relative bg-gradient-to-br from-purple-900 to-indigo-900 border border-purple-500 rounded-3xl p-8 shadow-2xl shadow-purple-900/50 transition-all h-[420px] flex flex-col ${pricingIndex === 1 ? 'scale-100' : 'scale-95 opacity-60'}`}>
-                    <div className="absolute top-0 right-0 bg-amber-400 text-black text-xs font-bold px-3 py-1 rounded-bl-xl rounded-tr-2xl">
-                      MOST POPULAR
+                    <div className={`absolute top-0 ${isRTL ? 'left-0 rounded-br-xl rounded-tl-2xl' : 'right-0 rounded-bl-xl rounded-tr-2xl'} bg-amber-400 text-black text-xs font-bold px-3 py-1`}>
+                      {t('homepage.pricing.creator.badge')}
                     </div>
-                    <div className="text-lg font-semibold mb-2 text-purple-200">Creator</div>
-                    <div className="text-4xl font-bold mb-6">$9.99<span className="text-lg font-normal text-purple-300">/mo</span></div>
+                    <div className="text-lg font-semibold mb-2 text-purple-200">{t('homepage.pricing.creator.name')}</div>
+                    <div className="text-4xl font-bold mb-6">{t('homepage.pricing.creator.price')}<span className="text-lg font-normal text-purple-300">{t('homepage.pricing.creator.period')}</span></div>
                     <ul className="space-y-4 mb-8 text-white flex-grow">
-                      <li className="flex gap-3"><CheckIcon className="w-5 h-5 text-emerald-400 flex-shrink-0" /> Unlimited Children</li>
-                      <li className="flex gap-3"><CheckIcon className="w-5 h-5 text-emerald-400 flex-shrink-0" /> 5 Characters/month</li>
-                      <li className="flex gap-3"><CheckIcon className="w-5 h-5 text-emerald-400 flex-shrink-0" /> 10 Stories/week</li>
+                      <li className="flex gap-3"><CheckIcon className="w-5 h-5 text-emerald-400 flex-shrink-0" /> {t('homepage.pricing.creator.features.children')}</li>
+                      <li className="flex gap-3"><CheckIcon className="w-5 h-5 text-emerald-400 flex-shrink-0" /> {t('homepage.pricing.creator.features.characters')}</li>
+                      <li className="flex gap-3"><CheckIcon className="w-5 h-5 text-emerald-400 flex-shrink-0" /> {t('homepage.pricing.creator.features.stories')}</li>
                     </ul>
                     <button
                       onClick={() => window.open(LEMON_SQUEEZY_CREATOR_URL, '_blank')}
                       className="w-full py-3 rounded-full bg-white text-purple-900 font-bold hover:shadow-lg hover:shadow-white/20 transition-all mt-auto"
                     >
-                      Start 7-Day Free Trial
+                      {t('homepage.pricing.creator.cta')}
                     </button>
                   </div>
                 </div>
@@ -478,51 +498,51 @@ export default function BabuMediaLanding() {
                 {/* Pro Tier */}
                 <div className="min-w-full flex-shrink-0 px-6">
                   <div className={`relative bg-gradient-to-br from-amber-900/40 to-orange-900/40 border border-amber-500/30 rounded-3xl p-8 hover:border-amber-500/50 transition-all shadow-xl shadow-amber-900/30 h-[420px] flex flex-col ${pricingIndex === 2 ? 'scale-100' : 'scale-95 opacity-60'}`}>
-                    <div className="absolute top-0 right-0 bg-amber-500 text-black text-xs font-bold px-3 py-1 rounded-bl-xl rounded-tr-2xl">
-                      BEST VALUE
+                    <div className={`absolute top-0 ${isRTL ? 'left-0 rounded-br-xl rounded-tl-2xl' : 'right-0 rounded-bl-xl rounded-tr-2xl'} bg-amber-500 text-black text-xs font-bold px-3 py-1`}>
+                      {t('homepage.pricing.pro.badge')}
                     </div>
-                    <div className="text-lg font-semibold mb-2 text-amber-200">Pro</div>
-                    <div className="text-4xl font-bold mb-6">$19.99<span className="text-lg font-normal text-amber-300">/mo</span></div>
+                    <div className="text-lg font-semibold mb-2 text-amber-200">{t('homepage.pricing.pro.name')}</div>
+                    <div className="text-4xl font-bold mb-6">{t('homepage.pricing.pro.price')}<span className="text-lg font-normal text-amber-300">{t('homepage.pricing.pro.period')}</span></div>
                     <ul className="space-y-4 mb-8 text-white flex-grow">
-                      <li className="flex gap-3"><CheckIcon className="w-5 h-5 text-emerald-400 flex-shrink-0" /> Unlimited Characters</li>
-                      <li className="flex gap-3"><CheckIcon className="w-5 h-5 text-emerald-400 flex-shrink-0" /> Unlimited Stories</li>
-                      <li className="flex gap-3"><CheckIcon className="w-5 h-5 text-emerald-400 flex-shrink-0" /> Unlimited Storage</li>
+                      <li className="flex gap-3"><CheckIcon className="w-5 h-5 text-emerald-400 flex-shrink-0" /> {t('homepage.pricing.pro.features.characters')}</li>
+                      <li className="flex gap-3"><CheckIcon className="w-5 h-5 text-emerald-400 flex-shrink-0" /> {t('homepage.pricing.pro.features.stories')}</li>
+                      <li className="flex gap-3"><CheckIcon className="w-5 h-5 text-emerald-400 flex-shrink-0" /> {t('homepage.pricing.pro.features.storage')}</li>
                       <li className="flex flex-wrap items-center gap-2 text-gray-400">
-                        <span className="px-2 py-0.5 bg-gray-600 text-white text-xs font-bold rounded flex-shrink-0 self-center">SOON</span>
-                        <span className="flex-1">Access to Classroom & Games</span>
+                        <span className="px-2 py-0.5 bg-gray-600 text-white text-xs font-bold rounded flex-shrink-0 self-center">{t('homepage.pricing.pro.comingSoon')}</span>
+                        <span className="flex-1">{t('homepage.pricing.pro.features.classroom')}</span>
                       </li>
                       <li className="flex flex-wrap items-center gap-2 text-gray-400">
-                        <span className="px-2 py-0.5 bg-gray-600 text-white text-xs font-bold rounded flex-shrink-0 self-center">SOON</span>
-                        <span className="flex-1">Comm Rooms</span>
+                        <span className="px-2 py-0.5 bg-gray-600 text-white text-xs font-bold rounded flex-shrink-0 self-center">{t('homepage.pricing.pro.comingSoon')}</span>
+                        <span className="flex-1">{t('homepage.pricing.pro.features.commRooms')}</span>
                       </li>
                     </ul>
                     <button
                       onClick={() => window.open(LEMON_SQUEEZY_PRO_URL, '_blank')}
                       className="w-full py-3 rounded-full bg-gradient-to-r from-amber-500 to-orange-500 text-white font-bold hover:shadow-lg hover:shadow-amber-500/30 transition-all mt-auto"
                     >
-                      Start 7-Day Free Trial
+                      {t('homepage.pricing.pro.cta')}
                     </button>
                   </div>
                 </div>
               </div>
             </div>
-            
+
             {/* Navigation Buttons */}
             <button
               onClick={() => setPricingIndex((prev) => (prev - 1 + 3) % 3)}
-              className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 w-10 h-10 bg-black/60 hover:bg-black/80 rounded-full flex items-center justify-center backdrop-blur-sm z-10"
+              className={`absolute ${isRTL ? 'right-0 translate-x-4' : 'left-0 -translate-x-4'} top-1/2 -translate-y-1/2 w-10 h-10 bg-black/60 hover:bg-black/80 rounded-full flex items-center justify-center backdrop-blur-sm z-10`}
               aria-label="Previous pricing"
             >
-              <ChevronLeftIcon className="w-6 h-6 text-white" />
+              <ChevronLeftIcon className={`w-6 h-6 text-white ${isRTL ? 'rotate-180' : ''}`} />
             </button>
             <button
               onClick={() => setPricingIndex((prev) => (prev + 1) % 3)}
-              className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 w-10 h-10 bg-black/60 hover:bg-black/80 rounded-full flex items-center justify-center backdrop-blur-sm z-10"
+              className={`absolute ${isRTL ? 'left-0 -translate-x-4' : 'right-0 translate-x-4'} top-1/2 -translate-y-1/2 w-10 h-10 bg-black/60 hover:bg-black/80 rounded-full flex items-center justify-center backdrop-blur-sm z-10`}
               aria-label="Next pricing"
             >
-              <ChevronRightIcon className="w-6 h-6 text-white" />
+              <ChevronRightIcon className={`w-6 h-6 text-white ${isRTL ? 'rotate-180' : ''}`} />
             </button>
-            
+
             {/* Indicator Dots */}
             <div className="flex justify-center gap-2 mt-6">
               {[0, 1, 2].map((index) => (
@@ -530,8 +550,8 @@ export default function BabuMediaLanding() {
                   key={index}
                   onClick={() => setPricingIndex(index)}
                   className={`h-2 rounded-full transition-all ${
-                    pricingIndex === index 
-                      ? 'w-8 bg-purple-500' 
+                    pricingIndex === index
+                      ? 'w-8 bg-purple-500'
                       : 'w-2 bg-white/30 hover:bg-white/50'
                   }`}
                   aria-label={`Go to pricing ${index + 1}`}
@@ -544,66 +564,66 @@ export default function BabuMediaLanding() {
           <div className="hidden md:grid md:grid-cols-3 gap-8 items-stretch">
             {/* Free Tier */}
             <div className="bg-white/5 border border-white/10 rounded-3xl p-8 hover:bg-white/10 transition-colors flex flex-col">
-              <div className="text-lg font-semibold mb-2">Explorer</div>
-              <div className="text-4xl font-bold mb-6">$0</div>
+              <div className="text-lg font-semibold mb-2">{t('homepage.pricing.explorer.name')}</div>
+              <div className="text-4xl font-bold mb-6">{t('homepage.pricing.explorer.price')}</div>
               <ul className="space-y-4 mb-8 text-gray-300 flex-grow">
-                <li className="flex gap-3"><CheckIcon className="w-5 h-5 text-gray-500 flex-shrink-0" /> 1 Child Profile</li>
-                <li className="flex gap-3"><CheckIcon className="w-5 h-5 text-gray-500 flex-shrink-0" /> 2 Characters</li>
-                <li className="flex gap-3"><CheckIcon className="w-5 h-5 text-gray-500 flex-shrink-0" /> 1 Story</li>
+                <li className="flex gap-3"><CheckIcon className="w-5 h-5 text-gray-500 flex-shrink-0" /> {t('homepage.pricing.explorer.features.children')}</li>
+                <li className="flex gap-3"><CheckIcon className="w-5 h-5 text-gray-500 flex-shrink-0" /> {t('homepage.pricing.explorer.features.characters')}</li>
+                <li className="flex gap-3"><CheckIcon className="w-5 h-5 text-gray-500 flex-shrink-0" /> {t('homepage.pricing.explorer.features.stories')}</li>
               </ul>
               <button
-                onClick={() => navigate('/signup')}
+                onClick={() => navigate(localizedHref('/signup'))}
                 className="w-full py-3 rounded-full border border-white/20 hover:bg-white/10 font-semibold transition-all mt-auto"
               >
-                Start Free
+                {t('homepage.pricing.explorer.cta')}
               </button>
             </div>
 
             {/* Premium Tier */}
             <div className="relative bg-gradient-to-br from-purple-900 to-indigo-900 border border-purple-500 rounded-3xl p-8 shadow-2xl shadow-purple-900/50 transform md:scale-105 flex flex-col">
-              <div className="absolute top-0 right-0 bg-amber-400 text-black text-xs font-bold px-3 py-1 rounded-bl-xl rounded-tr-2xl">
-                MOST POPULAR
+              <div className={`absolute top-0 ${isRTL ? 'left-0 rounded-br-xl rounded-tl-2xl' : 'right-0 rounded-bl-xl rounded-tr-2xl'} bg-amber-400 text-black text-xs font-bold px-3 py-1`}>
+                {t('homepage.pricing.creator.badge')}
               </div>
-              <div className="text-lg font-semibold mb-2 text-purple-200">Creator</div>
-              <div className="text-4xl font-bold mb-6">$9.99<span className="text-lg font-normal text-purple-300">/mo</span></div>
+              <div className="text-lg font-semibold mb-2 text-purple-200">{t('homepage.pricing.creator.name')}</div>
+              <div className="text-4xl font-bold mb-6">{t('homepage.pricing.creator.price')}<span className="text-lg font-normal text-purple-300">{t('homepage.pricing.creator.period')}</span></div>
               <ul className="space-y-4 mb-8 text-white flex-grow">
-                <li className="flex gap-3"><CheckIcon className="w-5 h-5 text-emerald-400 flex-shrink-0" /> Unlimited Children</li>
-                <li className="flex gap-3"><CheckIcon className="w-5 h-5 text-emerald-400 flex-shrink-0" /> 5 Characters/month</li>
-                <li className="flex gap-3"><CheckIcon className="w-5 h-5 text-emerald-400 flex-shrink-0" /> 10 Stories/week</li>
+                <li className="flex gap-3"><CheckIcon className="w-5 h-5 text-emerald-400 flex-shrink-0" /> {t('homepage.pricing.creator.features.children')}</li>
+                <li className="flex gap-3"><CheckIcon className="w-5 h-5 text-emerald-400 flex-shrink-0" /> {t('homepage.pricing.creator.features.characters')}</li>
+                <li className="flex gap-3"><CheckIcon className="w-5 h-5 text-emerald-400 flex-shrink-0" /> {t('homepage.pricing.creator.features.stories')}</li>
               </ul>
               <button
                 onClick={() => window.open(LEMON_SQUEEZY_CREATOR_URL, '_blank')}
                 className="w-full py-3 rounded-full bg-white text-purple-900 font-bold hover:shadow-lg hover:shadow-white/20 transition-all mt-auto"
               >
-                Start 7-Day Free Trial
+                {t('homepage.pricing.creator.cta')}
               </button>
             </div>
 
             {/* Pro Tier */}
             <div className="relative bg-gradient-to-br from-amber-900/40 to-orange-900/40 border border-amber-500/30 rounded-3xl p-8 hover:border-amber-500/50 transition-colors shadow-xl shadow-amber-900/30 flex flex-col">
-              <div className="absolute top-0 right-0 bg-amber-500 text-black text-xs font-bold px-3 py-1 rounded-bl-xl rounded-tr-2xl">
-                BEST VALUE
+              <div className={`absolute top-0 ${isRTL ? 'left-0 rounded-br-xl rounded-tl-2xl' : 'right-0 rounded-bl-xl rounded-tr-2xl'} bg-amber-500 text-black text-xs font-bold px-3 py-1`}>
+                {t('homepage.pricing.pro.badge')}
               </div>
-              <div className="text-lg font-semibold mb-2 text-amber-200">Pro</div>
-              <div className="text-4xl font-bold mb-6">$19.99<span className="text-lg font-normal text-amber-300">/mo</span></div>
+              <div className="text-lg font-semibold mb-2 text-amber-200">{t('homepage.pricing.pro.name')}</div>
+              <div className="text-4xl font-bold mb-6">{t('homepage.pricing.pro.price')}<span className="text-lg font-normal text-amber-300">{t('homepage.pricing.pro.period')}</span></div>
               <ul className="space-y-4 mb-8 text-white flex-grow">
-                <li className="flex gap-3"><CheckIcon className="w-5 h-5 text-emerald-400 flex-shrink-0" /> Unlimited Characters</li>
-                <li className="flex gap-3"><CheckIcon className="w-5 h-5 text-emerald-400 flex-shrink-0" /> Unlimited Stories</li>
-                <li className="flex gap-3"><CheckIcon className="w-5 h-5 text-emerald-400 flex-shrink-0" /> Unlimited Storage</li>
+                <li className="flex gap-3"><CheckIcon className="w-5 h-5 text-emerald-400 flex-shrink-0" /> {t('homepage.pricing.pro.features.characters')}</li>
+                <li className="flex gap-3"><CheckIcon className="w-5 h-5 text-emerald-400 flex-shrink-0" /> {t('homepage.pricing.pro.features.stories')}</li>
+                <li className="flex gap-3"><CheckIcon className="w-5 h-5 text-emerald-400 flex-shrink-0" /> {t('homepage.pricing.pro.features.storage')}</li>
                 <li className="flex flex-wrap items-center gap-2 text-gray-400">
-                  <span className="px-2 py-0.5 bg-gray-600 text-white text-xs font-bold rounded flex-shrink-0 self-center">SOON</span>
-                  <span className="flex-1">Access to Classroom & Games</span>
+                  <span className="px-2 py-0.5 bg-gray-600 text-white text-xs font-bold rounded flex-shrink-0 self-center">{t('homepage.pricing.pro.comingSoon')}</span>
+                  <span className="flex-1">{t('homepage.pricing.pro.features.classroom')}</span>
                 </li>
                 <li className="flex flex-wrap items-center gap-2 text-gray-400">
-                  <span className="px-2 py-0.5 bg-gray-600 text-white text-xs font-bold rounded flex-shrink-0 self-center">SOON</span>
-                  <span className="flex-1">Comm Rooms</span>
+                  <span className="px-2 py-0.5 bg-gray-600 text-white text-xs font-bold rounded flex-shrink-0 self-center">{t('homepage.pricing.pro.comingSoon')}</span>
+                  <span className="flex-1">{t('homepage.pricing.pro.features.commRooms')}</span>
                 </li>
               </ul>
               <button
                 onClick={() => window.open(LEMON_SQUEEZY_PRO_URL, '_blank')}
                 className="w-full py-3 rounded-full bg-gradient-to-r from-amber-500 to-orange-500 text-white font-bold hover:shadow-lg hover:shadow-amber-500/30 transition-all mt-auto"
               >
-                Start 7-Day Free Trial
+                {t('homepage.pricing.pro.cta')}
               </button>
             </div>
           </div>
@@ -620,12 +640,12 @@ export default function BabuMediaLanding() {
             <span className="font-bold">Babu Media</span>
           </div>
           <div className="flex gap-8 text-sm text-gray-400">
-            <a href="#" className="hover:text-white">Privacy</a>
-            <a href="#" className="hover:text-white">Terms</a>
-            <a href="#" className="hover:text-white">Contact</a>
+            <a href="#" className="hover:text-white">{t('homepage.footer.privacy')}</a>
+            <a href="#" className="hover:text-white">{t('homepage.footer.terms')}</a>
+            <a href="#" className="hover:text-white">{t('homepage.footer.contact')}</a>
           </div>
           <div className="text-xs text-gray-600">
-            © 2025 Babu Media. Built for Dads & Kids.
+            {t('homepage.footer.copyright')}
           </div>
         </div>
       </footer>

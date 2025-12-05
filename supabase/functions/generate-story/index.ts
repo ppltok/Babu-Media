@@ -13,11 +13,17 @@ serve(async (req) => {
   }
 
   try {
-    const { storyId, characterName, characterTraits, adventureTheme, moralLesson, visualStyle, animalType } = await req.json()
+    const { storyId, characterName, characterTraits, adventureTheme, moralLesson, visualStyle, animalType, language = 'en' } = await req.json()
 
     if (!storyId || !characterName || !adventureTheme) {
       throw new Error('Missing required fields: storyId, characterName, adventureTheme')
     }
+
+    // Language-specific settings
+    const isHebrew = language === 'he'
+    const languageInstruction = isHebrew
+      ? `LANGUAGE: Write the ENTIRE story in Hebrew (עברית). All page text must be in Hebrew. The title must be in Hebrew. Use natural, child-friendly Hebrew language.`
+      : `LANGUAGE: Write the entire story in English.`
 
     // Get API key from environment
     const anthropicKey = Deno.env.get('ANTHROPIC_API_KEY')
@@ -44,6 +50,7 @@ serve(async (req) => {
     console.log('Generating story with Claude...')
     console.log('Animal type:', animalType)
     console.log('Character description:', animalDescription)
+    console.log('Language:', language)
 
     const claudeResponse = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
@@ -60,6 +67,8 @@ serve(async (req) => {
           content: `You are a children's story writer creating magical, engaging stories for children ages 5-12.
 
 Create an illustrated children's story with the following details:
+
+${languageInstruction}
 
 MAIN CHARACTER: ${characterName}
 CHARACTER TYPE: ${animalDescription}

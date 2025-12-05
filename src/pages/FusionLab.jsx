@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
+import { useLanguage } from '../contexts/LanguageContext'
 
 // Art style images from public folder (using BASE_URL for production compatibility)
 const baseUrl = import.meta.env.BASE_URL
@@ -81,6 +82,7 @@ const OUTFIT_PRESETS = [
 export default function FusionLab() {
   const { childId } = useParams()
   const navigate = useNavigate()
+  const { localizedHref } = useLanguage()
 
   const [child, setChild] = useState(null)
   const [characters, setCharacters] = useState([])
@@ -316,7 +318,7 @@ export default function FusionLab() {
       <header className="border-b border-white/10 bg-white/[0.02]">
         <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
           <button
-            onClick={() => navigate('/dashboard')}
+            onClick={() => navigate(localizedHref('/dashboard'))}
             className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors"
           >
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>

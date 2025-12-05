@@ -1,0 +1,98 @@
+{
+  "navigation": {
+    "home": "דף הבית",
+    "dashboard": "לוח הבקרה",
+    "fusionLab": "מעבדת היצירה",
+    "plotWorld": "עולם הסיפורים",
+    "settings": "הגדרות",
+    "signOut": "התנתקות"
+  },
+  "buttons": {
+    "create": "צור",
+    "save": "שמור",
+    "cancel": "ביטול",
+    "delete": "מחק",
+    "close": "סגור",
+    "back": "חזרה",
+    "next": "הבא",
+    "previous": "הקודם",
+    "loading": "טוען...",
+    "saving": "שומר...",
+    "deleting": "מוחק..."
+  },
+  "forms": {
+    "required": "שדה חובה",
+    "email": "אימייל",
+    "password": "סיסמה",
+    "confirmPassword": "אימות סיסמה",
+    "name": "שם"
+  },
+  "errors": {
+    "generic": "משהו השתבש",
+    "required": "שדה זה הוא חובה",
+    "invalidEmail": "נא להזין כתובת אימייל תקינה",
+    "passwordMismatch": "הסיסמאות אינן תואמות",
+    "passwordTooShort": "הסיסמה חייבת להכיל לפחות 6 תווים"
+  },
+  "success": {
+    "saved": "נשמר בהצלחה",
+    "deleted": "נמחק בהצלחה",
+    "created": "נוצר בהצלחה"
+  },
+  "animals": {
+    "fox": "שועל",
+    "wolf": "זאב",
+    "raccoon": "דביבון",
+    "unicorn": "חד קרן",
+    "lion": "אריה",
+    "owl": "ינשוף",
+    "dragon": "דרקון",
+    "bunny": "ארנב",
+    "cat": "חתול",
+    "dog": "כלב",
+    "bear": "דוב",
+    "panda": "פנדה"
+  },
+  "traits": {
+    "brave": "אמיץ",
+    "curious": "סקרן",
+    "kind": "טוב לב",
+    "clever": "חכם",
+    "playful": "שובב",
+    "wise": "חכם",
+    "gentle": "עדין",
+    "bold": "נועז",
+    "creative": "יצירתי",
+    "loyal": "נאמן",
+    "funny": "מצחיק",
+    "adventurous": "הרפתקן",
+    "shy": "ביישן",
+    "confident": "בטוח בעצמו",
+    "caring": "אכפתי",
+    "magical": "קסום"
+  },
+  "artStyles": {
+    "pixar": "פיקסר/דיסני",
+    "dreamworks": "דרימוורקס",
+    "ghibli": "סטודיו ג'יבלי",
+    "cartoonNetwork": "קרטון נטוורק",
+    "nickelodeon": "ניקלודיאון",
+    "anime": "סגנון אנימה",
+    "disneyClassic": "דיסני קלאסי",
+    "illumination": "אילומינציה"
+  },
+  "outfits": {
+    "superheroCape": "גלימת גיבור על",
+    "detective": "בלש",
+    "princessPrince": "נסיכה/נסיך",
+    "pirate": "פיראט",
+    "astronaut": "אסטרונאוט",
+    "wizardWitch": "קוסם/מכשפה",
+    "sportsStar": "כוכב ספורט",
+    "artist": "אמן",
+    "scientist": "מדען",
+    "ninja": "נינג'ה",
+    "fairy": "פיה",
+    "casual": "יומיומי"
+  }
+}

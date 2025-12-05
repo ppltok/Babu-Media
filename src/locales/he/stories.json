@@ -1,0 +1,86 @@
+{
+  "plotWorld": "עולם הסיפורים",
+  "create": {
+    "title": "יצירת סיפור חדש",
+    "selectCharacter": {
+      "title": "בחרו דמות",
+      "subtitle": "בחרו איזו דמות תככב בסיפור שלכם",
+      "noCharacters": "אין עדיין דמויות. צרו אחת קודם!",
+      "goToFusionLab": "עברו למעבדת היצירה"
+    },
+    "selectAdventure": {
+      "title": "בחרו הרפתקה",
+      "subtitle": "איזו הרפתקה תהיה לדמות שלכם?",
+      "themes": {
+        "space": "הרפתקה בחלל",
+        "underwater": "מסע מתחת למים",
+        "forest": "חקירת היער",
+        "castle": "משימה בטירה",
+        "dinosaurs": "גילוי דינוזאורים",
+        "pirates": "אוצר הפיראטים",
+        "superheroes": "משימת גיבורי על",
+        "magic": "ממלכה קסומה",
+        "safari": "הרפתקת ספארי",
+        "arctic": "משלחת לקוטב"
+      }
+    },
+    "selectLesson": {
+      "title": "בחרו מסר (אופציונלי)",
+      "subtitle": "מה הסיפור צריך ללמד?",
+      "lessons": {
+        "sharing": "לשתף זה לאהוב",
+        "bravery": "להיות אמיץ",
+        "friendship": "ליצור חברויות",
+        "honesty": "לומר את האמת",
+        "kindness": "להיות נחמד לאחרים",
+        "patience": "ללמוד סבלנות",
+        "teamwork": "לעבוד יחד",
+        "perseverance": "לא לוותר לעולם"
+      }
+    },
+    "visualStyle": {
+      "title": "בחרו סגנון ויזואלי",
+      "subtitle": "איך הסיפור שלכם צריך להיראות?"
+    },
+    "createButton": "צור סיפור",
+    "creating": "יוצר את הסיפור הקסום שלכם...",
+    "creatingIllustration": "יוצר איור {number}..."
+  },
+  "list": {
+    "title": "הסיפורים שלכם",
+    "empty": {
+      "title": "אין עדיין סיפורים",
+      "description": "צרו את הסיפור הראשון שלכם!"
+    },
+    "createNew": "יצירת סיפור חדש"
+  },
+  "read": {
+    "title": "הסיפור שלכם",
+    "page": "עמוד",
+    "of": "מתוך",
+    "theEnd": "הסוף",
+    "close": "סגור",
+    "nextPage": "הבא",
+    "prevPage": "הקודם"
+  },
+  "card": {
+    "readStory": "קרא סיפור",
+    "delete": "מחק",
+    "createdWith": "עם"
+  },
+  "delete": {
+    "title": "מחיקת סיפור",
+    "message": "האם אתם בטוחים שברצונכם למחוק את הסיפור הזה? לא ניתן לבטל פעולה זו.",
+    "confirm": "מחק",
+    "cancel": "ביטול"
+  },
+  "errors": {
+    "selectCharacter": "נא לבחור דמות",
+    "selectAdventure": "נא לבחור נושא הרפתקה",
+    "generationFailed": "יצירת הסיפור נכשלה. נא לנסות שוב."
+  },
+  "success": {
+    "created": "הסיפור נוצר בהצלחה!",
+    "deleted": "הסיפור נמחק"
+  }
+}

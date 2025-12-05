@@ -1,0 +1,165 @@
+{
+  "meta": {
+    "title": "Babu Media - Build Your Own Disney World",
+    "description": "Transform passive screen time into active bonding with personalized bedtime stories"
+  },
+  "nav": {
+    "pillars": "The 5 Pillars",
+    "howItWorks": "How It Works",
+    "pricing": "Pricing",
+    "create": "Create",
+    "login": "Login"
+  },
+  "hero": {
+    "tagline": "Reimagining Bedtime Stories",
+    "titleLine1": "Build Your Own",
+    "titleLine2": "Disney World",
+    "subtitle": "Transform Passive Screen Time into Active Bonding",
+    "description": "Create AI-powered characters with your child, then watch them come to life in personalized bedtime adventures. No coding. No drawing skills. Just imagination.",
+    "cta": "Start Creating Free",
+    "secondaryCta": "See the Magic",
+    "socialProof": "from 1,000+ Fathers"
+  },
+  "stats": {
+    "bondingTime": "20m Avg. Bonding Time",
+    "imaginationYears": "3-10 Prime Imagination Years",
+    "storyPossibilities": "Story Possibilities"
+  },
+  "pillars": {
+    "title": "The 5 Pillars of Imagination",
+    "subtitle": "Babu Media isn't just a story app. It's a complete digital ecosystem designed to spark creativity and build confidence.",
+    "fusionLab": {
+      "title": "The Fusion Lab",
+      "description": "Don't just choose a character. Build one. Pick an animal, dress it up, give it a personality. AI brings your creation to life in seconds.",
+      "cta": "Create Character"
+    },
+    "plotWorld": {
+      "title": "The Plot World",
+      "description": "Bedtime reimagined. YOUR character. YOUR adventure. Type any idea—\"rescue a cloud stuck in a tree\"—and watch AI spin a 5-page illustrated story in minutes.",
+      "cta": "Start Story"
+    },
+    "classroom": {
+      "title": "The Classroom",
+      "badge": "Coming Soon",
+      "description": "Learning is easier when it's fun. Math with your fox. Reading with your unicorn. Personalized educational games that make your child the teacher's pet."
+    },
+    "playground": {
+      "title": "The Playground",
+      "badge": "Coming Soon",
+      "description": "Play casual games starring YOUR character. Jumping puzzles. Matching games. Every win feels personal because that's YOUR creation on screen."
+    },
+    "commRooms": {
+      "title": "Comm Rooms",
+      "badge": "Coming Soon",
+      "description": "Build confidence through conversation. Your child's character becomes a safe space for practicing social scenarios, expressing feelings, and building emotional intelligence."
+    }
+  },
+  "howItWorks": {
+    "title": "Magic in 3 Steps",
+    "step": "STEP",
+    "step1": {
+      "title": "Create Character",
+      "description": "Pick animal, style, outfit. AI brings it to life.",
+      "time": "3 min"
+    },
+    "step2": {
+      "title": "Choose Adventure",
+      "description": "Any idea becomes a 5-page illustrated story.",
+      "time": "2 min"
+    },
+    "step3": {
+      "title": "Read Together",
+      "description": "Swipe through pages. Watch the animated climax.",
+      "time": "10 min"
+    }
+  },
+  "testimonials": {
+    "testimonial1": {
+      "quote": "For the first time, bedtime isn't a battle. My daughter asks to create stories with me. The bonding is real—we're building something together.",
+      "author": "Sarah M.",
+      "role": "Mom of 2"
+    },
+    "testimonial2": {
+      "quote": "The 'Ikea Effect' is real. My son is obsessed with HIS fox character. He cares about these stories because he helped create them.",
+      "author": "David R.",
+      "role": "Dad of 1"
+    },
+    "testimonial3": {
+      "quote": "Finally, an app that makes ME the hero sidekick. We create together, read together, laugh together. Screen time I actually feel good about.",
+      "author": "Michael K.",
+      "role": "Dad of 3"
+    }
+  },
+  "pricing": {
+    "title": "Simple Pricing",
+    "subtitle": "Start free. Upgrade when you're ready.",
+    "explorer": {
+      "name": "Explorer",
+      "price": "$0",
+      "features": {
+        "children": "1 Child Profile",
+        "characters": "2 Characters",
+        "stories": "1 Story"
+      },
+      "cta": "Start Free"
+    },
+    "creator": {
+      "name": "Creator",
+      "price": "$9.99",
+      "period": "/mo",
+      "badge": "MOST POPULAR",
+      "features": {
+        "children": "Unlimited Children",
+        "characters": "5 Characters/month",
+        "stories": "10 Stories/week"
+      },
+      "cta": "Start 7-Day Free Trial"
+    },
+    "pro": {
+      "name": "Pro",
+      "price": "$19.99",
+      "period": "/mo",
+      "badge": "BEST VALUE",
+      "features": {
+        "characters": "Unlimited Characters",
+        "stories": "Unlimited Stories",
+        "storage": "Unlimited Storage",
+        "classroom": "Access to Classroom & Games",
+        "commRooms": "Comm Rooms"
+      },
+      "comingSoon": "SOON",
+      "cta": "Start 7-Day Free Trial"
+    }
+  },
+  "footer": {
+    "privacy": "Privacy",
+    "terms": "Terms",
+    "contact": "Contact",
+    "copyright": "© 2025 Babu Media. Built for Dads & Kids."
+  },
+  "character": {
+    "trait": "Trait",
+    "types": {
+      "foxDetective": "Fox Detective",
+      "cyberWolf": "Cyber Wolf",
+      "friendlyRaccoon": "Friendly Raccoon",
+      "magicalUnicorn": "Magical Unicorn",
+      "kingCharles": "King Charles Cavalier",
+      "shyDragon": "Shy Dragon"
+    },
+    "traits": {
+      "cleverCurious": "Clever & Curious",
+      "braveStrong": "Brave & Strong",
+      "kindHelpful": "Kind & Helpful",
+      "wiseMagical": "Wise & Magical",
+      "braveCurious": "Brave & Curious",
+      "shyGentle": "Shy & Gentle"
+    }
+  },
+  "cta": {
+    "bringToLife": "Bring to Life"
+  },
+  "tablet": {
+    "header": "Make Your Best Friend Come to Life"
+  }
+}

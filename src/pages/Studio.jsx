@@ -1,20 +1,37 @@
 import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
+import { useLanguage } from '../contexts/LanguageContext'
 import { supabase } from '../lib/supabase'
 import { canCreate, trackCreation, getUsageSummary } from '../lib/usageTracking'
 import { checkDevBypass } from '../lib/devBypass'
 import PaymentWall from '../components/PaymentWall'
 
-// Optimized Image Component with loading state
-const OptimizedImage = ({ src, alt, className, fallback }) => {
+// Optimized Image Component with loading state and eager loading for story images
+const OptimizedImage = ({ src, alt, className, fallback, priority = false }) => {
   const [isLoaded, setIsLoaded] = useState(false)
   const [hasError, setHasError] = useState(false)
+  const imgRef = useRef(null)
 
   useEffect(() => {
     // Reset state when src changes
     setIsLoaded(false)
     setHasError(false)
+
+    // For priority images, preload immediately
+    if (src && priority) {
+      const img = new Image()
+      img.src = src
+      img.onload = () => setIsLoaded(true)
+      img.onerror = () => setHasError(true)
+    }
+  }, [src, priority])
+
+  // Check if image is already cached
+  useEffect(() => {
+    if (imgRef.current?.complete && imgRef.current?.naturalHeight > 0) {
+      setIsLoaded(true)
+    }
   }, [src])
 
   if (!src || hasError) {
@@ -30,9 +47,12 @@ const OptimizedImage = ({ src, alt, className, fallback }) => {
         </div>
       )}
       <img
+        ref={imgRef}
         src={src}
         alt={alt}
-        loading="lazy"
+        loading={priority ? "eager" : "lazy"}
+        fetchpriority={priority ? "high" : "auto"}
+        decoding="async"
         className={`w-full h-full object-cover transition-opacity duration-300 ${isLoaded ? 'opacity-100' : 'opacity-0'}`}
         onLoad={() => setIsLoaded(true)}
         onError={() => setHasError(true)}
@@ -117,6 +137,7 @@ const CloseIcon = ({ className }) => (
 
 export default function Studio() {
   const { user, signOut } = useAuth()
+  const { isRTL, t, language } = useLanguage()
   const navigate = useNavigate()
   const menuRef = useRef(null)
   const [showUserMenu, setShowUserMenu] = useState(false)
@@ -220,15 +241,15 @@ export default function Studio() {
       <div className="min-h-screen bg-[#0B0A16] flex items-center justify-center px-4">
         <div className="text-center max-w-md">
           <div className="text-6xl mb-6">👶</div>
-          <h1 className="text-3xl font-bold text-white mb-4">Welcome to Babu Media!</h1>
+          <h1 className="text-3xl font-bold text-white mb-4">{t('studio.welcome.title')}</h1>
           <p className="text-gray-400 mb-8">
-            To start creating magical characters and stories, first add a child profile.
+            {t('studio.welcome.description')}
           </p>
           <button
             onClick={handleAddChild}
             className="px-8 py-4 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl font-bold text-white hover:shadow-lg hover:shadow-purple-500/30 transition-all"
           >
-            Add Child Profile
+            {t('studio.welcome.addChildButton')}
           </button>
         </div>
       </div>
@@ -241,12 +262,12 @@ export default function Studio() {
       {deleteChildConfirm && (
         <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
           <div className="bg-slate-900 border border-white/10 rounded-2xl p-6 max-w-sm w-full">
-            <h3 className="text-xl font-bold mb-2">Remove Child Profile?</h3>
+            <h3 className="text-xl font-bold mb-2">{t('studio.deleteChild.title')}</h3>
             <p className="text-gray-400 mb-4">
-              Are you sure you want to remove <span className="text-white font-medium">{deleteChildConfirm.name}</span>?
+              {t('studio.deleteChild.confirmText')} <span className="text-white font-medium">{deleteChildConfirm.name}</span>?
             </p>
             <p className="text-red-400 text-sm mb-6">
-              This will also delete all their characters and stories. This action cannot be undone.
+              {t('studio.deleteChild.warning')}
             </p>
             <div className="flex gap-3">
               <button
@@ -254,7 +275,7 @@ export default function Studio() {
                 disabled={isDeletingChild}
                 className="flex-1 py-3 border border-white/20 rounded-xl font-semibold hover:bg-white/5 transition-all"
               >
-                Cancel
+                {t('studio.deleteChild.cancel')}
               </button>
               <button
                 onClick={() => handleDeleteChild(deleteChildConfirm.id)}
@@ -264,7 +285,7 @@ export default function Studio() {
                 {isDeletingChild ? (
                   <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
                 ) : (
-                  'Remove'
+                  t('studio.deleteChild.remove')
                 )}
               </button>
             </div>
@@ -318,7 +339,7 @@ export default function Studio() {
                 <span className="text-xl">{child.avatar_emoji || '🧒'}</span>
                 <div className="text-left">
                   <div className="font-medium">{child.name}</div>
-                  <div className="text-xs text-gray-400">{child.age} years old</div>
+                  <div className="text-xs text-gray-400">{child.age} {t('studio.sidebar.yearsOld')}</div>
                 </div>
               </button>
               <button
@@ -343,7 +364,7 @@ export default function Studio() {
             className="w-full flex items-center gap-3 p-3 hover:bg-white/10 transition-colors border-t border-white/10 text-purple-400"
           >
             <PlusIcon className="w-5 h-5" />
-            <span>Add Child</span>
+            <span>{t('studio.sidebar.addChild')}</span>
           </button>
         </div>
       )}
@@ -364,7 +385,7 @@ export default function Studio() {
               }`}
             >
               <PaletteIcon className="w-6 h-6 flex-shrink-0" />
-              <span className="font-medium text-lg">Fusion Lab</span>
+              <span className="font-medium text-lg">{t('studio.sidebar.fusionLab')}</span>
             </button>
 
             <button
@@ -379,7 +400,7 @@ export default function Studio() {
               }`}
             >
               <BookIcon className="w-6 h-6 flex-shrink-0" />
-              <span className="font-medium text-lg">Plot World</span>
+              <span className="font-medium text-lg">{t('studio.sidebar.plotWorld')}</span>
             </button>
           </nav>
 
@@ -390,7 +411,7 @@ export default function Studio() {
               </div>
               <div className="flex-1 min-w-0">
                 <div className="text-sm font-medium truncate">{user?.email}</div>
-                <div className="text-xs text-gray-500">Parent Account</div>
+                <div className="text-xs text-gray-500">{t('studio.sidebar.parentAccount')}</div>
               </div>
             </div>
             <button
@@ -401,14 +422,14 @@ export default function Studio() {
               className="w-full flex items-center gap-3 p-3 rounded-xl text-gray-400 hover:text-white hover:bg-white/5 transition-colors"
             >
               <SettingsIcon className="w-5 h-5" />
-              <span>Settings & Subscription</span>
+              <span>{t('studio.sidebar.settingsAndSubscription')}</span>
             </button>
             <button
               onClick={handleSignOut}
               className="w-full flex items-center gap-3 p-3 rounded-xl text-red-400 hover:text-red-300 hover:bg-white/5 transition-colors"
             >
               <LogoutIcon className="w-5 h-5" />
-              <span>Sign Out</span>
+              <span>{t('studio.sidebar.signOut')}</span>
             </button>
           </div>
         </div>
@@ -416,16 +437,16 @@ export default function Studio() {
 
       {/* Desktop Sidebar */}
       <aside className={`hidden lg:flex ${sidebarCollapsed ? 'w-20' : 'w-72'} bg-[#0d0c18] border-r border-white/10 flex-col transition-all duration-300 relative`}>
-        {/* Collapse Button */}
+        {/* Collapse Button - positioned on outer edge (right in LTR, left in RTL) */}
         <button
           onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-          className="absolute -right-3 top-20 w-6 h-6 bg-purple-500 hover:bg-purple-600 rounded-full flex items-center justify-center shadow-lg z-10 transition-colors"
-          title={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+          className={`absolute ${isRTL ? '-left-3' : '-right-3'} top-20 w-6 h-6 bg-purple-500 hover:bg-purple-600 rounded-full flex items-center justify-center shadow-lg z-10 transition-colors`}
+          title={sidebarCollapsed ? t('studio.sidebar.expandSidebar') : t('studio.sidebar.collapseSidebar')}
         >
           {sidebarCollapsed ? (
-            <ExpandIcon className="w-3 h-3 text-white" />
+            <ExpandIcon className={`w-3 h-3 text-white ${isRTL ? 'rotate-180' : ''}`} />
           ) : (
-            <CollapseIcon className="w-3 h-3 text-white" />
+            <CollapseIcon className={`w-3 h-3 text-white ${isRTL ? 'rotate-180' : ''}`} />
           )}
         </button>
 
@@ -453,7 +474,7 @@ export default function Studio() {
                 <>
                   <div className="flex-1 text-left">
                     <div className="font-semibold">{selectedChild?.name}</div>
-                    <div className="text-xs text-gray-400">{selectedChild?.age} years old</div>
+                    <div className="text-xs text-gray-400">{selectedChild?.age} {t('studio.sidebar.yearsOld')}</div>
                   </div>
                   <ChevronDownIcon className={`w-5 h-5 text-gray-400 transition-transform ${childMenuOpen ? 'rotate-180' : ''}`} />
                 </>
@@ -480,7 +501,7 @@ export default function Studio() {
                       <span className="text-xl">{child.avatar_emoji || '🧒'}</span>
                       <div className="text-left">
                         <div className="font-medium">{child.name}</div>
-                        <div className="text-xs text-gray-400">{child.age} years old</div>
+                        <div className="text-xs text-gray-400">{child.age} {t('studio.sidebar.yearsOld')}</div>
                       </div>
                     </button>
                     <button
@@ -490,7 +511,7 @@ export default function Studio() {
                         setDeleteChildConfirm(child)
                       }}
                       className="opacity-0 group-hover:opacity-100 p-1.5 text-gray-400 hover:text-red-400 transition-all"
-                      title="Remove child"
+                      title={t('studio.deleteChild.remove')}
                     >
                       <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                         <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -506,7 +527,7 @@ export default function Studio() {
                   className="w-full flex items-center gap-3 p-3 hover:bg-white/10 transition-colors border-t border-white/10 text-purple-400"
                 >
                   <PlusIcon className="w-5 h-5" />
-                  <span>Add Child</span>
+                  <span>{t('studio.sidebar.addChild')}</span>
                 </button>
               </div>
             )}
@@ -524,7 +545,7 @@ export default function Studio() {
             }`}
           >
             <PaletteIcon className="w-5 h-5 flex-shrink-0" />
-            {!sidebarCollapsed && <span className="font-medium">Fusion Lab</span>}
+            {!sidebarCollapsed && <span className="font-medium">{t('studio.sidebar.fusionLab')}</span>}
           </button>
 
           <button
@@ -536,7 +557,7 @@ export default function Studio() {
             }`}
           >
             <BookIcon className="w-5 h-5 flex-shrink-0" />
-            {!sidebarCollapsed && <span className="font-medium">Plot World</span>}
+            {!sidebarCollapsed && <span className="font-medium">{t('studio.sidebar.plotWorld')}</span>}
           </button>
         </nav>
 
@@ -553,7 +574,7 @@ export default function Studio() {
               <>
                 <div className="flex-1 min-w-0 text-left">
                   <div className="text-sm font-medium truncate">{user?.email}</div>
-                  <div className="text-xs text-gray-500">Parent Account</div>
+                  <div className="text-xs text-gray-500">{t('studio.sidebar.parentAccount')}</div>
                 </div>
                 <ChevronDownIcon className={`w-4 h-4 text-gray-400 transition-transform ${showUserMenu ? 'rotate-180' : ''}`} />
               </>
@@ -572,7 +593,7 @@ export default function Studio() {
                 className="w-full px-4 py-3 text-left text-sm text-gray-300 hover:bg-white/5 transition-colors flex items-center gap-2"
               >
                 <SettingsIcon className="w-4 h-4" />
-                Settings & Subscription
+                {t('studio.sidebar.settingsAndSubscription')}
               </button>
 
               {/* Sign Out */}
@@ -581,7 +602,7 @@ export default function Studio() {
                 className="w-full px-4 py-3 text-left text-sm text-red-400 hover:bg-white/5 transition-colors flex items-center gap-2 border-t border-white/10"
               >
                 <LogoutIcon className="w-4 h-4" />
-                Sign Out
+                {t('studio.sidebar.signOut')}
               </button>
             </div>
           )}
@@ -609,6 +630,7 @@ export default function Studio() {
 
 // Embedded Fusion Lab Content (without the full page wrapper)
 function FusionLabContent({ childId, child, onGoToStory, user }) {
+  const { t, language, isRTL } = useLanguage()
   const [characters, setCharacters] = useState([])
   const [loading, setLoading] = useState(true)
 
@@ -630,17 +652,8 @@ function FusionLabContent({ childId, child, onGoToStory, user }) {
   const [usageSummary, setUsageSummary] = useState(null)
   const [paymentWallReason, setPaymentWallReason] = useState('')
 
-  // Fun loading messages for character creation
-  const CHARACTER_LOADING_MESSAGES = [
-    "Mixing the magic ingredients...",
-    "Adding a sprinkle of personality...",
-    "Painting with imagination...",
-    "Bringing your character to life...",
-    "Almost ready to meet you...",
-    "The magic is happening...",
-    "Creating something amazing...",
-    "Your character is waking up..."
-  ]
+  // Fun loading messages for character creation (translated)
+  const CHARACTER_LOADING_MESSAGES = t('studio.fusionLab.loadingMessages')
 
   // Cycle through fun messages while generating
   useEffect(() => {
@@ -667,21 +680,21 @@ function FusionLabContent({ childId, child, onGoToStory, user }) {
   // Character detail view
   const [selectedCharacter, setSelectedCharacter] = useState(null)
 
-  // Data constants
+  // Data constants - using translations
   const ANIMAL_TYPES = [
-    { id: 'fox', emoji: '🦊', name: 'Fox' },
-    { id: 'wolf', emoji: '🐺', name: 'Wolf' },
-    { id: 'raccoon', emoji: '🦝', name: 'Raccoon' },
-    { id: 'unicorn', emoji: '🦄', name: 'Unicorn' },
-    { id: 'lion', emoji: '🦁', name: 'Lion' },
-    { id: 'owl', emoji: '🦉', name: 'Owl' },
-    { id: 'dragon', emoji: '🐉', name: 'Dragon' },
-    { id: 'bunny', emoji: '🐰', name: 'Bunny' },
-    { id: 'cat', emoji: '🐱', name: 'Cat' },
-    { id: 'dog', emoji: '🐕', name: 'Dog' },
-    { id: 'bear', emoji: '🐻', name: 'Bear' },
-    { id: 'panda', emoji: '🐼', name: 'Panda' },
-    { id: 'custom', emoji: '✨', name: 'Custom', isCustom: true },
+    { id: 'fox', emoji: '🦊', name: t('studio.fusionLab.animals.fox') },
+    { id: 'wolf', emoji: '🐺', name: t('studio.fusionLab.animals.wolf') },
+    { id: 'raccoon', emoji: '🦝', name: t('studio.fusionLab.animals.raccoon') },
+    { id: 'unicorn', emoji: '🦄', name: t('studio.fusionLab.animals.unicorn') },
+    { id: 'lion', emoji: '🦁', name: t('studio.fusionLab.animals.lion') },
+    { id: 'owl', emoji: '🦉', name: t('studio.fusionLab.animals.owl') },
+    { id: 'dragon', emoji: '🐉', name: t('studio.fusionLab.animals.dragon') },
+    { id: 'bunny', emoji: '🐰', name: t('studio.fusionLab.animals.bunny') },
+    { id: 'cat', emoji: '🐱', name: t('studio.fusionLab.animals.cat') },
+    { id: 'dog', emoji: '🐕', name: t('studio.fusionLab.animals.dog') },
+    { id: 'bear', emoji: '🐻', name: t('studio.fusionLab.animals.bear') },
+    { id: 'panda', emoji: '🐼', name: t('studio.fusionLab.animals.panda') },
+    { id: 'custom', emoji: '✨', name: t('studio.fusionLab.animals.custom'), isCustom: true },
   ]
 
   // Get the actual animal name (handles custom animals)
@@ -700,48 +713,48 @@ function FusionLabContent({ childId, child, onGoToStory, user }) {
   }
 
   const VISUAL_STYLES = [
-    { id: 'pixar', name: 'Pixar/Disney', shows: 'Toy Story, Finding Nemo, Coco', color: 'from-blue-500 to-cyan-500' },
-    { id: 'dreamworks', name: 'DreamWorks', shows: 'Shrek, Kung Fu Panda, How to Train Your Dragon', color: 'from-green-500 to-emerald-500' },
-    { id: 'ghibli', name: 'Studio Ghibli', shows: 'Totoro, Spirited Away, Ponyo', color: 'from-sky-400 to-blue-500' },
-    { id: 'cartoon-network', name: 'Cartoon Network', shows: 'Adventure Time, Powerpuff Girls, Steven Universe', color: 'from-pink-500 to-rose-500' },
-    { id: 'nickelodeon', name: 'Nickelodeon', shows: 'SpongeBob, Paw Patrol, Dora', color: 'from-orange-500 to-amber-500' },
-    { id: 'anime', name: 'Anime Style', shows: 'Pokemon, Naruto, Dragon Ball', color: 'from-purple-500 to-violet-500' },
-    { id: 'disney-classic', name: 'Disney Classic', shows: 'Lion King, Aladdin, Little Mermaid', color: 'from-yellow-500 to-orange-500' },
-    { id: 'illumination', name: 'Illumination', shows: 'Minions, Sing, Secret Life of Pets', color: 'from-yellow-400 to-yellow-600' },
+    { id: 'pixar', name: t('studio.fusionLab.styles.pixar'), shows: 'Toy Story, Finding Nemo, Coco', color: 'from-blue-500 to-cyan-500' },
+    { id: 'dreamworks', name: t('studio.fusionLab.styles.dreamworks'), shows: 'Shrek, Kung Fu Panda, How to Train Your Dragon', color: 'from-green-500 to-emerald-500' },
+    { id: 'ghibli', name: t('studio.fusionLab.styles.ghibli'), shows: 'Totoro, Spirited Away, Ponyo', color: 'from-sky-400 to-blue-500' },
+    { id: 'cartoon-network', name: t('studio.fusionLab.styles.cartoonNetwork'), shows: 'Adventure Time, Powerpuff Girls, Steven Universe', color: 'from-pink-500 to-rose-500' },
+    { id: 'nickelodeon', name: t('studio.fusionLab.styles.nickelodeon'), shows: 'SpongeBob, Paw Patrol, Dora', color: 'from-orange-500 to-amber-500' },
+    { id: 'anime', name: t('studio.fusionLab.styles.anime'), shows: 'Pokemon, Naruto, Dragon Ball', color: 'from-purple-500 to-violet-500' },
+    { id: 'disney-classic', name: t('studio.fusionLab.styles.disneyClassic'), shows: 'Lion King, Aladdin, Little Mermaid', color: 'from-yellow-500 to-orange-500' },
+    { id: 'illumination', name: t('studio.fusionLab.styles.illumination'), shows: 'Minions, Sing, Secret Life of Pets', color: 'from-yellow-400 to-yellow-600' },
   ]
 
   const PERSONALITY_TRAITS = [
-    { id: 'brave', label: 'Brave', emoji: '🦸' },
-    { id: 'curious', label: 'Curious', emoji: '🔍' },
-    { id: 'kind', label: 'Kind', emoji: '💝' },
-    { id: 'clever', label: 'Clever', emoji: '🧠' },
-    { id: 'playful', label: 'Playful', emoji: '🎮' },
-    { id: 'wise', label: 'Wise', emoji: '🦉' },
-    { id: 'gentle', label: 'Gentle', emoji: '🌸' },
-    { id: 'bold', label: 'Bold', emoji: '⚡' },
-    { id: 'creative', label: 'Creative', emoji: '🎨' },
-    { id: 'loyal', label: 'Loyal', emoji: '🤝' },
-    { id: 'funny', label: 'Funny', emoji: '😄' },
-    { id: 'adventurous', label: 'Adventurous', emoji: '🗺️' },
-    { id: 'shy', label: 'Shy', emoji: '🙈' },
-    { id: 'confident', label: 'Confident', emoji: '💪' },
-    { id: 'caring', label: 'Caring', emoji: '🤗' },
-    { id: 'magical', label: 'Magical', emoji: '✨' },
+    { id: 'brave', label: t('studio.fusionLab.traits.brave'), emoji: '🦸' },
+    { id: 'curious', label: t('studio.fusionLab.traits.curious'), emoji: '🔍' },
+    { id: 'kind', label: t('studio.fusionLab.traits.kind'), emoji: '💝' },
+    { id: 'clever', label: t('studio.fusionLab.traits.clever'), emoji: '🧠' },
+    { id: 'playful', label: t('studio.fusionLab.traits.playful'), emoji: '🎮' },
+    { id: 'wise', label: t('studio.fusionLab.traits.wise'), emoji: '🦉' },
+    { id: 'gentle', label: t('studio.fusionLab.traits.gentle'), emoji: '🌸' },
+    { id: 'bold', label: t('studio.fusionLab.traits.bold'), emoji: '⚡' },
+    { id: 'creative', label: t('studio.fusionLab.traits.creative'), emoji: '🎨' },
+    { id: 'loyal', label: t('studio.fusionLab.traits.loyal'), emoji: '🤝' },
+    { id: 'funny', label: t('studio.fusionLab.traits.funny'), emoji: '😄' },
+    { id: 'adventurous', label: t('studio.fusionLab.traits.adventurous'), emoji: '🗺️' },
+    { id: 'shy', label: t('studio.fusionLab.traits.shy'), emoji: '🙈' },
+    { id: 'confident', label: t('studio.fusionLab.traits.confident'), emoji: '💪' },
+    { id: 'caring', label: t('studio.fusionLab.traits.caring'), emoji: '🤗' },
+    { id: 'magical', label: t('studio.fusionLab.traits.magical'), emoji: '✨' },
   ]
 
   const OUTFIT_PRESETS = [
-    { id: 'superhero', label: 'Superhero Cape', emoji: '🦸', desc: 'A flowing superhero cape with a bold emblem' },
-    { id: 'detective', label: 'Detective', emoji: '🔍', desc: 'Trench coat with a magnifying glass' },
-    { id: 'princess', label: 'Princess/Prince', emoji: '👑', desc: 'Royal gown or suit with a crown' },
-    { id: 'pirate', label: 'Pirate', emoji: '🏴‍☠️', desc: 'Pirate hat, eye patch, and adventure gear' },
-    { id: 'astronaut', label: 'Astronaut', emoji: '🚀', desc: 'Space suit ready for cosmic adventures' },
-    { id: 'wizard', label: 'Wizard/Witch', emoji: '🧙', desc: 'Magical robes with a pointed hat' },
-    { id: 'sports', label: 'Sports Star', emoji: '⚽', desc: 'Athletic jersey and sneakers' },
-    { id: 'artist', label: 'Artist', emoji: '🎨', desc: 'Colorful smock with a beret' },
-    { id: 'scientist', label: 'Scientist', emoji: '🔬', desc: 'Lab coat with goggles' },
-    { id: 'ninja', label: 'Ninja', emoji: '🥷', desc: 'Stealthy ninja outfit' },
-    { id: 'fairy', label: 'Fairy', emoji: '🧚', desc: 'Sparkly wings and magical outfit' },
-    { id: 'casual', label: 'Casual', emoji: '👕', desc: 'Comfortable everyday clothes' },
+    { id: 'superhero', label: t('studio.fusionLab.outfits.superhero'), emoji: '🦸', desc: 'A flowing superhero cape with a bold emblem' },
+    { id: 'detective', label: t('studio.fusionLab.outfits.detective'), emoji: '🔍', desc: 'Trench coat with a magnifying glass' },
+    { id: 'princess', label: t('studio.fusionLab.outfits.princess'), emoji: '👑', desc: 'Royal gown or suit with a crown' },
+    { id: 'pirate', label: t('studio.fusionLab.outfits.pirate'), emoji: '🏴‍☠️', desc: 'Pirate hat, eye patch, and adventure gear' },
+    { id: 'astronaut', label: t('studio.fusionLab.outfits.astronaut'), emoji: '🚀', desc: 'Space suit ready for cosmic adventures' },
+    { id: 'wizard', label: t('studio.fusionLab.outfits.wizard'), emoji: '🧙', desc: 'Magical robes with a pointed hat' },
+    { id: 'sports', label: t('studio.fusionLab.outfits.sports'), emoji: '⚽', desc: 'Athletic jersey and sneakers' },
+    { id: 'artist', label: t('studio.fusionLab.outfits.artist'), emoji: '🎨', desc: 'Colorful smock with a beret' },
+    { id: 'scientist', label: t('studio.fusionLab.outfits.scientist'), emoji: '🔬', desc: 'Lab coat with goggles' },
+    { id: 'ninja', label: t('studio.fusionLab.outfits.ninja'), emoji: '🥷', desc: 'Stealthy ninja outfit' },
+    { id: 'fairy', label: t('studio.fusionLab.outfits.fairy'), emoji: '🧚', desc: 'Sparkly wings and magical outfit' },
+    { id: 'casual', label: t('studio.fusionLab.outfits.casual'), emoji: '👕', desc: 'Comfortable everyday clothes' },
   ]
 
   useEffect(() => {
@@ -907,12 +920,12 @@ function FusionLabContent({ childId, child, onGoToStory, user }) {
   }
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8">
+    <div className={`p-4 sm:p-6 lg:p-8 ${isRTL ? 'text-right' : 'text-left'}`}>
       {/* Payment Wall Modal */}
       <PaymentWall
         isOpen={showPaymentWall}
         onClose={() => setShowPaymentWall(false)}
-        title="Upgrade to Creator Tier"
+        title={t('studio.fusionLab.upgradeTitle')}
         reason={paymentWallReason}
         usage={usageSummary}
         userEmail={user?.email || ''}
@@ -922,17 +935,17 @@ function FusionLabContent({ childId, child, onGoToStory, user }) {
       {deleteConfirm && (
         <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
           <div className="bg-slate-900 border border-white/10 rounded-2xl p-6 max-w-sm w-full">
-            <h3 className="text-xl font-bold mb-2">Delete Character?</h3>
+            <h3 className="text-xl font-bold mb-2">{t('studio.fusionLab.deleteCharacter.title')}</h3>
             <p className="text-gray-400 mb-6">
-              Are you sure you want to delete <span className="text-white font-medium">{deleteConfirm.name}</span>? This action cannot be undone.
+              {t('studio.fusionLab.deleteCharacter.confirmText')} <span className="text-white font-medium">{deleteConfirm.name}</span>? {t('studio.fusionLab.deleteCharacter.warning')}
             </p>
-            <div className="flex gap-3">
+            <div className={`flex gap-3 ${isRTL ? 'flex-row-reverse' : ''}`}>
               <button
                 onClick={() => setDeleteConfirm(null)}
                 disabled={isDeleting}
                 className="flex-1 py-3 border border-white/20 rounded-xl font-semibold hover:bg-white/5 transition-all"
               >
-                Cancel
+                {t('studio.fusionLab.deleteCharacter.cancel')}
               </button>
               <button
                 onClick={() => handleDeleteCharacter(deleteConfirm.id)}
@@ -942,7 +955,7 @@ function FusionLabContent({ childId, child, onGoToStory, user }) {
                 {isDeleting ? (
                   <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
                 ) : (
-                  'Delete'
+                  t('studio.fusionLab.deleteCharacter.delete')
                 )}
               </button>
             </div>
@@ -986,7 +999,7 @@ function FusionLabContent({ childId, child, onGoToStory, user }) {
 
             {/* Character Details */}
             <div className="p-6">
-              <div className="flex items-start justify-between gap-4 mb-6">
+              <div className={`flex items-start justify-between gap-4 mb-6 ${isRTL ? 'flex-row-reverse' : ''}`}>
                 <h2 className="text-3xl font-bold">{selectedCharacter.name}</h2>
                 <button
                   onClick={() => {
@@ -997,18 +1010,18 @@ function FusionLabContent({ childId, child, onGoToStory, user }) {
                   }}
                   className="shrink-0 px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl font-bold text-sm hover:shadow-lg hover:shadow-purple-500/30 transition-all"
                 >
-                  Create a story
+                  {t('studio.fusionLab.characterDetail.createStory')}
                 </button>
               </div>
 
               <div className="space-y-4">
                 {/* Animal Type */}
-                <div className="flex items-center gap-3">
+                <div className={`flex items-center gap-3 ${isRTL ? 'flex-row-reverse' : ''}`}>
                   <span className="text-2xl">
                     {ANIMAL_TYPES.find(a => a.id === selectedCharacter.animal_type)?.emoji || '🎭'}
                   </span>
                   <div>
-                    <div className="text-sm text-gray-400">Animal Type</div>
+                    <div className="text-sm text-gray-400">{t('studio.fusionLab.characterDetail.animalType')}</div>
                     <div className="font-medium">
                       {ANIMAL_TYPES.find(a => a.id === selectedCharacter.animal_type)?.name || selectedCharacter.animal_type}
                     </div>
@@ -1016,10 +1029,10 @@ function FusionLabContent({ childId, child, onGoToStory, user }) {
                 </div>
 
                 {/* Visual Style */}
-                <div className="flex items-center gap-3">
+                <div className={`flex items-center gap-3 ${isRTL ? 'flex-row-reverse' : ''}`}>
                   <span className="text-2xl">🎨</span>
                   <div>
-                    <div className="text-sm text-gray-400">Visual Style</div>
+                    <div className="text-sm text-gray-400">{t('studio.fusionLab.characterDetail.visualStyle')}</div>
                     <div className="font-medium">
                       {VISUAL_STYLES.find(s => s.id === selectedCharacter.visual_style)?.name || selectedCharacter.visual_style}
                     </div>
@@ -1027,10 +1040,10 @@ function FusionLabContent({ childId, child, onGoToStory, user }) {
                 </div>
 
                 {/* Personality Traits */}
-                <div className="flex items-start gap-3">
+                <div className={`flex items-start gap-3 ${isRTL ? 'flex-row-reverse' : ''}`}>
                   <span className="text-2xl">✨</span>
                   <div>
-                    <div className="text-sm text-gray-400">Personality Traits</div>
+                    <div className="text-sm text-gray-400">{t('studio.fusionLab.characterDetail.personalityTraits')}</div>
                     <div className="flex flex-wrap gap-2 mt-1">
                       {selectedCharacter.personality_trait?.split(', ').map((trait, i) => (
                         <span
@@ -1046,22 +1059,22 @@ function FusionLabContent({ childId, child, onGoToStory, user }) {
 
                 {/* Outfit */}
                 {selectedCharacter.outfit_description && (
-                  <div className="flex items-center gap-3">
+                  <div className={`flex items-center gap-3 ${isRTL ? 'flex-row-reverse' : ''}`}>
                     <span className="text-2xl">👕</span>
                     <div>
-                      <div className="text-sm text-gray-400">Outfit</div>
+                      <div className="text-sm text-gray-400">{t('studio.fusionLab.characterDetail.outfit')}</div>
                       <div className="font-medium">{selectedCharacter.outfit_description}</div>
                     </div>
                   </div>
                 )}
 
                 {/* Created Date */}
-                <div className="flex items-center gap-3">
+                <div className={`flex items-center gap-3 ${isRTL ? 'flex-row-reverse' : ''}`}>
                   <span className="text-2xl">📅</span>
                   <div>
-                    <div className="text-sm text-gray-400">Created</div>
+                    <div className="text-sm text-gray-400">{t('studio.fusionLab.characterDetail.created')}</div>
                     <div className="font-medium">
-                      {new Date(selectedCharacter.created_at).toLocaleDateString('en-US', {
+                      {new Date(selectedCharacter.created_at).toLocaleDateString(language === 'he' ? 'he-IL' : 'en-US', {
                         year: 'numeric',
                         month: 'long',
                         day: 'numeric'
@@ -1080,7 +1093,7 @@ function FusionLabContent({ childId, child, onGoToStory, user }) {
                   }}
                   className="w-full py-3 bg-red-500/20 border border-red-500/30 text-red-400 hover:bg-red-500/30 rounded-xl font-semibold transition-all"
                 >
-                  Delete Character
+                  {t('studio.fusionLab.characterDetail.deleteCharacter')}
                 </button>
               </div>
             </div>
@@ -1090,18 +1103,18 @@ function FusionLabContent({ childId, child, onGoToStory, user }) {
 
       {/* Header */}
       <div className="mb-6 sm:mb-8">
-        <h1 className="text-2xl sm:text-3xl font-bold flex items-center gap-2 sm:gap-3">
+        <h1 className={`text-2xl sm:text-3xl font-bold flex items-center gap-2 sm:gap-3 ${isRTL ? 'flex-row-reverse' : ''}`}>
           <span className="text-3xl sm:text-4xl">🧬</span>
-          <span className="truncate">{child?.name}'s Fusion Lab</span>
+          <span className="truncate">{child?.name}{t('studio.fusionLab.title')}</span>
         </h1>
-        <p className="text-gray-400 mt-2 text-sm sm:text-base">Create magical characters with AI</p>
+        <p className="text-gray-400 mt-2 text-sm sm:text-base">{t('studio.fusionLab.subtitle')}</p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
         {/* Character Creator */}
         <div className="lg:col-span-2 order-1">
           <div className="bg-white/5 border border-white/10 rounded-2xl p-4 sm:p-6 lg:p-8">
-            <h2 className="text-lg sm:text-xl font-bold mb-4 sm:mb-6">Create New Character</h2>
+            <h2 className="text-lg sm:text-xl font-bold mb-4 sm:mb-6">{t('studio.fusionLab.createNewCharacter')}</h2>
 
             {/* Step Indicator */}
             <div className="flex items-center gap-1.5 sm:gap-2 mb-6 sm:mb-8">
@@ -1119,18 +1132,19 @@ function FusionLabContent({ childId, child, onGoToStory, user }) {
             {step === 1 && (
               <div className="space-y-4 sm:space-y-6">
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">Character Name</label>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">{t('studio.fusionLab.step1.characterName')}</label>
                   <input
                     type="text"
                     value={characterName}
                     onChange={(e) => setCharacterName(e.target.value)}
-                    className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 transition-colors text-sm sm:text-base"
-                    placeholder="Detective Dash, Captain Whiskers..."
+                    className={`w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 transition-colors text-sm sm:text-base ${isRTL ? 'text-right' : ''}`}
+                    placeholder={t('studio.fusionLab.step1.characterNamePlaceholder')}
+                    dir={isRTL ? 'rtl' : 'ltr'}
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2 sm:mb-3">Choose Animal Type</label>
+                  <label className="block text-sm font-medium text-gray-300 mb-2 sm:mb-3">{t('studio.fusionLab.step1.chooseAnimalType')}</label>
                   <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2 sm:gap-3">
                     {ANIMAL_TYPES.map((animal) => (
                       <button
@@ -1158,7 +1172,7 @@ function FusionLabContent({ childId, child, onGoToStory, user }) {
                         <div className="w-full border-t border-white/10"></div>
                       </div>
                       <div className="relative flex justify-center text-sm">
-                        <span className="px-2 bg-[#0B0A16] text-gray-500">or type your own</span>
+                        <span className="px-2 bg-[#0B0A16] text-gray-500">{t('studio.fusionLab.step1.orTypeYourOwn')}</span>
                       </div>
                     </div>
                     <input
@@ -1172,11 +1186,12 @@ function FusionLabContent({ childId, child, onGoToStory, user }) {
                           if (customAnimal) setSelectedAnimal(customAnimal)
                         }
                       }}
-                      className="w-full mt-3 px-3 sm:px-4 py-2.5 sm:py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 transition-colors text-sm sm:text-base"
-                      placeholder="Border Collie, Dinosaur, Phoenix, Penguin..."
+                      className={`w-full mt-3 px-3 sm:px-4 py-2.5 sm:py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 transition-colors text-sm sm:text-base ${isRTL ? 'text-right' : ''}`}
+                      placeholder={t('studio.fusionLab.step1.customAnimalPlaceholder')}
+                      dir={isRTL ? 'rtl' : 'ltr'}
                     />
                     <p className="text-xs text-gray-500 mt-2">
-                      Type any specific animal breed or creature - real or fantasy!
+                      {t('studio.fusionLab.step1.customAnimalHint')}
                     </p>
                   </div>
                 </div>
@@ -1186,7 +1201,7 @@ function FusionLabContent({ childId, child, onGoToStory, user }) {
                   disabled={!characterName || !isAnimalValid()}
                   className="w-full py-3 sm:py-4 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl font-bold text-sm sm:text-base disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-lg hover:shadow-purple-500/30 transition-all"
                 >
-                  Next: Choose Style
+                  {t('studio.fusionLab.step1.nextButton')}
                 </button>
               </div>
             )}
@@ -1195,14 +1210,14 @@ function FusionLabContent({ childId, child, onGoToStory, user }) {
             {step === 2 && (
               <div className="space-y-4 sm:space-y-6">
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2 sm:mb-3">Choose Your Favorite Art Style</label>
-                  <p className="text-gray-500 text-xs sm:text-sm mb-3 sm:mb-4">Pick the style that reminds you of your favorite shows!</p>
+                  <label className="block text-sm font-medium text-gray-300 mb-2 sm:mb-3">{t('studio.fusionLab.step2.chooseArtStyle')}</label>
+                  <p className="text-gray-500 text-xs sm:text-sm mb-3 sm:mb-4">{t('studio.fusionLab.step2.artStyleHint')}</p>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
                     {VISUAL_STYLES.map((style) => (
                       <button
                         key={style.id}
                         onClick={() => setSelectedStyle(style.id)}
-                        className={`p-3 sm:p-4 rounded-xl text-left transition-all ${
+                        className={`p-3 sm:p-4 rounded-xl ${isRTL ? 'text-right' : 'text-left'} transition-all ${
                           selectedStyle === style.id
                             ? 'bg-purple-500/30 border-2 border-purple-500'
                             : 'bg-white/5 border-2 border-transparent hover:bg-white/10'
@@ -1217,16 +1232,16 @@ function FusionLabContent({ childId, child, onGoToStory, user }) {
                   </div>
                 </div>
 
-                <div className="flex gap-2 sm:gap-3">
+                <div className={`flex gap-2 sm:gap-3 ${isRTL ? 'flex-row-reverse' : ''}`}>
                   <button onClick={() => setStep(1)} className="flex-1 py-3 sm:py-4 border border-white/20 rounded-xl font-semibold text-sm sm:text-base hover:bg-white/5 transition-all">
-                    Back
+                    {t('studio.fusionLab.step2.back')}
                   </button>
                   <button
                     onClick={() => setStep(3)}
                     disabled={!selectedStyle}
                     className="flex-1 py-3 sm:py-4 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl font-bold text-sm sm:text-base disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-lg hover:shadow-purple-500/30 transition-all"
                   >
-                    Next: Personality
+                    {t('studio.fusionLab.step2.nextButton')}
                   </button>
                 </div>
               </div>
@@ -1236,8 +1251,8 @@ function FusionLabContent({ childId, child, onGoToStory, user }) {
             {step === 3 && (
               <div className="space-y-4 sm:space-y-6">
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">Choose Personality Traits</label>
-                  <p className="text-gray-500 text-xs sm:text-sm mb-3 sm:mb-4">Select up to 4 traits that describe your character</p>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">{t('studio.fusionLab.step3.chooseTraits')}</label>
+                  <p className="text-gray-500 text-xs sm:text-sm mb-3 sm:mb-4">{t('studio.fusionLab.step3.traitsHint')}</p>
                   <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-1.5 sm:gap-2">
                     {PERSONALITY_TRAITS.map((trait) => (
                       <button
@@ -1254,19 +1269,19 @@ function FusionLabContent({ childId, child, onGoToStory, user }) {
                       </button>
                     ))}
                   </div>
-                  <p className="text-xs text-gray-500 mt-2">Selected: {selectedTraits.length}/4</p>
+                  <p className="text-xs text-gray-500 mt-2">{t('studio.fusionLab.step3.selected')}: {selectedTraits.length}/4</p>
                 </div>
 
-                <div className="flex gap-2 sm:gap-3">
+                <div className={`flex gap-2 sm:gap-3 ${isRTL ? 'flex-row-reverse' : ''}`}>
                   <button onClick={() => setStep(2)} className="flex-1 py-3 sm:py-4 border border-white/20 rounded-xl font-semibold text-sm sm:text-base hover:bg-white/5 transition-all">
-                    Back
+                    {t('studio.fusionLab.step3.back')}
                   </button>
                   <button
                     onClick={() => setStep(4)}
                     disabled={selectedTraits.length === 0}
                     className="flex-1 py-3 sm:py-4 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl font-bold text-sm sm:text-base disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-lg hover:shadow-purple-500/30 transition-all"
                   >
-                    Next: Outfit
+                    {t('studio.fusionLab.step3.nextButton')}
                   </button>
                 </div>
               </div>
@@ -1286,17 +1301,17 @@ function FusionLabContent({ childId, child, onGoToStory, user }) {
                       </div>
                     </div>
                     <h3 className="text-xl sm:text-2xl font-bold mb-3 bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
-                      {generatingMessage || 'Creating magic...'}
+                      {generatingMessage || t('studio.fusionLab.generating.creatingMagic')}
                     </h3>
                     <p className="text-gray-400 text-sm sm:text-base mb-2">
-                      {characterName} is coming to life!
+                      {characterName} {t('studio.fusionLab.generating.comingToLife')}
                     </p>
-                    <p className="text-xs sm:text-sm text-gray-500">This usually takes 10-20 seconds</p>
+                    <p className="text-xs sm:text-sm text-gray-500">{t('studio.fusionLab.generating.timeEstimate')}</p>
                   </div>
                 ) : (
                   <>
                     <div>
-                      <label className="block text-sm font-medium text-gray-300 mb-2 sm:mb-3">Choose an Outfit</label>
+                      <label className="block text-sm font-medium text-gray-300 mb-2 sm:mb-3">{t('studio.fusionLab.step4.chooseOutfit')}</label>
                       <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5 sm:gap-2 mb-3 sm:mb-4">
                         {OUTFIT_PRESETS.map((outfit) => (
                           <button
@@ -1305,13 +1320,13 @@ function FusionLabContent({ childId, child, onGoToStory, user }) {
                               setSelectedOutfit(outfit.id)
                               setCustomOutfit('')
                             }}
-                            className={`p-2 sm:p-3 rounded-xl text-left transition-all ${
+                            className={`p-2 sm:p-3 rounded-xl ${isRTL ? 'text-right' : 'text-left'} transition-all ${
                               selectedOutfit === outfit.id && !customOutfit
                                 ? 'bg-purple-500/30 border-2 border-purple-500'
                                 : 'bg-white/5 border-2 border-transparent hover:bg-white/10'
                             }`}
                           >
-                            <div className="flex items-center gap-1.5 sm:gap-2">
+                            <div className={`flex items-center gap-1.5 sm:gap-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
                               <span className="text-lg sm:text-xl">{outfit.emoji}</span>
                               <span className="text-xs sm:text-sm font-medium">{outfit.label}</span>
                             </div>
@@ -1324,7 +1339,7 @@ function FusionLabContent({ childId, child, onGoToStory, user }) {
                           <div className="w-full border-t border-white/10"></div>
                         </div>
                         <div className="relative flex justify-center text-xs sm:text-sm">
-                          <span className="px-2 bg-[#0B0A16] text-gray-500">or describe your own</span>
+                          <span className="px-2 bg-[#0B0A16] text-gray-500">{t('studio.fusionLab.step4.orDescribeOwn')}</span>
                         </div>
                       </div>
 
@@ -1335,42 +1350,43 @@ function FusionLabContent({ childId, child, onGoToStory, user }) {
                           setCustomOutfit(e.target.value)
                           if (e.target.value) setSelectedOutfit(null)
                         }}
-                        className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 transition-colors text-sm sm:text-base"
-                        placeholder="Describe a custom outfit..."
+                        className={`w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 transition-colors text-sm sm:text-base ${isRTL ? 'text-right' : ''}`}
+                        placeholder={t('studio.fusionLab.step4.customOutfitPlaceholder')}
+                        dir={isRTL ? 'rtl' : 'ltr'}
                       />
                     </div>
 
                     {/* Preview */}
                     <div className="bg-black/20 rounded-xl p-4 sm:p-6">
-                      <h3 className="text-xs sm:text-sm font-medium text-gray-400 mb-3 sm:mb-4">Character Preview</h3>
-                      <div className="flex items-center gap-3 sm:gap-4">
+                      <h3 className="text-xs sm:text-sm font-medium text-gray-400 mb-3 sm:mb-4">{t('studio.fusionLab.step4.characterPreview')}</h3>
+                      <div className={`flex items-center gap-3 sm:gap-4 ${isRTL ? 'flex-row-reverse' : ''}`}>
                         <div className="text-4xl sm:text-6xl">{selectedAnimal?.emoji}</div>
                         <div className="min-w-0 flex-1">
                           <div className="text-lg sm:text-xl font-bold truncate">{characterName}</div>
                           <div className="text-gray-400 text-xs sm:text-sm truncate">
-                            {selectedTraits.map(t => PERSONALITY_TRAITS.find(p => p.id === t)?.label).join(', ')}
+                            {selectedTraits.map(traitId => PERSONALITY_TRAITS.find(p => p.id === traitId)?.label).join(', ')}
                           </div>
                           <div className="text-purple-400 text-xs sm:text-sm mt-0.5 sm:mt-1">
-                            {VISUAL_STYLES.find(s => s.id === selectedStyle)?.name} Style
+                            {t('studio.fusionLab.step4.style')}: {VISUAL_STYLES.find(s => s.id === selectedStyle)?.name}
                           </div>
                           {getOutfitDescription() && (
                             <div className="text-emerald-400 text-xs sm:text-sm mt-0.5 sm:mt-1 truncate">
-                              Outfit: {getOutfitDescription()}
+                              {t('studio.fusionLab.step4.outfit')}: {getOutfitDescription()}
                             </div>
                           )}
                         </div>
                       </div>
                     </div>
 
-                    <div className="flex gap-2 sm:gap-3">
+                    <div className={`flex gap-2 sm:gap-3 ${isRTL ? 'flex-row-reverse' : ''}`}>
                       <button onClick={() => setStep(3)} className="flex-1 py-3 sm:py-4 border border-white/20 rounded-xl font-semibold text-sm sm:text-base hover:bg-white/5 transition-all">
-                        Back
+                        {t('studio.fusionLab.step4.back')}
                       </button>
                       <button
                         onClick={handleGenerate}
                         className="flex-1 py-3 sm:py-4 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl font-bold text-sm sm:text-base hover:shadow-lg hover:shadow-purple-500/30 transition-all flex items-center justify-center gap-1.5 sm:gap-2"
                       >
-                        <span>✨</span> <span>Bring to Life!</span>
+                        <span>✨</span> <span>{t('studio.fusionLab.step4.bringToLife')}</span>
                       </button>
                     </div>
                   </>
@@ -1392,11 +1408,11 @@ function FusionLabContent({ childId, child, onGoToStory, user }) {
                 ) : (
                   <div className="text-6xl sm:text-8xl mb-4 sm:mb-6">{selectedAnimal?.emoji}</div>
                 )}
-                <h3 className="text-xl sm:text-2xl font-bold mb-2">{generatedCharacter.name} is Ready!</h3>
+                <h3 className="text-xl sm:text-2xl font-bold mb-2">{generatedCharacter.name} {t('studio.fusionLab.success.isReady')}</h3>
                 <p className="text-gray-400 text-sm sm:text-base mb-6 sm:mb-8 px-2">
                   {generatedCharacter.image_url
-                    ? "Your character has been created with AI magic!"
-                    : "Your character has been saved. Image generation may take a moment."}
+                    ? t('studio.fusionLab.success.createdWithMagic')
+                    : t('studio.fusionLab.success.savedWaiting')}
                 </p>
                 <button
                   onClick={() => {
@@ -1407,7 +1423,7 @@ function FusionLabContent({ childId, child, onGoToStory, user }) {
                   }}
                   className="px-6 sm:px-8 py-3 sm:py-4 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl font-bold text-sm sm:text-base hover:shadow-lg hover:shadow-purple-500/30 transition-all"
                 >
-                  Let's build your first story with {generatedCharacter.name}
+                  {t('studio.fusionLab.success.buildFirstStory')} {generatedCharacter.name}
                 </button>
               </div>
             )}
@@ -1416,13 +1432,13 @@ function FusionLabContent({ childId, child, onGoToStory, user }) {
 
         {/* Character Gallery */}
         <div className="order-2 lg:order-2">
-          <h3 className="text-base sm:text-lg font-bold mb-3 sm:mb-4 flex items-center gap-2">
-            <span>🎭</span> Characters ({characters.length})
+          <h3 className={`text-base sm:text-lg font-bold mb-3 sm:mb-4 flex items-center gap-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
+            <span>🎭</span> {t('studio.fusionLab.characters')} ({characters.length})
           </h3>
 
           {characters.length === 0 ? (
             <div className="bg-white/5 border border-white/10 rounded-xl p-4 sm:p-6 text-center text-gray-400 text-sm sm:text-base">
-              No characters yet. Create your first one!
+              {t('studio.fusionLab.noCharactersYet')}
             </div>
           ) : (
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-1 gap-2 sm:gap-3 lg:space-y-3 lg:max-h-[600px] lg:overflow-y-auto lg:pr-2">
@@ -1434,7 +1450,7 @@ function FusionLabContent({ childId, child, onGoToStory, user }) {
                     onClick={() => setSelectedCharacter(char)}
                     className="relative bg-white/5 border border-white/10 rounded-xl p-3 sm:p-4 hover:bg-white/10 transition-colors group cursor-pointer"
                   >
-                    <div className="flex flex-col lg:flex-row items-center gap-2 lg:gap-3">
+                    <div className={`flex flex-col lg:flex-row items-center gap-2 lg:gap-3 ${isRTL ? 'lg:flex-row-reverse' : ''}`}>
                       {char.image_url ? (
                         <img
                           src={char.image_url}
@@ -1444,7 +1460,7 @@ function FusionLabContent({ childId, child, onGoToStory, user }) {
                       ) : (
                         <div className="text-3xl sm:text-4xl">{animal?.emoji || '🎭'}</div>
                       )}
-                      <div className="flex-1 min-w-0 text-center lg:text-left">
+                      <div className={`flex-1 min-w-0 text-center ${isRTL ? 'lg:text-right' : 'lg:text-left'}`}>
                         <div className="font-semibold text-sm sm:text-base truncate hover:text-purple-400 transition-colors">{char.name}</div>
                         <div className="text-xs sm:text-sm text-gray-400 truncate hidden sm:block">
                           {char.personality_trait}
@@ -1476,6 +1492,7 @@ function FusionLabContent({ childId, child, onGoToStory, user }) {
 
 // Plot World Content - Story Creation Wizard
 function PlotWorldContent({ childId, child, initialCharacter, onCharacterUsed, user }) {
+  const { t, language, isRTL } = useLanguage()
   const [characters, setCharacters] = useState([])
   const [stories, setStories] = useState([])
   const [loading, setLoading] = useState(true)
@@ -1517,30 +1534,30 @@ function PlotWorldContent({ childId, child, initialCharacter, onCharacterUsed, u
   const [deleteStoryConfirm, setDeleteStoryConfirm] = useState(null)
   const [isDeletingStory, setIsDeletingStory] = useState(false)
 
-  // Adventure theme options
+  // Adventure theme options - using translations
   const ADVENTURE_THEMES = [
-    { id: 'space', emoji: '🚀', label: 'Space Adventure', desc: 'Journey through the stars and planets' },
-    { id: 'underwater', emoji: '🐠', label: 'Underwater Discovery', desc: 'Explore the magical ocean depths' },
-    { id: 'forest', emoji: '🌲', label: 'Enchanted Forest', desc: 'Adventures in a magical woodland' },
-    { id: 'castle', emoji: '🏰', label: 'Kingdom Quest', desc: 'A royal adventure in a magical kingdom' },
-    { id: 'dinosaurs', emoji: '🦕', label: 'Dinosaur Land', desc: 'Travel back to prehistoric times' },
-    { id: 'superheroes', emoji: '🦸', label: 'Superhero Mission', desc: 'Save the day with special powers' },
-    { id: 'pirates', emoji: '🏴‍☠️', label: 'Pirate Treasure', desc: 'Hunt for hidden treasure on the high seas' },
-    { id: 'candy', emoji: '🍭', label: 'Candy World', desc: 'A sweet adventure in a land of treats' },
+    { id: 'space', emoji: '🚀', label: t('studio.plotWorld.adventures.space.label'), desc: t('studio.plotWorld.adventures.space.desc') },
+    { id: 'underwater', emoji: '🐠', label: t('studio.plotWorld.adventures.underwater.label'), desc: t('studio.plotWorld.adventures.underwater.desc') },
+    { id: 'forest', emoji: '🌲', label: t('studio.plotWorld.adventures.forest.label'), desc: t('studio.plotWorld.adventures.forest.desc') },
+    { id: 'castle', emoji: '🏰', label: t('studio.plotWorld.adventures.castle.label'), desc: t('studio.plotWorld.adventures.castle.desc') },
+    { id: 'dinosaurs', emoji: '🦕', label: t('studio.plotWorld.adventures.dinosaurs.label'), desc: t('studio.plotWorld.adventures.dinosaurs.desc') },
+    { id: 'superheroes', emoji: '🦸', label: t('studio.plotWorld.adventures.superheroes.label'), desc: t('studio.plotWorld.adventures.superheroes.desc') },
+    { id: 'pirates', emoji: '🏴‍☠️', label: t('studio.plotWorld.adventures.pirates.label'), desc: t('studio.plotWorld.adventures.pirates.desc') },
+    { id: 'candy', emoji: '🍭', label: t('studio.plotWorld.adventures.candy.label'), desc: t('studio.plotWorld.adventures.candy.desc') },
   ]
 
-  // Moral lesson options
+  // Moral lesson options - using translations
   const MORAL_LESSONS = [
-    { id: 'kindness', emoji: '💝', label: 'Being Kind', desc: 'Learning to be kind and help others' },
-    { id: 'bravery', emoji: '🦁', label: 'Overcoming Fear', desc: 'Being brave even when scared' },
-    { id: 'friendship', emoji: '🤝', label: 'Making Friends', desc: 'How to make and keep good friends' },
-    { id: 'honesty', emoji: '⭐', label: 'Telling the Truth', desc: 'The importance of being honest' },
-    { id: 'sharing', emoji: '🎁', label: 'Learning to Share', desc: 'The joy of sharing with others' },
-    { id: 'newplace', emoji: '🏠', label: 'New Beginnings', desc: 'Adjusting to a new place or school' },
-    { id: 'patience', emoji: '🐢', label: 'Being Patient', desc: 'Good things come to those who wait' },
-    { id: 'trying', emoji: '💪', label: 'Never Give Up', desc: 'Keep trying even when things are hard' },
-    { id: 'different', emoji: '🌈', label: 'Being Different', desc: 'Celebrating what makes you unique' },
-    { id: 'goodbye', emoji: '👋', label: 'Saying Goodbye', desc: 'Dealing with goodbyes and loss' },
+    { id: 'kindness', emoji: '💝', label: t('studio.plotWorld.morals.kindness.label'), desc: t('studio.plotWorld.morals.kindness.desc') },
+    { id: 'bravery', emoji: '🦁', label: t('studio.plotWorld.morals.bravery.label'), desc: t('studio.plotWorld.morals.bravery.desc') },
+    { id: 'friendship', emoji: '🤝', label: t('studio.plotWorld.morals.friendship.label'), desc: t('studio.plotWorld.morals.friendship.desc') },
+    { id: 'honesty', emoji: '⭐', label: t('studio.plotWorld.morals.honesty.label'), desc: t('studio.plotWorld.morals.honesty.desc') },
+    { id: 'sharing', emoji: '🎁', label: t('studio.plotWorld.morals.sharing.label'), desc: t('studio.plotWorld.morals.sharing.desc') },
+    { id: 'newplace', emoji: '🏠', label: t('studio.plotWorld.morals.newplace.label'), desc: t('studio.plotWorld.morals.newplace.desc') },
+    { id: 'patience', emoji: '🐢', label: t('studio.plotWorld.morals.patience.label'), desc: t('studio.plotWorld.morals.patience.desc') },
+    { id: 'trying', emoji: '💪', label: t('studio.plotWorld.morals.trying.label'), desc: t('studio.plotWorld.morals.trying.desc') },
+    { id: 'different', emoji: '🌈', label: t('studio.plotWorld.morals.different.label'), desc: t('studio.plotWorld.morals.different.desc') },
+    { id: 'goodbye', emoji: '👋', label: t('studio.plotWorld.morals.goodbye.label'), desc: t('studio.plotWorld.morals.goodbye.desc') },
   ]
 
   useEffect(() => {
@@ -1579,6 +1596,32 @@ function PlotWorldContent({ childId, child, initialCharacter, onCharacterUsed, u
 
     return () => clearInterval(interval)
   }, [step, currentStory?.id, currentStory?.images?.length])
+
+  // Preload upcoming images in the background while reading
+  useEffect(() => {
+    if (step !== 6 || !currentStory?.images) return
+
+    // Determine which images to preload based on current spread
+    const imagesToPreload = []
+    if (currentPage === 0 && currentStory.images[1]?.url) {
+      imagesToPreload.push(currentStory.images[1].url) // Preload image 2 while on spread 0
+    }
+    if (currentPage === 1 && currentStory.images[1]?.url) {
+      imagesToPreload.push(currentStory.images[1].url) // Preload image 2 while on spread 1
+    }
+    if (currentPage === 2 && currentStory.images[2]?.url) {
+      imagesToPreload.push(currentStory.images[2].url) // Preload image 3 while on spread 2
+    }
+    if (currentPage === 3 && currentStory.images[2]?.url) {
+      imagesToPreload.push(currentStory.images[2].url) // Preload image 3 while on spread 3
+    }
+
+    // Preload images
+    imagesToPreload.forEach(url => {
+      const img = new Image()
+      img.src = url
+    })
+  }, [step, currentPage, currentStory?.images])
 
   const fetchData = async () => {
     // Fetch characters
@@ -1663,7 +1706,7 @@ function PlotWorldContent({ childId, child, initialCharacter, onCharacterUsed, u
 
     setIsGenerating(true)
     setStep(5)
-    setGenerationStatus(`✨ ${selectedCharacter?.name}'s adventure begins...`)
+    setGenerationStatus(`✨ ${selectedCharacter?.name}${t('studio.plotWorld.generating.adventureBegins')}`)
 
     try {
       // Get visual style from character and convert ID to name
@@ -1693,7 +1736,7 @@ function PlotWorldContent({ childId, child, initialCharacter, onCharacterUsed, u
         await trackCreation(user.id, 'story')
       }
 
-      setGenerationStatus('📝 Once upon a time... the story is being written!')
+      setGenerationStatus(`📝 ${t('studio.plotWorld.generating.storyBeingWritten')}`)
 
       // Call generate-story edge function
       const storyResponse = await supabase.functions.invoke('generate-story', {
@@ -1704,7 +1747,8 @@ function PlotWorldContent({ childId, child, initialCharacter, onCharacterUsed, u
           adventureTheme: getThemeLabel(),
           moralLesson: wantsMoral ? getMoralLabel() : null,
           visualStyle: visualStyle,
-          animalType: selectedCharacter.animal_type // Pass animal type so Claude knows the character is an animal
+          animalType: selectedCharacter.animal_type, // Pass animal type so Claude knows the character is an animal
+          language: language // Pass language for story generation (en/he)
         }
       })
 
@@ -1718,20 +1762,56 @@ function PlotWorldContent({ childId, child, initialCharacter, onCharacterUsed, u
 
       const imagePrompts = storyResult.story.imagePrompts || []
 
-      // Fun messages for each illustration
-      const illustrationMessages = [
-        '🎨 Painting the opening scene...',
-        '🖌️ Creating the adventure moment...',
-        '✨ Adding the magical finale...'
-      ]
+      // PROGRESSIVE LOADING: Generate first image, show reader, then generate rest in background
+      setGenerationStatus(`🎨 ${t('studio.plotWorld.generating.paintingOpening')}`)
 
-      // Generate ALL images sequentially and preload them for faster display
-      const generatedImageUrls = []
-      for (let i = 0; i < imagePrompts.length; i++) {
-        const imagePrompt = imagePrompts[i]
-        setGenerationStatus(illustrationMessages[i] || `🎨 Creating illustration ${i + 1}...`)
+      // Generate ONLY the first image and wait for it
+      const firstImagePrompt = imagePrompts[0]
+      if (firstImagePrompt) {
+        const firstImageResponse = await supabase.functions.invoke('generate-story-image', {
+          body: {
+            storyId: storyData.id,
+            imageNumber: firstImagePrompt.imageNumber,
+            prompt: firstImagePrompt.prompt,
+            characterImageUrl: selectedCharacter.image_url,
+            visualStyle: visualStyle,
+            animalType: selectedCharacter.animal_type
+          }
+        })
 
-        const imageResponse = await supabase.functions.invoke('generate-story-image', {
+        if (firstImageResponse.error) {
+          console.error('First image generation error:', firstImageResponse.error)
+        } else {
+          console.log('First image generated successfully')
+          // Preload the first image
+          if (firstImageResponse.data?.imageUrl) {
+            const img = new Image()
+            img.src = firstImageResponse.data.imageUrl
+          }
+        }
+      }
+
+      // Show reader immediately with first image
+      setGenerationStatus(`📖 ${t('studio.plotWorld.generating.showAboutToBegin')}`)
+
+      // Fetch story with first image
+      const { data: storyWithFirstImage } = await supabase
+        .from('stories')
+        .select('*, characters(name, image_url)')
+        .eq('id', storyData.id)
+        .single()
+
+      // Show reader immediately - user can start reading while other images generate
+      setCurrentStory(storyWithFirstImage)
+      setCurrentPage(0)
+      setStep(6)
+      setStories([storyWithFirstImage, ...stories])
+      setIsGenerating(false)
+
+      // Generate remaining images in background (don't await - fire and forget)
+      const remainingPrompts = imagePrompts.slice(1)
+      remainingPrompts.forEach((imagePrompt) => {
+        supabase.functions.invoke('generate-story-image', {
           body: {
             storyId: storyData.id,
             imageNumber: imagePrompt.imageNumber,
@@ -1740,48 +1820,29 @@ function PlotWorldContent({ childId, child, initialCharacter, onCharacterUsed, u
             visualStyle: visualStyle,
             animalType: selectedCharacter.animal_type
           }
-        })
-
-        if (imageResponse.error) {
-          console.error(`Image ${i + 1} generation error:`, imageResponse.error)
-        } else {
-          console.log(`Image ${i + 1} generated successfully`)
-          // Preload the image into browser cache
-          if (imageResponse.data?.imageUrl) {
-            generatedImageUrls.push(imageResponse.data.imageUrl)
-            const img = new Image()
-            img.src = imageResponse.data.imageUrl
+        }).then((response) => {
+          if (response.error) {
+            console.error(`Image ${imagePrompt.imageNumber} generation error:`, response.error)
+          } else {
+            console.log(`Image ${imagePrompt.imageNumber} generated successfully in background`)
+            // Preload the image
+            if (response.data?.imageUrl) {
+              const img = new Image()
+              img.src = response.data.imageUrl
+            }
           }
-        }
-      }
+        })
+      })
 
-      // Wait a moment for preloading to complete
-      setGenerationStatus('📖 The show is about to begin!')
-      await new Promise(resolve => setTimeout(resolve, 500))
-
-      // Update story status to completed
+      // Update story status to completed after all images are queued
       await supabase
         .from('stories')
         .update({ status: 'completed' })
         .eq('id', storyData.id)
 
-      // Fetch complete story with all images
-      const { data: completeStory } = await supabase
-        .from('stories')
-        .select('*, characters(name, image_url)')
-        .eq('id', storyData.id)
-        .single()
-
-      // Show reader with all images ready
-      setCurrentStory(completeStory)
-      setCurrentPage(0)
-      setStep(6)
-      setStories([completeStory, ...stories])
-      setIsGenerating(false)
-
     } catch (error) {
       console.error('Story creation error:', error)
-      setGenerationStatus('Something went wrong. Please try again.')
+      setGenerationStatus(t('studio.plotWorld.generating.somethingWentWrong'))
       setTimeout(() => {
         resetWizard()
       }, 3000)
@@ -1838,32 +1899,32 @@ function PlotWorldContent({ childId, child, initialCharacter, onCharacterUsed, u
   }
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8">
+    <div className={`p-4 sm:p-6 lg:p-8 ${isRTL ? 'text-right' : 'text-left'}`}>
       {/* Payment Wall Modal */}
       <PaymentWall
         isOpen={showPaymentWall}
         onClose={() => setShowPaymentWall(false)}
-        title="Upgrade to Creator Tier"
+        title={t('studio.plotWorld.upgradeTitle')}
         reason={paymentWallReason}
         usage={usageSummary}
         userEmail={user?.email || ''}
       />
 
       {/* Header */}
-      <div className="mb-6 sm:mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <div className={`mb-6 sm:mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${isRTL ? 'sm:flex-row-reverse' : ''}`}>
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold flex items-center gap-2 sm:gap-3">
+          <h1 className={`text-2xl sm:text-3xl font-bold flex items-center gap-2 sm:gap-3 ${isRTL ? 'flex-row-reverse' : ''}`}>
             <span className="text-3xl sm:text-4xl">📖</span>
-            <span className="truncate">{child?.name}'s Plot World</span>
+            <span className="truncate">{child?.name}{t('studio.plotWorld.title')}</span>
           </h1>
-          <p className="text-gray-400 mt-1 sm:mt-2 text-sm sm:text-base">Create magical stories with your characters</p>
+          <p className="text-gray-400 mt-1 sm:mt-2 text-sm sm:text-base">{t('studio.plotWorld.subtitle')}</p>
         </div>
         {step > 0 && step < 5 && (
           <button
             onClick={resetWizard}
-            className="px-3 sm:px-4 py-2 text-sm sm:text-base text-gray-400 hover:text-white transition-colors self-start sm:self-auto"
+            className={`px-3 sm:px-4 py-2 text-sm sm:text-base text-gray-400 hover:text-white transition-colors self-start sm:self-auto ${isRTL ? 'flex-row-reverse' : ''}`}
           >
-            ← Back to Stories
+            {t('studio.plotWorld.backToStories')}
           </button>
         )}
       </div>
@@ -1871,10 +1932,9 @@ function PlotWorldContent({ childId, child, initialCharacter, onCharacterUsed, u
       {characters.length === 0 ? (
         <div className="bg-white/5 border border-white/10 rounded-2xl p-6 sm:p-12 text-center">
           <div className="text-5xl sm:text-6xl mb-4 sm:mb-6">🎭</div>
-          <h2 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4">No Characters Yet</h2>
+          <h2 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4">{t('studio.plotWorld.noCharacters.title')}</h2>
           <p className="text-gray-400 text-sm sm:text-base mb-4 sm:mb-6 max-w-md mx-auto">
-            Before creating stories, you need to create some characters in the Fusion Lab.
-            Your characters will be the stars of your stories!
+            {t('studio.plotWorld.noCharacters.description')}
           </p>
         </div>
       ) : step === 0 ? (
@@ -1882,18 +1942,18 @@ function PlotWorldContent({ childId, child, initialCharacter, onCharacterUsed, u
         <div>
           <button
             onClick={() => setStep(1)}
-            className="mb-6 sm:mb-8 px-5 sm:px-8 py-3 sm:py-4 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-xl font-bold text-sm sm:text-base text-white hover:shadow-lg hover:shadow-blue-500/30 transition-all flex items-center gap-2 sm:gap-3"
+            className={`mb-6 sm:mb-8 px-5 sm:px-8 py-3 sm:py-4 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-xl font-bold text-sm sm:text-base text-white hover:shadow-lg hover:shadow-blue-500/30 transition-all flex items-center gap-2 sm:gap-3 ${isRTL ? 'flex-row-reverse' : ''}`}
           >
             <span className="text-lg sm:text-xl">✨</span>
-            Create New Story
+            {t('studio.plotWorld.createNewStory')}
           </button>
 
           {stories.length === 0 ? (
             <div className="bg-white/5 border border-white/10 rounded-2xl p-6 sm:p-12 text-center">
               <div className="text-5xl sm:text-6xl mb-4 sm:mb-6">📚</div>
-              <h2 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4">No Stories Yet</h2>
+              <h2 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4">{t('studio.plotWorld.noStories.title')}</h2>
               <p className="text-gray-400 text-sm sm:text-base max-w-md mx-auto">
-                Click the button above to create your first magical adventure!
+                {t('studio.plotWorld.noStories.description')}
               </p>
             </div>
           ) : (
@@ -1909,8 +1969,8 @@ function PlotWorldContent({ childId, child, initialCharacter, onCharacterUsed, u
                       e.stopPropagation()
                       setDeleteStoryConfirm(story)
                     }}
-                    className="absolute top-2 right-2 z-10 p-2 bg-black/50 hover:bg-red-500 rounded-full text-gray-300 hover:text-white transition-all opacity-0 group-hover:opacity-100"
-                    title="Delete story"
+                    className={`absolute top-2 ${isRTL ? 'left-2' : 'right-2'} z-10 p-2 bg-black/50 hover:bg-red-500 rounded-full text-gray-300 hover:text-white transition-all opacity-0 group-hover:opacity-100`}
+                    title={t('studio.plotWorld.storyCard.deleteStory')}
                   >
                     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -1935,13 +1995,13 @@ function PlotWorldContent({ childId, child, initialCharacter, onCharacterUsed, u
                     )}
                     <div className="p-3 sm:p-4">
                       <h3 className="font-bold text-base sm:text-lg mb-1 group-hover:text-blue-400 transition-colors truncate">
-                        {story.title || 'Untitled Story'}
+                        {story.title || t('studio.plotWorld.storyCard.untitled')}
                       </h3>
                       <p className="text-xs sm:text-sm text-gray-400 mb-1 sm:mb-2 truncate">
-                        Starring {story.characters?.name || 'Unknown'}
+                        {t('studio.plotWorld.storyCard.starring')} {story.characters?.name || t('studio.plotWorld.storyCard.unknown')}
                       </p>
                       <p className="text-xs text-gray-500">
-                        {new Date(story.created_at).toLocaleDateString()}
+                        {new Date(story.created_at).toLocaleDateString(language === 'he' ? 'he-IL' : 'en-US')}
                       </p>
                     </div>
                   </div>
@@ -1956,8 +2016,8 @@ function PlotWorldContent({ childId, child, initialCharacter, onCharacterUsed, u
           <div className="bg-white/5 border border-white/10 rounded-2xl p-4 sm:p-6 lg:p-8">
             <div className="text-center mb-6 sm:mb-8">
               <span className="text-4xl sm:text-5xl mb-3 sm:mb-4 block">🦸</span>
-              <h2 className="text-xl sm:text-2xl font-bold mb-2">Choose Your Hero</h2>
-              <p className="text-gray-400 text-sm sm:text-base">Who will be the star of today's adventure?</p>
+              <h2 className="text-xl sm:text-2xl font-bold mb-2">{t('studio.plotWorld.step1.title')}</h2>
+              <p className="text-gray-400 text-sm sm:text-base">{t('studio.plotWorld.step1.subtitle')}</p>
             </div>
 
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-4 mb-6 sm:mb-8">
@@ -1998,7 +2058,7 @@ function PlotWorldContent({ childId, child, initialCharacter, onCharacterUsed, u
               disabled={!selectedCharacter}
               className="w-full py-3 sm:py-4 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-xl font-bold text-sm sm:text-base disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-lg hover:shadow-blue-500/30 transition-all"
             >
-              Next: Choose Adventure
+              {t('studio.plotWorld.step1.nextButton')}
             </button>
           </div>
         </div>
@@ -2008,8 +2068,8 @@ function PlotWorldContent({ childId, child, initialCharacter, onCharacterUsed, u
           <div className="bg-white/5 border border-white/10 rounded-2xl p-4 sm:p-6 lg:p-8">
             <div className="text-center mb-6 sm:mb-8">
               <span className="text-4xl sm:text-5xl mb-3 sm:mb-4 block">🗺️</span>
-              <h2 className="text-xl sm:text-2xl font-bold mb-2">What's Today's Adventure?</h2>
-              <p className="text-gray-400 text-sm sm:text-base">Choose the type of adventure for {selectedCharacter?.name}</p>
+              <h2 className="text-xl sm:text-2xl font-bold mb-2">{t('studio.plotWorld.step2.title')}</h2>
+              <p className="text-gray-400 text-sm sm:text-base">{t('studio.plotWorld.step2.subtitle')} {selectedCharacter?.name}</p>
             </div>
 
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 mb-4 sm:mb-6">
@@ -2037,7 +2097,7 @@ function PlotWorldContent({ childId, child, initialCharacter, onCharacterUsed, u
                 <div className="w-full border-t border-white/10"></div>
               </div>
               <div className="relative flex justify-center text-xs sm:text-sm">
-                <span className="px-2 bg-[#0B0A16] text-gray-500">or describe your own</span>
+                <span className="px-2 bg-[#0B0A16] text-gray-500">{t('studio.plotWorld.step2.orDescribeOwn')}</span>
               </div>
             </div>
 
@@ -2048,23 +2108,24 @@ function PlotWorldContent({ childId, child, initialCharacter, onCharacterUsed, u
                 setCustomTheme(e.target.value)
                 if (e.target.value) setAdventureTheme('')
               }}
-              className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 transition-colors text-sm sm:text-base mb-6 sm:mb-8"
-              placeholder="Describe a custom adventure..."
+              className={`w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 transition-colors text-sm sm:text-base mb-6 sm:mb-8 ${isRTL ? 'text-right' : ''}`}
+              placeholder={t('studio.plotWorld.step2.customAdventurePlaceholder')}
+              dir={isRTL ? 'rtl' : 'ltr'}
             />
 
-            <div className="flex gap-2 sm:gap-3">
+            <div className={`flex gap-2 sm:gap-3 ${isRTL ? 'flex-row-reverse' : ''}`}>
               <button
                 onClick={() => setStep(1)}
                 className="flex-1 py-3 sm:py-4 border border-white/20 rounded-xl font-semibold text-sm sm:text-base hover:bg-white/5 transition-all"
               >
-                Back
+                {t('studio.plotWorld.step2.back')}
               </button>
               <button
                 onClick={() => setStep(3)}
                 disabled={!adventureTheme && !customTheme}
                 className="flex-1 py-3 sm:py-4 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-xl font-bold text-sm sm:text-base disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-lg hover:shadow-blue-500/30 transition-all"
               >
-                Next: Story Options
+                {t('studio.plotWorld.step2.nextButton')}
               </button>
             </div>
           </div>
@@ -2075,8 +2136,8 @@ function PlotWorldContent({ childId, child, initialCharacter, onCharacterUsed, u
           <div className="bg-white/5 border border-white/10 rounded-2xl p-4 sm:p-6 lg:p-8">
             <div className="text-center mb-6 sm:mb-8">
               <span className="text-4xl sm:text-5xl mb-3 sm:mb-4 block">🎓</span>
-              <h2 className="text-xl sm:text-2xl font-bold mb-2">Add a Learning Moment?</h2>
-              <p className="text-gray-400 text-sm sm:text-base">Would you like the story to teach a valuable lesson?</p>
+              <h2 className="text-xl sm:text-2xl font-bold mb-2">{t('studio.plotWorld.step3.title')}</h2>
+              <p className="text-gray-400 text-sm sm:text-base">{t('studio.plotWorld.step3.subtitle')}</p>
             </div>
 
             <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 justify-center mb-6 sm:mb-8">
@@ -2088,7 +2149,7 @@ function PlotWorldContent({ childId, child, initialCharacter, onCharacterUsed, u
                     : 'bg-white/5 border-2 border-transparent hover:bg-white/10'
                 }`}
               >
-                Yes, add a lesson
+                {t('studio.plotWorld.step3.yesAddLesson')}
               </button>
               <button
                 onClick={() => {
@@ -2102,12 +2163,16 @@ function PlotWorldContent({ childId, child, initialCharacter, onCharacterUsed, u
                     : 'bg-white/5 border-2 border-transparent hover:bg-white/10'
                 }`}
               >
-                Just fun adventure!
+                {t('studio.plotWorld.step3.noJustFun')}
               </button>
             </div>
 
             {wantsMoral && (
               <>
+                <div className="text-center mb-4">
+                  <h3 className="text-lg font-semibold mb-1">{t('studio.plotWorld.step3.chooseLessonTitle')}</h3>
+                  <p className="text-gray-400 text-sm">{t('studio.plotWorld.step3.chooseLessonSubtitle')}</p>
+                </div>
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2 sm:gap-3 mb-4 sm:mb-6">
                   {MORAL_LESSONS.map((moral) => (
                     <button
@@ -2133,7 +2198,7 @@ function PlotWorldContent({ childId, child, initialCharacter, onCharacterUsed, u
                     <div className="w-full border-t border-white/10"></div>
                   </div>
                   <div className="relative flex justify-center text-xs sm:text-sm">
-                    <span className="px-2 bg-[#0B0A16] text-gray-500">or describe your own</span>
+                    <span className="px-2 bg-[#0B0A16] text-gray-500">{t('studio.plotWorld.step3.orDescribeOwn')}</span>
                   </div>
                 </div>
 
@@ -2144,25 +2209,26 @@ function PlotWorldContent({ childId, child, initialCharacter, onCharacterUsed, u
                     setCustomMoral(e.target.value)
                     if (e.target.value) setSelectedMoral(null)
                   }}
-                  className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-emerald-500 transition-colors text-sm sm:text-base mb-6 sm:mb-8"
-                  placeholder="Describe a custom lesson..."
+                  className={`w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-emerald-500 transition-colors text-sm sm:text-base mb-6 sm:mb-8 ${isRTL ? 'text-right' : ''}`}
+                  placeholder={t('studio.plotWorld.step3.customLessonPlaceholder')}
+                  dir={isRTL ? 'rtl' : 'ltr'}
                 />
               </>
             )}
 
-            <div className="flex gap-2 sm:gap-3 mt-6 sm:mt-8">
+            <div className={`flex gap-2 sm:gap-3 mt-6 sm:mt-8 ${isRTL ? 'flex-row-reverse' : ''}`}>
               <button
                 onClick={() => setStep(2)}
                 className="flex-1 py-3 sm:py-4 border border-white/20 rounded-xl font-semibold text-sm sm:text-base hover:bg-white/5 transition-all"
               >
-                Back
+                {t('studio.plotWorld.step3.back')}
               </button>
               <button
                 onClick={() => setStep(4)}
                 disabled={wantsMoral && !selectedMoral && !customMoral}
                 className="flex-1 py-3 sm:py-4 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-xl font-bold text-sm sm:text-base disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-lg hover:shadow-blue-500/30 transition-all"
               >
-                Next: Preview
+                {t('studio.plotWorld.step3.nextButton')}
               </button>
             </div>
           </div>
@@ -2173,12 +2239,12 @@ function PlotWorldContent({ childId, child, initialCharacter, onCharacterUsed, u
           <div className="bg-white/5 border border-white/10 rounded-2xl p-4 sm:p-6 lg:p-8">
             <div className="text-center mb-6 sm:mb-8">
               <span className="text-4xl sm:text-5xl mb-3 sm:mb-4 block">✨</span>
-              <h2 className="text-xl sm:text-2xl font-bold mb-2">Ready to Create Magic?</h2>
-              <p className="text-gray-400 text-sm sm:text-base">Review your story setup</p>
+              <h2 className="text-xl sm:text-2xl font-bold mb-2">{t('studio.plotWorld.step4.title')}</h2>
+              <p className="text-gray-400 text-sm sm:text-base">{t('studio.plotWorld.step4.subtitle')}</p>
             </div>
 
             <div className="bg-black/20 rounded-xl p-4 sm:p-6 mb-6 sm:mb-8">
-              <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-6">
+              <div className={`flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-6 ${isRTL ? 'sm:flex-row-reverse' : ''}`}>
                 {selectedCharacter?.image_url ? (
                   <img
                     src={selectedCharacter.image_url}
@@ -2190,41 +2256,32 @@ function PlotWorldContent({ childId, child, initialCharacter, onCharacterUsed, u
                     🎭
                   </div>
                 )}
-                <div className="flex-1 text-center sm:text-left">
-                  <h3 className="text-lg sm:text-xl font-bold mb-1">{selectedCharacter?.name}'s Adventure</h3>
+                <div className={`flex-1 text-center ${isRTL ? 'sm:text-right' : 'sm:text-left'}`}>
+                  <h3 className="text-lg sm:text-xl font-bold mb-1">{t('studio.plotWorld.step4.hero')}: {selectedCharacter?.name}</h3>
                   <div className="space-y-1 sm:space-y-2 text-xs sm:text-sm">
                     <p className="text-gray-400">
-                      <span className="text-blue-400">Adventure:</span> {getThemeLabel()}
+                      <span className="text-blue-400">{t('studio.plotWorld.step4.adventure')}:</span> {getThemeLabel()}
                     </p>
-                    {wantsMoral && (
-                      <p className="text-gray-400">
-                        <span className="text-emerald-400">Lesson:</span> {getMoralLabel()}
-                      </p>
-                    )}
                     <p className="text-gray-400">
-                      <span className="text-purple-400">Hero Traits:</span> {selectedCharacter?.personality_trait}
+                      <span className="text-emerald-400">{t('studio.plotWorld.step4.lesson')}:</span> {wantsMoral ? getMoralLabel() : t('studio.plotWorld.step4.noLesson')}
                     </p>
                   </div>
                 </div>
               </div>
             </div>
 
-            <div className="bg-blue-500/10 border border-blue-500/20 rounded-xl p-3 sm:p-4 mb-6 sm:mb-8 text-xs sm:text-sm text-blue-300">
-              <p>📝 Your story will have 6 pages with 3 beautiful illustrations featuring {selectedCharacter?.name}!</p>
-            </div>
-
-            <div className="flex gap-2 sm:gap-3">
+            <div className={`flex gap-2 sm:gap-3 ${isRTL ? 'flex-row-reverse' : ''}`}>
               <button
                 onClick={() => setStep(3)}
                 className="flex-1 py-3 sm:py-4 border border-white/20 rounded-xl font-semibold text-sm sm:text-base hover:bg-white/5 transition-all"
               >
-                Back
+                {t('studio.plotWorld.step4.back')}
               </button>
               <button
                 onClick={handleCreateStory}
                 className="flex-1 py-3 sm:py-4 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-xl font-bold text-sm sm:text-base hover:shadow-lg hover:shadow-blue-500/30 transition-all flex items-center justify-center gap-1.5 sm:gap-2"
               >
-                <span>✨</span> <span>Create Story!</span>
+                <span>✨</span> <span>{t('studio.plotWorld.step4.createButton')}</span>
               </button>
             </div>
           </div>
@@ -2249,96 +2306,135 @@ function PlotWorldContent({ childId, child, initialCharacter, onCharacterUsed, u
               </div>
             </div>
             <h2 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4 bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
-              {selectedCharacter?.name}'s Story is Being Created!
+              {selectedCharacter?.name}{t('studio.plotWorld.generating.personalizedHeader')}
             </h2>
             <p className="text-gray-300 text-sm sm:text-base mb-3 sm:mb-4 font-medium">{generationStatus}</p>
-            <p className="text-xs sm:text-sm text-gray-500">Babu is working hard on something magical...</p>
+            <p className="text-xs sm:text-sm text-gray-500">{t('studio.plotWorld.generating.showAboutToBegin')}</p>
           </div>
         </div>
       ) : step === 6 && currentStory ? (
-        /* Step 6: Story Reader - Book Style */
+        /* Step 6: Story Reader - Book Style with smart layout for image loading */
         (() => {
-          // Total pages: 6 story pages + 1 "The End" page = 7
-          const totalPages = 7
-          const isTheEndPage = currentPage === 6
-          // Image position: pages 0-1 (image 0) = left, pages 2-3 (image 1) = right, pages 4-5 (image 2) = left
-          const imageIndex = Math.floor(currentPage / 2)
-          const isImageOnLeft = imageIndex % 2 === 0 // 0, 2 = left; 1 = right
+          /*
+           * NEW LAYOUT: Single page per image spread for better text display
+           * This gives more time for images 2 and 3 to load while user reads
+           *
+           * Spread 0: Image 1 + Page 1 text
+           * Spread 1: Pages 2-3 text only (no image - time for image 2 to load)
+           * Spread 2: Image 2 + Page 4 text
+           * Spread 3: Pages 5-6 text only (no image - time for image 3 to load)
+           * Spread 4: Image 3 + "The End"
+           */
+          const totalSpreads = 5
+          const isTheEndSpread = currentPage === 4
 
-          // Image component - responsive with proper aspect ratio
-          const ImageSection = () => (
-            <div className="w-full md:w-1/2 bg-gradient-to-br from-amber-100 to-orange-100 p-3 sm:p-4 flex items-center justify-center h-full">
-              <div className="relative w-full max-w-[280px] sm:max-w-[320px] md:max-w-none md:w-full aspect-square rounded-xl overflow-hidden shadow-lg border-4 border-amber-200/50">
-                {currentStory.images?.[imageIndex]?.url ? (
+          // Determine spread type and content
+          const getSpreadConfig = () => {
+            switch (currentPage) {
+              case 0: return { type: 'image-text', imageIndex: 0, storyPage: 0 }
+              case 1: return { type: 'text-only', storyPages: [1, 2] }
+              case 2: return { type: 'image-text', imageIndex: 1, storyPage: 3 }
+              case 3: return { type: 'text-only', storyPages: [4, 5] }
+              case 4: return { type: 'end', imageIndex: 2 }
+              default: return { type: 'text-only', storyPages: [0, 1] }
+            }
+          }
+          const spreadConfig = getSpreadConfig()
+
+          // Image component - responsive with proper aspect ratio and priority loading
+          const ImageSection = ({ imgIndex }) => (
+            <div className="w-full md:w-1/2 bg-gradient-to-br from-amber-100 to-orange-100 p-4 sm:p-6 flex items-center justify-center">
+              <div className="relative w-full max-w-[280px] sm:max-w-[320px] md:max-w-[85%] aspect-square rounded-xl overflow-hidden shadow-lg border-4 border-amber-200/50">
+                {currentStory.images?.[imgIndex]?.url ? (
                   <OptimizedImage
-                    src={currentStory.images[imageIndex].url}
-                    alt={`Illustration ${imageIndex + 1}`}
+                    src={currentStory.images[imgIndex].url}
+                    alt={`Illustration ${imgIndex + 1}`}
                     className="w-full h-full"
+                    priority={true}
                     fallback={
                       <div className="w-full h-full flex flex-col items-center justify-center gap-3 bg-gradient-to-br from-blue-100 to-purple-100">
                         <div className="w-8 h-8 sm:w-10 sm:h-10 border-4 border-purple-500 border-t-transparent rounded-full animate-spin" />
-                        <p className="text-purple-600 font-medium text-xs sm:text-sm">Loading...</p>
+                        <p className="text-purple-600 font-medium text-xs sm:text-sm">{t('common.buttons.loading')}</p>
                       </div>
                     }
                   />
                 ) : (
                   <div className="w-full h-full flex flex-col items-center justify-center gap-3 bg-gradient-to-br from-blue-100 to-purple-100">
                     <div className="w-8 h-8 sm:w-10 sm:h-10 border-4 border-purple-500 border-t-transparent rounded-full animate-spin" />
-                    <p className="text-purple-600 font-medium text-xs sm:text-sm">Creating...</p>
+                    <p className="text-purple-600 font-medium text-xs sm:text-sm">{t('studio.plotWorld.reader.creatingIllustration')}</p>
                   </div>
                 )}
               </div>
             </div>
           )
 
-          // Text component - with overflow protection and responsive text sizing
-          const TextSection = () => (
-            <div className="w-full md:w-1/2 bg-gradient-to-br from-amber-50 to-orange-50 p-3 sm:p-4 md:p-6 flex flex-col h-full overflow-hidden">
-              {/* Page number */}
-              <div className="text-center mb-2 sm:mb-3 flex-shrink-0">
-                <span
-                  className="inline-block px-3 sm:px-4 py-1 bg-purple-500/20 text-purple-700 rounded-full text-xs sm:text-sm font-bold"
-                  style={{ fontFamily: '"Comic Sans MS", "Chalkboard", cursive' }}
-                >
-                  Page {currentPage + 1} of {totalPages}
-                </span>
-              </div>
+          // Single page text component
+          const SingleTextSection = ({ pageIndex, isFullWidth = false }) => {
+            const pageText = currentStory.pages?.[pageIndex]?.text || 'Loading...'
+            const textLength = pageText.length
 
-              {/* Story text - contained within boundaries */}
-              <div className="flex-1 flex items-center justify-center overflow-hidden min-h-0">
-                <div
-                  className="text-sm sm:text-base md:text-lg lg:text-xl text-center leading-relaxed space-y-2 sm:space-y-3 px-2 max-h-full overflow-y-auto"
-                  style={{ fontFamily: 'Georgia, "Times New Roman", serif', lineHeight: '1.7' }}
-                >
-                  {(currentStory.pages?.[currentPage]?.text || 'Loading...').split('\n').map((line, idx) => (
-                    <p key={idx} className="text-gray-900 font-medium">{line}</p>
-                  ))}
+            const getFontSizeClass = () => {
+              if (isFullWidth) {
+                // Full width/height single page (next to image) - can use larger fonts
+                if (textLength > 400) return isRTL ? 'text-lg sm:text-xl md:text-2xl' : 'text-base sm:text-lg md:text-xl'
+                if (textLength > 300) return isRTL ? 'text-xl sm:text-2xl md:text-3xl' : 'text-lg sm:text-xl md:text-2xl'
+                return isRTL ? 'text-2xl sm:text-3xl md:text-4xl' : 'text-xl sm:text-2xl md:text-3xl'
+              }
+              // Half width (in text-only spread, side by side)
+              if (textLength > 350) return isRTL ? 'text-base sm:text-lg md:text-xl' : 'text-sm sm:text-base md:text-lg'
+              if (textLength > 250) return isRTL ? 'text-lg sm:text-xl md:text-2xl' : 'text-base sm:text-lg md:text-xl'
+              return isRTL ? 'text-xl sm:text-2xl md:text-3xl' : 'text-lg sm:text-xl md:text-2xl'
+            }
+
+            return (
+              <div className={`${isFullWidth ? 'w-full' : 'w-full md:w-1/2'} bg-gradient-to-br from-amber-50 to-orange-50 p-4 sm:p-6 md:p-8 flex flex-col h-full overflow-hidden`} dir={isRTL ? 'rtl' : 'ltr'}>
+                <div className="text-center mb-3 sm:mb-4 flex-shrink-0">
+                  <span
+                    className="inline-block px-4 sm:px-5 py-1.5 bg-purple-500/20 text-purple-700 rounded-full text-sm sm:text-base font-bold"
+                    style={{ fontFamily: '"Comic Sans MS", "Chalkboard", cursive' }}
+                  >
+                    {t('studio.plotWorld.reader.page')} {pageIndex + 1}
+                  </span>
+                </div>
+                <div className="flex-1 flex items-center justify-center overflow-hidden min-h-0">
+                  <div
+                    className={`text-center leading-relaxed space-y-3 sm:space-y-4 px-4 sm:px-6 md:px-8 max-h-full overflow-y-auto ${getFontSizeClass()}`}
+                    style={{
+                      fontFamily: isRTL ? '"David Libre", "Frank Ruhl Libre", Georgia, serif' : 'Georgia, "Times New Roman", serif',
+                      lineHeight: isRTL ? '1.9' : '1.7'
+                    }}
+                  >
+                    {pageText.split('\n').map((line, idx) => (
+                      <p key={idx} className="text-gray-900 font-medium">{line}</p>
+                    ))}
+                  </div>
                 </div>
               </div>
+            )
+          }
 
-              {/* Navigation dots */}
-              <div className="flex justify-center gap-1.5 sm:gap-2 mt-2 sm:mt-3 flex-shrink-0">
-                {Array.from({ length: totalPages }).map((_, idx) => (
-                  <button
-                    key={idx}
-                    onClick={() => setCurrentPage(idx)}
-                    className={`w-2 h-2 sm:w-2.5 sm:h-2.5 md:w-3 md:h-3 rounded-full transition-all ${
-                      idx === currentPage
-                        ? 'bg-purple-500 scale-125'
-                        : 'bg-purple-300 hover:bg-purple-400'
-                    }`}
-                  />
-                ))}
-              </div>
+          // Navigation dots component
+          const NavigationDots = () => (
+            <div className="flex justify-center gap-1.5 sm:gap-2 mt-2 sm:mt-3 flex-shrink-0">
+              {Array.from({ length: totalSpreads }).map((_, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => setCurrentPage(idx)}
+                  className={`w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full transition-all ${
+                    idx === currentPage
+                      ? 'bg-purple-500 scale-125'
+                      : 'bg-purple-300 hover:bg-purple-400'
+                  }`}
+                />
+              ))}
             </div>
           )
 
           return (
             <div className="w-full max-w-5xl mx-auto px-2 sm:px-4 md:h-[calc(100vh-120px)] md:flex md:items-center md:justify-center">
-              {/* Book Container with frame - fits viewport on tablet/desktop */}
               <div className="relative bg-gradient-to-br from-amber-800/20 to-amber-700/20 rounded-3xl p-2 sm:p-3 shadow-2xl border-4 border-amber-600/40 w-full md:max-h-[calc(100vh-140px)]">
 
-                {/* Close button - Red X in upper left */}
+                {/* Close button */}
                 <button
                   onClick={resetWizard}
                   className="absolute -top-3 -left-3 sm:-top-4 sm:-left-4 z-20 w-10 h-10 sm:w-12 sm:h-12 bg-red-500 hover:bg-red-600 rounded-full flex items-center justify-center shadow-lg transition-all hover:scale-110"
@@ -2350,7 +2446,7 @@ function PlotWorldContent({ childId, child, initialCharacter, onCharacterUsed, u
 
                 {/* Inner book pages */}
                 <div className="bg-gradient-to-br from-amber-50 to-orange-50 rounded-2xl overflow-hidden shadow-inner flex flex-col md:max-h-[calc(100vh-180px)]">
-                  {/* Story Title - Cute childish font style */}
+                  {/* Story Title */}
                   <div className="bg-gradient-to-r from-pink-400 via-purple-400 to-blue-400 py-2 sm:py-3 px-4 sm:px-6 flex-shrink-0">
                     <h1
                       className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-black text-white text-center drop-shadow-lg"
@@ -2364,77 +2460,106 @@ function PlotWorldContent({ childId, child, initialCharacter, onCharacterUsed, u
                     </h1>
                   </div>
 
-                  {/* Book content - Flexible height that fits viewport */}
-                  {isTheEndPage ? (
-                    /* THE END page - Full width, centered */
-                    <div className="flex flex-col items-center justify-center min-h-[350px] sm:min-h-[400px] md:min-h-[300px] md:flex-1 bg-gradient-to-br from-amber-100 via-orange-50 to-pink-100 p-6 sm:p-8 relative overflow-hidden">
-                      {/* Decorative stars */}
-                      <div className="absolute top-20 left-10 text-4xl animate-pulse">✨</div>
-                      <div className="absolute top-32 right-16 text-3xl animate-pulse delay-300">⭐</div>
-                      <div className="absolute bottom-32 left-20 text-3xl animate-pulse delay-500">🌟</div>
-                      <div className="absolute bottom-20 right-10 text-4xl animate-pulse delay-700">✨</div>
+                  {/* Book content */}
+                  {spreadConfig.type === 'end' ? (
+                    /* THE END spread with final image */
+                    <div className="flex flex-col md:flex-row min-h-[350px] sm:min-h-[400px] md:min-h-[300px] md:flex-1">
+                      <ImageSection imgIndex={spreadConfig.imageIndex} />
+                      <div className="hidden md:block w-0.5 bg-amber-200" />
+                      <div className="w-full md:w-1/2 flex flex-col items-center justify-center bg-gradient-to-br from-amber-100 via-orange-50 to-pink-100 p-6 sm:p-8 relative overflow-hidden">
+                        {/* Decorative sparkle icons */}
+                        <svg className="absolute top-8 left-6 w-6 h-6 sm:w-8 sm:h-8 text-amber-400 animate-pulse" fill="currentColor" viewBox="0 0 24 24">
+                          <path d="M12 0L14.59 9.41L24 12L14.59 14.59L12 24L9.41 14.59L0 12L9.41 9.41L12 0Z" />
+                        </svg>
+                        <svg className="absolute top-14 right-8 w-5 h-5 sm:w-6 sm:h-6 text-purple-400 animate-pulse" style={{ animationDelay: '300ms' }} fill="currentColor" viewBox="0 0 24 24">
+                          <path d="M12 0L14.59 9.41L24 12L14.59 14.59L12 24L9.41 14.59L0 12L9.41 9.41L12 0Z" />
+                        </svg>
+                        <svg className="absolute bottom-20 left-10 w-5 h-5 sm:w-7 sm:h-7 text-pink-400 animate-pulse" style={{ animationDelay: '500ms' }} fill="currentColor" viewBox="0 0 24 24">
+                          <path d="M12 0L14.59 9.41L24 12L14.59 14.59L12 24L9.41 14.59L0 12L9.41 9.41L12 0Z" />
+                        </svg>
+                        <svg className="absolute bottom-12 right-6 w-6 h-6 sm:w-8 sm:h-8 text-blue-400 animate-pulse" style={{ animationDelay: '700ms' }} fill="currentColor" viewBox="0 0 24 24">
+                          <path d="M12 0L14.59 9.41L24 12L14.59 14.59L12 24L9.41 14.59L0 12L9.41 9.41L12 0Z" />
+                        </svg>
 
-                      {/* The End text */}
-                      <div className="text-center relative">
                         <h2
-                          className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-black bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 bg-clip-text text-transparent mb-6"
+                          className="text-4xl sm:text-5xl md:text-6xl font-black bg-gradient-to-r from-amber-500 via-orange-500 to-pink-500 bg-clip-text text-transparent mb-6"
                           style={{
-                            fontFamily: '"Comic Sans MS", "Chalkboard", "Comic Neue", cursive',
-                            textShadow: '4px 4px 8px rgba(0,0,0,0.1)'
+                            fontFamily: 'Georgia, "Times New Roman", serif',
+                            fontStyle: 'italic',
+                            letterSpacing: '0.02em'
                           }}
                         >
-                          The End
+                          {t('studio.plotWorld.reader.theEnd')}
                         </h2>
-                        <div className="flex items-center justify-center gap-4 mb-8">
-                          <span className="text-3xl sm:text-4xl">🎉</span>
-                          <span className="text-3xl sm:text-4xl">📚</span>
-                          <span className="text-3xl sm:text-4xl">🎉</span>
+                        <div className="flex items-center justify-center gap-4 mb-6">
+                          {/* Book icon */}
+                          <svg className="w-8 h-8 sm:w-10 sm:h-10 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" />
+                          </svg>
+                          {/* Heart icon */}
+                          <svg className="w-7 h-7 sm:w-9 sm:h-9 text-pink-500" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+                          </svg>
+                          {/* Star icon */}
+                          <svg className="w-8 h-8 sm:w-10 sm:h-10 text-amber-500" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                          </svg>
                         </div>
-                        <p
-                          className="text-lg sm:text-xl md:text-2xl text-purple-700 max-w-md mx-auto"
-                          style={{ fontFamily: '"Comic Sans MS", "Chalkboard", cursive' }}
-                        >
-                          Thank you for reading!
-                        </p>
-                        <p
-                          className="text-base sm:text-lg text-purple-500 mt-2"
-                          style={{ fontFamily: '"Comic Sans MS", "Chalkboard", cursive' }}
-                        >
-                          We hope you enjoyed {currentStory.characters?.name || 'this'}'s adventure! 💜
-                        </p>
+                        <NavigationDots />
                       </div>
-
-                      {/* Navigation dots */}
-                      <div className="flex justify-center gap-1.5 sm:gap-2 mt-8">
-                        {Array.from({ length: totalPages }).map((_, idx) => (
-                          <button
-                            key={idx}
-                            onClick={() => setCurrentPage(idx)}
-                            className={`w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full transition-all ${
-                              idx === currentPage
-                                ? 'bg-purple-500 scale-125'
-                                : 'bg-purple-300 hover:bg-purple-400'
-                            }`}
-                          />
-                        ))}
+                    </div>
+                  ) : spreadConfig.type === 'image-text' ? (
+                    /* Image + Single page text spread */
+                    <div className="flex flex-col md:flex-row min-h-[350px] sm:min-h-[400px] md:min-h-[450px] md:flex-1">
+                      <ImageSection imgIndex={spreadConfig.imageIndex} />
+                      <div className="hidden md:block w-0.5 bg-amber-200" />
+                      <div className="w-full md:w-1/2 flex flex-col bg-gradient-to-br from-amber-50 to-orange-50" dir={isRTL ? 'rtl' : 'ltr'}>
+                        {/* Single story page with full height - allow scrolling for long text */}
+                        <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
+                          <div className="text-center py-3 sm:py-4 flex-shrink-0">
+                            <span
+                              className="inline-block px-4 sm:px-5 py-1.5 bg-purple-500/20 text-purple-700 rounded-full text-sm sm:text-base font-bold"
+                              style={{ fontFamily: '"Comic Sans MS", "Chalkboard", cursive' }}
+                            >
+                              {t('studio.plotWorld.reader.page')} {spreadConfig.storyPage + 1}
+                            </span>
+                          </div>
+                          <div className="flex-1 overflow-y-auto px-4 sm:px-6 md:px-8 pb-4">
+                            <div
+                              className={`text-center leading-relaxed space-y-3 sm:space-y-4 ${
+                                (currentStory.pages?.[spreadConfig.storyPage]?.text?.length || 0) > 400
+                                  ? (isRTL ? 'text-base sm:text-lg md:text-xl' : 'text-sm sm:text-base md:text-lg')
+                                  : (currentStory.pages?.[spreadConfig.storyPage]?.text?.length || 0) > 300
+                                    ? (isRTL ? 'text-lg sm:text-xl md:text-2xl' : 'text-base sm:text-lg md:text-xl')
+                                    : (isRTL ? 'text-xl sm:text-2xl md:text-3xl' : 'text-lg sm:text-xl md:text-2xl')
+                              }`}
+                              style={{
+                                fontFamily: isRTL ? '"David Libre", "Frank Ruhl Libre", Georgia, serif' : 'Georgia, "Times New Roman", serif',
+                                lineHeight: isRTL ? '1.9' : '1.7'
+                              }}
+                            >
+                              {(currentStory.pages?.[spreadConfig.storyPage]?.text || 'Loading...').split('\n').map((line, idx) => (
+                                <p key={idx} className="text-gray-900 font-medium">{line}</p>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+                        <div className="py-2 sm:py-3 flex-shrink-0 border-t border-amber-200/50">
+                          <NavigationDots />
+                        </div>
                       </div>
                     </div>
                   ) : (
-                    /* Regular story pages with alternating image position - Flexible height */
-                    <div className="flex flex-col md:flex-row min-h-[350px] sm:min-h-[400px] md:min-h-[300px] md:flex-1">
-                      {isImageOnLeft ? (
-                        <>
-                          <ImageSection />
-                          <div className="hidden md:block w-0.5 bg-amber-200" />
-                          <TextSection />
-                        </>
-                      ) : (
-                        <>
-                          <TextSection />
-                          <div className="hidden md:block w-0.5 bg-amber-200" />
-                          <ImageSection />
-                        </>
-                      )}
+                    /* Text-only spread - two pages side by side (gives time for next image to load) */
+                    <div className="flex flex-col min-h-[350px] sm:min-h-[400px] md:min-h-[300px] md:flex-1">
+                      <div className="flex-1 flex flex-col md:flex-row" dir={isRTL ? 'rtl' : 'ltr'}>
+                        <SingleTextSection pageIndex={spreadConfig.storyPages[0]} isFullWidth={false} />
+                        <div className="hidden md:block w-0.5 bg-amber-200" />
+                        <SingleTextSection pageIndex={spreadConfig.storyPages[1]} isFullWidth={false} />
+                      </div>
+                      <div className="bg-gradient-to-br from-amber-50 to-orange-50 py-3">
+                        <NavigationDots />
+                      </div>
                     </div>
                   )}
 
@@ -2443,28 +2568,28 @@ function PlotWorldContent({ childId, child, initialCharacter, onCharacterUsed, u
                     <button
                       onClick={() => setCurrentPage(Math.max(0, currentPage - 1))}
                       disabled={currentPage === 0}
-                      className="flex items-center gap-1 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 bg-purple-500 hover:bg-purple-600 text-white rounded-full font-bold text-sm transition-all disabled:opacity-30 disabled:cursor-not-allowed shadow-lg hover:shadow-xl disabled:hover:shadow-lg"
+                      className={`flex items-center gap-1 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 bg-purple-500 hover:bg-purple-600 text-white rounded-full font-bold text-sm transition-all disabled:opacity-30 disabled:cursor-not-allowed shadow-lg hover:shadow-xl disabled:hover:shadow-lg ${isRTL ? 'flex-row-reverse' : ''}`}
                       style={{ fontFamily: '"Comic Sans MS", "Chalkboard", cursive' }}
                     >
-                      <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                      <svg className={`w-4 h-4 sm:w-5 sm:h-5 ${isRTL ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
                         <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
                       </svg>
-                      <span className="hidden sm:inline">Previous</span>
+                      <span className="hidden sm:inline">{t('common.buttons.previous')}</span>
                     </button>
 
-                    {/* Page indicator */}
+                    {/* Spread indicator */}
                     <span className="text-purple-700 font-bold text-xs sm:text-sm" style={{ fontFamily: '"Comic Sans MS", "Chalkboard", cursive' }}>
-                      {currentPage + 1} / {totalPages}
+                      {currentPage + 1} / {totalSpreads}
                     </span>
 
                     <button
-                      onClick={() => setCurrentPage(Math.min(totalPages - 1, currentPage + 1))}
-                      disabled={currentPage >= totalPages - 1}
-                      className="flex items-center gap-1 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 bg-purple-500 hover:bg-purple-600 text-white rounded-full font-bold text-sm transition-all disabled:opacity-30 disabled:cursor-not-allowed shadow-lg hover:shadow-xl disabled:hover:shadow-lg"
+                      onClick={() => setCurrentPage(Math.min(totalSpreads - 1, currentPage + 1))}
+                      disabled={currentPage >= totalSpreads - 1}
+                      className={`flex items-center gap-1 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 bg-purple-500 hover:bg-purple-600 text-white rounded-full font-bold text-sm transition-all disabled:opacity-30 disabled:cursor-not-allowed shadow-lg hover:shadow-xl disabled:hover:shadow-lg ${isRTL ? 'flex-row-reverse' : ''}`}
                       style={{ fontFamily: '"Comic Sans MS", "Chalkboard", cursive' }}
                     >
-                      <span className="hidden sm:inline">Next</span>
-                      <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                      <span className="hidden sm:inline">{t('common.buttons.next')}</span>
+                      <svg className={`w-4 h-4 sm:w-5 sm:h-5 ${isRTL ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
                         <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
                       </svg>
                     </button>
@@ -2485,17 +2610,17 @@ function PlotWorldContent({ childId, child, initialCharacter, onCharacterUsed, u
           >
             <div className="text-center mb-6">
               <div className="text-5xl mb-4">🗑️</div>
-              <h3 className="text-xl font-bold mb-2">Delete Story?</h3>
+              <h3 className="text-xl font-bold mb-2">{t('studio.plotWorld.deleteStory.title')}</h3>
               <p className="text-gray-400">
-                Are you sure you want to delete "{deleteStoryConfirm.title || 'Untitled Story'}"? This action cannot be undone.
+                {t('studio.plotWorld.deleteStory.confirmText')}
               </p>
             </div>
-            <div className="flex gap-3">
+            <div className={`flex gap-3 ${isRTL ? 'flex-row-reverse' : ''}`}>
               <button
                 onClick={() => setDeleteStoryConfirm(null)}
                 className="flex-1 py-3 border border-white/20 rounded-xl font-semibold hover:bg-white/5 transition-all"
               >
-                Cancel
+                {t('studio.plotWorld.deleteStory.cancel')}
               </button>
               <button
                 onClick={() => handleDeleteStory(deleteStoryConfirm.id)}
@@ -2505,10 +2630,10 @@ function PlotWorldContent({ childId, child, initialCharacter, onCharacterUsed, u
                 {isDeletingStory ? (
                   <>
                     <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                    Deleting...
+                    {t('common.buttons.deleting')}
                   </>
                 ) : (
-                  'Delete Story'
+                  t('studio.plotWorld.deleteStory.delete')
                 )}
               </button>
             </div>

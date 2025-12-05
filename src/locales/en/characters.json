@@ -1,0 +1,59 @@
+{
+  "fusionLab": "Fusion Lab",
+  "create": {
+    "title": "Create New Character",
+    "step1": {
+      "title": "Name Your Character",
+      "nameLabel": "Character Name",
+      "namePlaceholder": "Detective Dash, Captain Whiskers...",
+      "chooseAnimal": "Choose Animal Type",
+      "next": "Next: Choose Style"
+    },
+    "step2": {
+      "title": "Choose Your Favorite Art Style",
+      "subtitle": "Pick the style that reminds you of your favorite shows!",
+      "next": "Next: Choose Personality"
+    },
+    "step3": {
+      "title": "Choose Personality Traits",
+      "subtitle": "Select at least 1 trait",
+      "next": "Next: Choose Outfit"
+    },
+    "step4": {
+      "title": "Choose an Outfit (Optional)",
+      "customOutfit": "Or describe a custom outfit",
+      "customPlaceholder": "Describe a custom outfit...",
+      "createButton": "Create Character",
+      "generating": "Generating..."
+    },
+    "back": "Back"
+  },
+  "list": {
+    "title": "Your Characters",
+    "empty": {
+      "title": "No characters yet",
+      "description": "Create your first character!"
+    },
+    "createNew": "Create New Character"
+  },
+  "card": {
+    "delete": "Delete",
+    "deleting": "Deleting...",
+    "confirmDelete": "Are you sure you want to delete this character?"
+  },
+  "preview": {
+    "title": "Character Preview"
+  },
+  "goToStory": "Create a Story with {name}",
+  "errors": {
+    "nameRequired": "Please enter a character name",
+    "selectAnimal": "Please select an animal type",
+    "selectStyle": "Please select an art style",
+    "selectTrait": "Please select at least one personality trait",
+    "generationFailed": "Failed to generate character. Please try again."
+  },
+  "success": {
+    "created": "Character created successfully!",
+    "deleted": "Character deleted"
+  }
+}

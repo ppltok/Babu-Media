@@ -1,0 +1,262 @@
+{
+  "sidebar": {
+    "fusionLab": "מעבדת היצירה",
+    "plotWorld": "עולם הסיפורים",
+    "parentAccount": "חשבון הורה",
+    "settingsAndSubscription": "הגדרות ומנוי",
+    "signOut": "התנתקות",
+    "expandSidebar": "הרחב סרגל צד",
+    "collapseSidebar": "כווץ סרגל צד",
+    "addChild": "הוסף ילד",
+    "yearsOld": "שנים"
+  },
+  "welcome": {
+    "title": "ברוכים הבאים לבאבו מדיה!",
+    "description": "כדי להתחיל ליצור דמויות וסיפורים קסומים, קודם הוסיפו פרופיל ילד.",
+    "addChildButton": "הוסף פרופיל ילד"
+  },
+  "deleteChild": {
+    "title": "להסיר פרופיל ילד?",
+    "confirmText": "האם אתם בטוחים שברצונכם להסיר את",
+    "warning": "פעולה זו תמחק גם את כל הדמויות והסיפורים שלהם. לא ניתן לבטל פעולה זו.",
+    "cancel": "ביטול",
+    "remove": "הסר"
+  },
+  "fusionLab": {
+    "title": " - מעבדת היצירה",
+    "subtitle": "צרו דמויות קסומות עם בינה מלאכותית",
+    "createNewCharacter": "צור דמות חדשה",
+    "upgradeTitle": "שדרגו למסלול יוצר",
+    "deleteCharacter": {
+      "title": "למחוק דמות?",
+      "confirmText": "האם אתם בטוחים שברצונכם למחוק את",
+      "warning": "לא ניתן לבטל פעולה זו.",
+      "cancel": "ביטול",
+      "delete": "מחק"
+    },
+    "characterDetail": {
+      "createStory": "צור סיפור",
+      "animalType": "סוג חיה",
+      "visualStyle": "סגנון ויזואלי",
+      "personalityTraits": "תכונות אישיות",
+      "outfit": "תלבושת",
+      "created": "נוצר",
+      "deleteCharacter": "מחק דמות"
+    },
+    "step1": {
+      "characterName": "שם הדמות",
+      "characterNamePlaceholder": "בלש דש, קפטן שפם...",
+      "chooseAnimalType": "בחרו סוג חיה",
+      "orTypeYourOwn": "או הקלידו משלכם",
+      "customAnimalPlaceholder": "בורדר קולי, דינוזאור, פניקס, פינגווין...",
+      "customAnimalHint": "הקלידו כל גזע חיה או יצור - אמיתי או דמיוני!",
+      "nextButton": "הבא: בחירת סגנון"
+    },
+    "step2": {
+      "chooseArtStyle": "בחרו את סגנון האמנות האהוב עליכם",
+      "artStyleHint": "בחרו את הסגנון שמזכיר לכם את הסדרות האהובות!",
+      "back": "חזרה",
+      "nextButton": "הבא: אישיות"
+    },
+    "step3": {
+      "chooseTraits": "בחרו תכונות אישיות",
+      "traitsHint": "בחרו עד 4 תכונות שמתארות את הדמות שלכם",
+      "selected": "נבחרו",
+      "back": "חזרה",
+      "nextButton": "הבא: תלבושת"
+    },
+    "step4": {
+      "chooseOutfit": "בחרו תלבושת",
+      "orDescribeOwn": "או תארו משלכם",
+      "customOutfitPlaceholder": "תארו תלבושת מותאמת אישית...",
+      "characterPreview": "תצוגה מקדימה של הדמות",
+      "style": "סגנון",
+      "outfit": "תלבושת",
+      "back": "חזרה",
+      "bringToLife": "הביאו לחיים!"
+    },
+    "generating": {
+      "creatingMagic": "יוצרים קסם...",
+      "comingToLife": "מתעוררת לחיים!",
+      "timeEstimate": "זה בדרך כלל לוקח 10-20 שניות"
+    },
+    "success": {
+      "isReady": "מוכנה!",
+      "createdWithMagic": "הדמות שלכם נוצרה עם קסם בינה מלאכותית!",
+      "savedWaiting": "הדמות שלכם נשמרה. יצירת התמונה עשויה לקחת רגע.",
+      "buildFirstStory": "בואו נבנה את הסיפור הראשון שלכם עם"
+    },
+    "characters": "דמויות",
+    "noCharactersYet": "אין עדיין דמויות. צרו את הראשונה!",
+    "loadingMessages": [
+      "מערבבים את מרכיבי הקסם...",
+      "מוסיפים מעט אישיות...",
+      "צובעים עם דמיון...",
+      "מביאים את הדמות לחיים...",
+      "כמעט מוכנים להכיר אתכם...",
+      "הקסם קורה...",
+      "יוצרים משהו מדהים...",
+      "הדמות שלכם מתעוררת..."
+    ],
+    "animals": {
+      "fox": "שועל",
+      "wolf": "זאב",
+      "raccoon": "דביבון",
+      "unicorn": "חד קרן",
+      "lion": "אריה",
+      "owl": "ינשוף",
+      "dragon": "דרקון",
+      "bunny": "ארנבון",
+      "cat": "חתול",
+      "dog": "כלב",
+      "bear": "דוב",
+      "panda": "פנדה",
+      "custom": "מותאם אישית"
+    },
+    "styles": {
+      "pixar": "פיקסאר/דיסני",
+      "dreamworks": "דרימוורקס",
+      "ghibli": "סטודיו ג'יבלי",
+      "cartoonNetwork": "קרטון נטוורק",
+      "nickelodeon": "ניקלודיאון",
+      "anime": "סגנון אנימה",
+      "disneyClassic": "דיסני קלאסי",
+      "illumination": "אילומינציה"
+    },
+    "traits": {
+      "brave": "אמיץ",
+      "curious": "סקרן",
+      "kind": "טוב לב",
+      "clever": "חכם",
+      "playful": "שובב",
+      "wise": "נבון",
+      "gentle": "עדין",
+      "bold": "נועז",
+      "creative": "יצירתי",
+      "loyal": "נאמן",
+      "funny": "מצחיק",
+      "adventurous": "הרפתקן",
+      "shy": "ביישן",
+      "confident": "בטוח בעצמו",
+      "caring": "אכפתי",
+      "magical": "קסום"
+    },
+    "outfits": {
+      "superhero": "גלימת גיבור על",
+      "detective": "בלש",
+      "princess": "נסיכה/נסיך",
+      "pirate": "פיראט",
+      "astronaut": "אסטרונאוט",
+      "wizard": "קוסם/מכשפה",
+      "sports": "כוכב ספורט",
+      "artist": "אמן",
+      "scientist": "מדען",
+      "ninja": "נינג'ה",
+      "fairy": "פיה",
+      "casual": "יומיומי"
+    }
+  },
+  "plotWorld": {
+    "title": " - עולם הסיפורים",
+    "subtitle": "צרו סיפורים קסומים עם הדמויות שלכם",
+    "backToStories": "← חזרה לסיפורים",
+    "upgradeTitle": "שדרגו למסלול יוצר",
+    "noCharacters": {
+      "title": "אין עדיין דמויות",
+      "description": "לפני יצירת סיפורים, צריך ליצור כמה דמויות במעבדת היצירה. הדמויות שלכם יהיו הכוכבים של הסיפורים!"
+    },
+    "createNewStory": "צור סיפור חדש",
+    "noStories": {
+      "title": "אין עדיין סיפורים",
+      "description": "לחצו על הכפתור למעלה כדי ליצור את ההרפתקה הקסומה הראשונה שלכם!"
+    },
+    "storyCard": {
+      "untitled": "סיפור ללא שם",
+      "starring": "בכיכוב",
+      "unknown": "לא ידוע",
+      "deleteStory": "מחק סיפור"
+    },
+    "deleteStory": {
+      "title": "למחוק סיפור?",
+      "confirmText": "האם אתם בטוחים שברצונכם למחוק את הסיפור הזה? לא ניתן לבטל פעולה זו.",
+      "cancel": "ביטול",
+      "delete": "מחק"
+    },
+    "step1": {
+      "title": "בחרו את הגיבור שלכם",
+      "subtitle": "מי יהיה הכוכב של הרפתקת היום?",
+      "nextButton": "הבא: בחירת הרפתקה"
+    },
+    "step2": {
+      "title": "מה ההרפתקה של היום?",
+      "subtitle": "בחרו את סוג ההרפתקה עבור",
+      "orDescribeOwn": "או תארו משלכם",
+      "customAdventurePlaceholder": "תארו הרפתקה מותאמת אישית...",
+      "back": "חזרה",
+      "nextButton": "הבא: אפשרויות סיפור"
+    },
+    "step3": {
+      "title": "להוסיף רגע למידה?",
+      "subtitle": "האם תרצו שהסיפור ילמד ערך חשוב?",
+      "yesAddLesson": "כן, הוסיפו שיעור",
+      "noJustFun": "לא, רק כיף!",
+      "chooseLessonTitle": "בחרו שיעור",
+      "chooseLessonSubtitle": "מה תרצו שהסיפור ילמד?",
+      "orDescribeOwn": "או תארו משלכם",
+      "customLessonPlaceholder": "תארו שיעור מותאם אישית...",
+      "back": "חזרה",
+      "nextButton": "הבא: סקירה"
+    },
+    "step4": {
+      "title": "מוכנים ליצירה!",
+      "subtitle": "הנה מה שאנחנו יוצרים",
+      "hero": "גיבור",
+      "adventure": "הרפתקה",
+      "lesson": "שיעור",
+      "noLesson": "ללא שיעור ספציפי",
+      "back": "חזרה",
+      "createButton": "צרו את הסיפור שלי!"
+    },
+    "generating": {
+      "adventureBegins": " - ההרפתקה מתחילה...",
+      "storyBeingWritten": "היה היה פעם... הסיפור נכתב!",
+      "paintingOpening": "צובעים את סצנת הפתיחה...",
+      "creatingAdventure": "יוצרים את רגע ההרפתקה...",
+      "addingFinale": "מוסיפים את הסיום הקסום...",
+      "creatingIllustration": "יוצרים איור",
+      "showAboutToBegin": "ההצגה עומדת להתחיל!",
+      "somethingWentWrong": "משהו השתבש. אנא נסו שוב.",
+      "personalizedHeader": " - הסיפור נוצר!"
+    },
+    "adventures": {
+      "space": { "label": "הרפתקת חלל", "desc": "מסע בין הכוכבים והכוכבי לכת" },
+      "underwater": { "label": "גילוי תת-ימי", "desc": "חקרו את מעמקי האוקיינוס הקסום" },
+      "forest": { "label": "יער קסום", "desc": "הרפתקאות ביער קסום" },
+      "castle": { "label": "משימה מלכותית", "desc": "הרפתקה מלכותית בממלכה קסומה" },
+      "dinosaurs": { "label": "ארץ הדינוזאורים", "desc": "מסע אחורה לזמנים הפרהיסטוריים" },
+      "superheroes": { "label": "משימת גיבורי על", "desc": "הצילו את היום עם כוחות מיוחדים" },
+      "pirates": { "label": "אוצר פיראטים", "desc": "חפשו אוצר נסתר בלב ים" },
+      "candy": { "label": "עולם הממתקים", "desc": "הרפתקה מתוקה בארץ הפינוקים" }
+    },
+    "morals": {
+      "kindness": { "label": "להיות טוב לב", "desc": "ללמוד להיות טוב לב ולעזור לאחרים" },
+      "bravery": { "label": "להתגבר על פחד", "desc": "להיות אמיץ גם כשמפחדים" },
+      "friendship": { "label": "לעשות חברים", "desc": "איך לעשות ולשמור על חברים טובים" },
+      "honesty": { "label": "לדבר אמת", "desc": "החשיבות של להיות כנה" },
+      "sharing": { "label": "ללמוד לשתף", "desc": "השמחה בשיתוף עם אחרים" },
+      "newplace": { "label": "התחלות חדשות", "desc": "להסתגל למקום או לבית ספר חדש" },
+      "patience": { "label": "להיות סבלן", "desc": "דברים טובים מגיעים למי שמחכה" },
+      "trying": { "label": "לעולם לא לוותר", "desc": "להמשיך לנסות גם כשקשה" },
+      "different": { "label": "להיות שונה", "desc": "לחגוג את מה שהופך אותך מיוחד" },
+      "goodbye": { "label": "לומר שלום", "desc": "להתמודד עם פרידות ואובדן" }
+    },
+    "reader": {
+      "backToStories": "← חזרה לסיפורים",
+      "creatingIllustration": "יוצרים איור...",
+      "theEnd": "הסוף",
+      "readAgain": "קראו שוב",
+      "createAnother": "צרו סיפור נוסף",
+      "page": "עמוד"
+    }
+  }
+}

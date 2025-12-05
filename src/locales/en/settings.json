@@ -1,0 +1,52 @@
+{
+  "pageTitle": "Settings",
+  "backToDashboard": "Back to Dashboard",
+  "account": {
+    "title": "Account",
+    "email": "Email",
+    "memberSince": "Member since"
+  },
+  "language": {
+    "title": "Language",
+    "description": "Choose your preferred language for the app",
+    "english": "English",
+    "hebrew": "עברית"
+  },
+  "subscription": {
+    "title": "Subscription",
+    "currentPlan": "Current Plan",
+    "free": "Free",
+    "active": "Active",
+    "yourUsage": "Your Usage",
+    "children": "Children",
+    "characters": "Characters",
+    "stories": "Stories",
+    "monthly": "monthly",
+    "weekly": "weekly",
+    "upgradeToCreator": "Upgrade to Creator - $9.99/mo",
+    "upgradeToPro": "Upgrade to Pro - $19.99/mo",
+    "manageSubscription": "Manage Subscription",
+    "manageNote": "Click \"Manage Subscription\" to update payment method, change plan, or cancel."
+  },
+  "planComparison": {
+    "title": "Plan Comparison",
+    "feature": "Feature",
+    "explorer": "Explorer",
+    "creator": "Creator",
+    "pro": "Pro",
+    "childProfiles": "Child Profiles",
+    "characters": "Characters",
+    "stories": "Stories",
+    "storage": "Storage",
+    "unlimited": "Unlimited",
+    "total": "total",
+    "perMonth": "/month",
+    "perWeek": "/week",
+    "basic": "Basic",
+    "extended": "Extended"
+  },
+  "accountActions": {
+    "title": "Account Actions",
+    "signOut": "Sign Out"
+  }
+}

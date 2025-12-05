@@ -1,0 +1,98 @@
+{
+  "navigation": {
+    "home": "Home",
+    "dashboard": "Dashboard",
+    "fusionLab": "Fusion Lab",
+    "plotWorld": "Plot World",
+    "settings": "Settings",
+    "signOut": "Sign Out"
+  },
+  "buttons": {
+    "create": "Create",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "close": "Close",
+    "back": "Back",
+    "next": "Next",
+    "previous": "Previous",
+    "loading": "Loading...",
+    "saving": "Saving...",
+    "deleting": "Deleting..."
+  },
+  "forms": {
+    "required": "Required",
+    "email": "Email",
+    "password": "Password",
+    "confirmPassword": "Confirm Password",
+    "name": "Name"
+  },
+  "errors": {
+    "generic": "Something went wrong",
+    "required": "This field is required",
+    "invalidEmail": "Please enter a valid email",
+    "passwordMismatch": "Passwords do not match",
+    "passwordTooShort": "Password must be at least 6 characters"
+  },
+  "success": {
+    "saved": "Saved successfully",
+    "deleted": "Deleted successfully",
+    "created": "Created successfully"
+  },
+  "animals": {
+    "fox": "Fox",
+    "wolf": "Wolf",
+    "raccoon": "Raccoon",
+    "unicorn": "Unicorn",
+    "lion": "Lion",
+    "owl": "Owl",
+    "dragon": "Dragon",
+    "bunny": "Bunny",
+    "cat": "Cat",
+    "dog": "Dog",
+    "bear": "Bear",
+    "panda": "Panda"
+  },
+  "traits": {
+    "brave": "Brave",
+    "curious": "Curious",
+    "kind": "Kind",
+    "clever": "Clever",
+    "playful": "Playful",
+    "wise": "Wise",
+    "gentle": "Gentle",
+    "bold": "Bold",
+    "creative": "Creative",
+    "loyal": "Loyal",
+    "funny": "Funny",
+    "adventurous": "Adventurous",
+    "shy": "Shy",
+    "confident": "Confident",
+    "caring": "Caring",
+    "magical": "Magical"
+  },
+  "artStyles": {
+    "pixar": "Pixar/Disney",
+    "dreamworks": "DreamWorks",
+    "ghibli": "Studio Ghibli",
+    "cartoonNetwork": "Cartoon Network",
+    "nickelodeon": "Nickelodeon",
+    "anime": "Anime Style",
+    "disneyClassic": "Disney Classic",
+    "illumination": "Illumination"
+  },
+  "outfits": {
+    "superheroCape": "Superhero Cape",
+    "detective": "Detective",
+    "princessPrince": "Princess/Prince",
+    "pirate": "Pirate",
+    "astronaut": "Astronaut",
+    "wizardWitch": "Wizard/Witch",
+    "sportsStar": "Sports Star",
+    "artist": "Artist",
+    "scientist": "Scientist",
+    "ninja": "Ninja",
+    "fairy": "Fairy",
+    "casual": "Casual"
+  }
+}

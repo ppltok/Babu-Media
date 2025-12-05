@@ -1,0 +1,262 @@
+{
+  "sidebar": {
+    "fusionLab": "Fusion Lab",
+    "plotWorld": "Plot World",
+    "parentAccount": "Parent Account",
+    "settingsAndSubscription": "Settings & Subscription",
+    "signOut": "Sign Out",
+    "expandSidebar": "Expand sidebar",
+    "collapseSidebar": "Collapse sidebar",
+    "addChild": "Add Child",
+    "yearsOld": "years old"
+  },
+  "welcome": {
+    "title": "Welcome to Babu Media!",
+    "description": "To start creating magical characters and stories, first add a child profile.",
+    "addChildButton": "Add Child Profile"
+  },
+  "deleteChild": {
+    "title": "Remove Child Profile?",
+    "confirmText": "Are you sure you want to remove",
+    "warning": "This will also delete all their characters and stories. This action cannot be undone.",
+    "cancel": "Cancel",
+    "remove": "Remove"
+  },
+  "fusionLab": {
+    "title": "'s Fusion Lab",
+    "subtitle": "Create magical characters with AI",
+    "createNewCharacter": "Create New Character",
+    "upgradeTitle": "Upgrade to Creator Tier",
+    "deleteCharacter": {
+      "title": "Delete Character?",
+      "confirmText": "Are you sure you want to delete",
+      "warning": "This action cannot be undone.",
+      "cancel": "Cancel",
+      "delete": "Delete"
+    },
+    "characterDetail": {
+      "createStory": "Create a story",
+      "animalType": "Animal Type",
+      "visualStyle": "Visual Style",
+      "personalityTraits": "Personality Traits",
+      "outfit": "Outfit",
+      "created": "Created",
+      "deleteCharacter": "Delete Character"
+    },
+    "step1": {
+      "characterName": "Character Name",
+      "characterNamePlaceholder": "Detective Dash, Captain Whiskers...",
+      "chooseAnimalType": "Choose Animal Type",
+      "orTypeYourOwn": "or type your own",
+      "customAnimalPlaceholder": "Border Collie, Dinosaur, Phoenix, Penguin...",
+      "customAnimalHint": "Type any specific animal breed or creature - real or fantasy!",
+      "nextButton": "Next: Choose Style"
+    },
+    "step2": {
+      "chooseArtStyle": "Choose Your Favorite Art Style",
+      "artStyleHint": "Pick the style that reminds you of your favorite shows!",
+      "back": "Back",
+      "nextButton": "Next: Personality"
+    },
+    "step3": {
+      "chooseTraits": "Choose Personality Traits",
+      "traitsHint": "Select up to 4 traits that describe your character",
+      "selected": "Selected",
+      "back": "Back",
+      "nextButton": "Next: Outfit"
+    },
+    "step4": {
+      "chooseOutfit": "Choose an Outfit",
+      "orDescribeOwn": "or describe your own",
+      "customOutfitPlaceholder": "Describe a custom outfit...",
+      "characterPreview": "Character Preview",
+      "style": "Style",
+      "outfit": "Outfit",
+      "back": "Back",
+      "bringToLife": "Bring to Life!"
+    },
+    "generating": {
+      "creatingMagic": "Creating magic...",
+      "comingToLife": "is coming to life!",
+      "timeEstimate": "This usually takes 10-20 seconds"
+    },
+    "success": {
+      "isReady": "is Ready!",
+      "createdWithMagic": "Your character has been created with AI magic!",
+      "savedWaiting": "Your character has been saved. Image generation may take a moment.",
+      "buildFirstStory": "Let's build your first story with"
+    },
+    "characters": "Characters",
+    "noCharactersYet": "No characters yet. Create your first one!",
+    "loadingMessages": [
+      "Mixing the magic ingredients...",
+      "Adding a sprinkle of personality...",
+      "Painting with imagination...",
+      "Bringing your character to life...",
+      "Almost ready to meet you...",
+      "The magic is happening...",
+      "Creating something amazing...",
+      "Your character is waking up..."
+    ],
+    "animals": {
+      "fox": "Fox",
+      "wolf": "Wolf",
+      "raccoon": "Raccoon",
+      "unicorn": "Unicorn",
+      "lion": "Lion",
+      "owl": "Owl",
+      "dragon": "Dragon",
+      "bunny": "Bunny",
+      "cat": "Cat",
+      "dog": "Dog",
+      "bear": "Bear",
+      "panda": "Panda",
+      "custom": "Custom"
+    },
+    "styles": {
+      "pixar": "Pixar/Disney",
+      "dreamworks": "DreamWorks",
+      "ghibli": "Studio Ghibli",
+      "cartoonNetwork": "Cartoon Network",
+      "nickelodeon": "Nickelodeon",
+      "anime": "Anime Style",
+      "disneyClassic": "Disney Classic",
+      "illumination": "Illumination"
+    },
+    "traits": {
+      "brave": "Brave",
+      "curious": "Curious",
+      "kind": "Kind",
+      "clever": "Clever",
+      "playful": "Playful",
+      "wise": "Wise",
+      "gentle": "Gentle",
+      "bold": "Bold",
+      "creative": "Creative",
+      "loyal": "Loyal",
+      "funny": "Funny",
+      "adventurous": "Adventurous",
+      "shy": "Shy",
+      "confident": "Confident",
+      "caring": "Caring",
+      "magical": "Magical"
+    },
+    "outfits": {
+      "superhero": "Superhero Cape",
+      "detective": "Detective",
+      "princess": "Princess/Prince",
+      "pirate": "Pirate",
+      "astronaut": "Astronaut",
+      "wizard": "Wizard/Witch",
+      "sports": "Sports Star",
+      "artist": "Artist",
+      "scientist": "Scientist",
+      "ninja": "Ninja",
+      "fairy": "Fairy",
+      "casual": "Casual"
+    }
+  },
+  "plotWorld": {
+    "title": "'s Plot World",
+    "subtitle": "Create magical stories with your characters",
+    "backToStories": "← Back to Stories",
+    "upgradeTitle": "Upgrade to Creator Tier",
+    "noCharacters": {
+      "title": "No Characters Yet",
+      "description": "Before creating stories, you need to create some characters in the Fusion Lab. Your characters will be the stars of your stories!"
+    },
+    "createNewStory": "Create New Story",
+    "noStories": {
+      "title": "No Stories Yet",
+      "description": "Click the button above to create your first magical adventure!"
+    },
+    "storyCard": {
+      "untitled": "Untitled Story",
+      "starring": "Starring",
+      "unknown": "Unknown",
+      "deleteStory": "Delete story"
+    },
+    "deleteStory": {
+      "title": "Delete Story?",
+      "confirmText": "Are you sure you want to delete this story? This action cannot be undone.",
+      "cancel": "Cancel",
+      "delete": "Delete"
+    },
+    "step1": {
+      "title": "Choose Your Hero",
+      "subtitle": "Who will be the star of today's adventure?",
+      "nextButton": "Next: Choose Adventure"
+    },
+    "step2": {
+      "title": "What's Today's Adventure?",
+      "subtitle": "Choose the type of adventure for",
+      "orDescribeOwn": "or describe your own",
+      "customAdventurePlaceholder": "Describe a custom adventure...",
+      "back": "Back",
+      "nextButton": "Next: Story Options"
+    },
+    "step3": {
+      "title": "Add a Learning Moment?",
+      "subtitle": "Would you like the story to teach a valuable lesson?",
+      "yesAddLesson": "Yes, add a lesson",
+      "noJustFun": "No, just fun!",
+      "chooseLessonTitle": "Choose a Lesson",
+      "chooseLessonSubtitle": "What would you like the story to teach?",
+      "orDescribeOwn": "or describe your own",
+      "customLessonPlaceholder": "Describe a custom lesson...",
+      "back": "Back",
+      "nextButton": "Next: Review"
+    },
+    "step4": {
+      "title": "Ready to Create!",
+      "subtitle": "Here's what we're making",
+      "hero": "Hero",
+      "adventure": "Adventure",
+      "lesson": "Lesson",
+      "noLesson": "No specific lesson",
+      "back": "Back",
+      "createButton": "Create My Story!"
+    },
+    "generating": {
+      "adventureBegins": "'s adventure begins...",
+      "storyBeingWritten": "Once upon a time... the story is being written!",
+      "paintingOpening": "Painting the opening scene...",
+      "creatingAdventure": "Creating the adventure moment...",
+      "addingFinale": "Adding the magical finale...",
+      "creatingIllustration": "Creating illustration",
+      "showAboutToBegin": "The show is about to begin!",
+      "somethingWentWrong": "Something went wrong. Please try again.",
+      "personalizedHeader": "'s Story is Being Created!"
+    },
+    "adventures": {
+      "space": { "label": "Space Adventure", "desc": "Journey through the stars and planets" },
+      "underwater": { "label": "Underwater Discovery", "desc": "Explore the magical ocean depths" },
+      "forest": { "label": "Enchanted Forest", "desc": "Adventures in a magical woodland" },
+      "castle": { "label": "Kingdom Quest", "desc": "A royal adventure in a magical kingdom" },
+      "dinosaurs": { "label": "Dinosaur Land", "desc": "Travel back to prehistoric times" },
+      "superheroes": { "label": "Superhero Mission", "desc": "Save the day with special powers" },
+      "pirates": { "label": "Pirate Treasure", "desc": "Hunt for hidden treasure on the high seas" },
+      "candy": { "label": "Candy World", "desc": "A sweet adventure in a land of treats" }
+    },
+    "morals": {
+      "kindness": { "label": "Being Kind", "desc": "Learning to be kind and help others" },
+      "bravery": { "label": "Overcoming Fear", "desc": "Being brave even when scared" },
+      "friendship": { "label": "Making Friends", "desc": "How to make and keep good friends" },
+      "honesty": { "label": "Telling the Truth", "desc": "The importance of being honest" },
+      "sharing": { "label": "Learning to Share", "desc": "The joy of sharing with others" },
+      "newplace": { "label": "New Beginnings", "desc": "Adjusting to a new place or school" },
+      "patience": { "label": "Being Patient", "desc": "Good things come to those who wait" },
+      "trying": { "label": "Never Give Up", "desc": "Keep trying even when things are hard" },
+      "different": { "label": "Being Different", "desc": "Celebrating what makes you unique" },
+      "goodbye": { "label": "Saying Goodbye", "desc": "Dealing with goodbyes and loss" }
+    },
+    "reader": {
+      "backToStories": "← Back to Stories",
+      "creatingIllustration": "Creating illustration...",
+      "theEnd": "The End",
+      "readAgain": "Read Again",
+      "createAnother": "Create Another Story",
+      "page": "Page"
+    }
+  }
+}

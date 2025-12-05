@@ -1,0 +1,86 @@
+{
+  "plotWorld": "Plot World",
+  "create": {
+    "title": "Create New Story",
+    "selectCharacter": {
+      "title": "Select a Character",
+      "subtitle": "Choose which character will star in your story",
+      "noCharacters": "No characters yet. Create one first!",
+      "goToFusionLab": "Go to Fusion Lab"
+    },
+    "selectAdventure": {
+      "title": "Choose an Adventure",
+      "subtitle": "What kind of adventure will your character have?",
+      "themes": {
+        "space": "Space Adventure",
+        "underwater": "Underwater Journey",
+        "forest": "Forest Exploration",
+        "castle": "Castle Quest",
+        "dinosaurs": "Dinosaur Discovery",
+        "pirates": "Pirate Treasure",
+        "superheroes": "Superhero Mission",
+        "magic": "Magical Kingdom",
+        "safari": "Safari Adventure",
+        "arctic": "Arctic Expedition"
+      }
+    },
+    "selectLesson": {
+      "title": "Choose a Lesson (Optional)",
+      "subtitle": "What should the story teach?",
+      "lessons": {
+        "sharing": "Sharing is caring",
+        "bravery": "Being brave",
+        "friendship": "Making friends",
+        "honesty": "Telling the truth",
+        "kindness": "Being kind to others",
+        "patience": "Learning patience",
+        "teamwork": "Working together",
+        "perseverance": "Never giving up"
+      }
+    },
+    "visualStyle": {
+      "title": "Choose Visual Style",
+      "subtitle": "How should your story look?"
+    },
+    "createButton": "Create Story",
+    "creating": "Creating your magical story...",
+    "creatingIllustration": "Creating illustration {number}..."
+  },
+  "list": {
+    "title": "Your Stories",
+    "empty": {
+      "title": "No stories yet",
+      "description": "Create your first story!"
+    },
+    "createNew": "Create New Story"
+  },
+  "read": {
+    "title": "Your Story",
+    "page": "Page",
+    "of": "of",
+    "theEnd": "The End",
+    "close": "Close",
+    "nextPage": "Next",
+    "prevPage": "Previous"
+  },
+  "card": {
+    "readStory": "Read Story",
+    "delete": "Delete",
+    "createdWith": "with"
+  },
+  "delete": {
+    "title": "Delete Story",
+    "message": "Are you sure you want to delete this story? This cannot be undone.",
+    "confirm": "Delete",
+    "cancel": "Cancel"
+  },
+  "errors": {
+    "selectCharacter": "Please select a character",
+    "selectAdventure": "Please select an adventure theme",
+    "generationFailed": "Story creation failed. Please try again."
+  },
+  "success": {
+    "created": "Story created successfully!",
+    "deleted": "Story deleted"
+  }
+}

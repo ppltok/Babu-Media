@@ -1,0 +1,29 @@
+{
+  "welcome": "ברוכים הבאים לסטודיו",
+  "selectChild": "בחרו פרופיל ילד כדי להתחיל ליצור דמויות",
+  "addChild": "הוסף ילד",
+  "addFirstChild": "הוסיפו את הילד הראשון שלכם",
+  "childCard": {
+    "yearsOld": "שנים"
+  },
+  "addChildPage": {
+    "title": "הוספת פרופיל ילד",
+    "subtitle": "צרו פרופיל ליוצר הקטן שלכם",
+    "nameLabel": "שם הילד",
+    "namePlaceholder": "עמה",
+    "ageLabel": "גיל",
+    "agePlaceholder": "6",
+    "chooseAvatar": "בחרו אווטאר",
+    "createButton": "צור פרופיל",
+    "creating": "יוצר...",
+    "backToDashboard": "חזרה ללוח הבקרה",
+    "errors": {
+      "nameRequired": "נא להזין שם",
+      "invalidAge": "נא להזין גיל תקין (1-18)"
+    }
+  },
+  "paymentWall": {
+    "childLimitTitle": "הגעתם למגבלת פרופילי ילדים",
+    "childLimitReason": "הגעתם למגבלת המסלול החינמי של פרופיל ילד אחד."
+  }
+}

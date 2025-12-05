@@ -1,0 +1,29 @@
+{
+  "welcome": "Welcome to the Studio",
+  "selectChild": "Select a child profile to start creating characters",
+  "addChild": "Add Child",
+  "addFirstChild": "Add your first child",
+  "childCard": {
+    "yearsOld": "years old"
+  },
+  "addChildPage": {
+    "title": "Add Child Profile",
+    "subtitle": "Create a profile for your little creator",
+    "nameLabel": "Child's Name",
+    "namePlaceholder": "Emma",
+    "ageLabel": "Age",
+    "agePlaceholder": "6",
+    "chooseAvatar": "Choose an Avatar",
+    "createButton": "Create Profile",
+    "creating": "Creating...",
+    "backToDashboard": "Back to Dashboard",
+    "errors": {
+      "nameRequired": "Please enter a name",
+      "invalidAge": "Please enter a valid age (1-18)"
+    }
+  },
+  "paymentWall": {
+    "childLimitTitle": "Child Profile Limit Reached",
+    "childLimitReason": "You've reached your free tier limit of 1 child profile."
+  }
+}

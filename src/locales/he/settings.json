@@ -1,0 +1,52 @@
+{
+  "pageTitle": "הגדרות",
+  "backToDashboard": "חזרה ללוח הבקרה",
+  "account": {
+    "title": "חשבון",
+    "email": "אימייל",
+    "memberSince": "חבר מאז"
+  },
+  "language": {
+    "title": "שפה",
+    "description": "בחרו את השפה המועדפת עליכם לאפליקציה",
+    "english": "English",
+    "hebrew": "עברית"
+  },
+  "subscription": {
+    "title": "מנוי",
+    "currentPlan": "מסלול נוכחי",
+    "free": "חינם",
+    "active": "פעיל",
+    "yourUsage": "השימוש שלכם",
+    "children": "ילדים",
+    "characters": "דמויות",
+    "stories": "סיפורים",
+    "monthly": "חודשי",
+    "weekly": "שבועי",
+    "upgradeToCreator": "שדרגו ליוצר - $9.99/חודש",
+    "upgradeToPro": "שדרגו למקצועי - $19.99/חודש",
+    "manageSubscription": "ניהול מנוי",
+    "manageNote": "לחצו על ״ניהול מנוי״ כדי לעדכן אמצעי תשלום, לשנות מסלול או לבטל."
+  },
+  "planComparison": {
+    "title": "השוואת מסלולים",
+    "feature": "תכונה",
+    "explorer": "חוקר",
+    "creator": "יוצר",
+    "pro": "מקצועי",
+    "childProfiles": "פרופילי ילדים",
+    "characters": "דמויות",
+    "stories": "סיפורים",
+    "storage": "אחסון",
+    "unlimited": "ללא הגבלה",
+    "total": "סה״כ",
+    "perMonth": "/חודש",
+    "perWeek": "/שבוע",
+    "basic": "בסיסי",
+    "extended": "מורחב"
+  },
+  "accountActions": {
+    "title": "פעולות חשבון",
+    "signOut": "התנתקות"
+  }
+}
