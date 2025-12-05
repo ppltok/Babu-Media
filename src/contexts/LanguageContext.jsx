@@ -62,10 +62,12 @@ const getNestedValue = (obj, path) => {
 // Helper to extract locale from URL path
 export const getLocaleFromPath = (pathname) => {
   const segments = pathname.split('/').filter(Boolean)
-  const firstSegment = segments[0]
 
-  if (SUPPORTED_LOCALES.includes(firstSegment) && firstSegment !== DEFAULT_LOCALE) {
-    return firstSegment
+  // Check all segments for a locale (to handle basenames like /babu-media/he/settings)
+  for (const segment of segments) {
+    if (SUPPORTED_LOCALES.includes(segment) && segment !== DEFAULT_LOCALE) {
+      return segment
+    }
   }
   return DEFAULT_LOCALE
 }
@@ -135,12 +137,13 @@ export function LanguageProvider({ children }) {
   }, [language, isRTL])
 
   // Sync language with URL on location change
+  // Use window.location.pathname (includes basename) not location.pathname (excludes basename)
   useEffect(() => {
-    const urlLocale = getLocaleFromPath(location.pathname)
+    const urlLocale = getLocaleFromPath(window.location.pathname)
     if (urlLocale !== language) {
       setLanguageState(urlLocale)
     }
-  }, [location.pathname])
+  }, [location.pathname]) // Still trigger on location.pathname changes, but read from window
 
   // Function to change language (navigates to new locale URL)
   const setLanguage = useCallback((newLocale) => {

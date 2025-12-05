@@ -137,7 +137,7 @@ const CloseIcon = ({ className }) => (
 
 export default function Studio() {
   const { user, signOut } = useAuth()
-  const { isRTL, t, language } = useLanguage()
+  const { isRTL, t, language, localizedHref } = useLanguage()
   const navigate = useNavigate()
   const menuRef = useRef(null)
   const [showUserMenu, setShowUserMenu] = useState(false)
@@ -257,7 +257,7 @@ export default function Studio() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0B0A16] text-white flex flex-col lg:flex-row">
+    <div className="h-screen bg-[#0B0A16] text-white flex flex-col lg:flex-row overflow-hidden">
       {/* Delete Child Confirmation Modal */}
       {deleteChildConfirm && (
         <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
@@ -435,8 +435,8 @@ export default function Studio() {
         </div>
       )}
 
-      {/* Desktop Sidebar */}
-      <aside className={`hidden lg:flex ${sidebarCollapsed ? 'w-20' : 'w-72'} bg-[#0d0c18] border-r border-white/10 flex-col transition-all duration-300 relative`}>
+      {/* Desktop Sidebar - Fixed height, doesn't scroll with content */}
+      <aside className={`hidden lg:flex ${sidebarCollapsed ? 'w-20' : 'w-72'} bg-[#0d0c18] border-r border-white/10 flex-col transition-all duration-300 relative h-full flex-shrink-0`}>
         {/* Collapse Button - positioned on outer edge (right in LTR, left in RTL) */}
         <button
           onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
@@ -589,7 +589,7 @@ export default function Studio() {
 
               {/* Settings */}
               <button
-                onClick={() => navigate('/settings')}
+                onClick={() => navigate(localizedHref('/settings'))}
                 className="w-full px-4 py-3 text-left text-sm text-gray-300 hover:bg-white/5 transition-colors flex items-center gap-2"
               >
                 <SettingsIcon className="w-4 h-4" />
@@ -609,8 +609,8 @@ export default function Studio() {
         </div>
       </aside>
 
-      {/* Main Content */}
-      <main className="flex-1 overflow-auto">
+      {/* Main Content - Scrollable area */}
+      <main className="flex-1 overflow-y-auto h-full">
         {activeSection === 'fusion-lab' && selectedChild && (
           <FusionLabContent childId={selectedChild.id} child={selectedChild} onGoToStory={goToPlotWorldWithCharacter} user={user} />
         )}
@@ -694,22 +694,23 @@ function FusionLabContent({ childId, child, onGoToStory, user }) {
     { id: 'dog', emoji: '🐕', name: t('studio.fusionLab.animals.dog') },
     { id: 'bear', emoji: '🐻', name: t('studio.fusionLab.animals.bear') },
     { id: 'panda', emoji: '🐼', name: t('studio.fusionLab.animals.panda') },
-    { id: 'custom', emoji: '✨', name: t('studio.fusionLab.animals.custom'), isCustom: true },
   ]
 
-  // Get the actual animal name (handles custom animals)
+  // Get the actual animal name (prioritizes custom input if provided)
   const getAnimalName = () => {
-    if (selectedAnimal?.isCustom && customAnimalName.trim()) {
+    // If user typed a custom animal name, use that
+    if (customAnimalName.trim()) {
       return customAnimalName.trim()
     }
     return selectedAnimal?.name || ''
   }
 
-  // Check if animal selection is valid
+  // Check if animal selection is valid (either selected an animal OR typed a custom one)
   const isAnimalValid = () => {
-    if (!selectedAnimal) return false
-    if (selectedAnimal.isCustom) return customAnimalName.trim().length > 0
-    return true
+    // Valid if user typed a custom animal name
+    if (customAnimalName.trim().length > 0) return true
+    // Or if they selected a predefined animal
+    return !!selectedAnimal
   }
 
   const VISUAL_STYLES = [
@@ -818,8 +819,8 @@ function FusionLabContent({ childId, child, onGoToStory, user }) {
 
     const prompt = `A ${styleName} style illustration of a cute anthropomorphic ${animalName.toLowerCase()} character named ${characterName}. The character has these personality traits: ${traitLabels}. ${outfitDesc ? `Wearing ${outfitDesc}.` : ''} Child-friendly, colorful, expressive face, full body shot, high quality character design.`
 
-    // Store the animal type - use custom name for custom animals
-    const animalTypeId = selectedAnimal.isCustom ? `custom:${animalName}` : selectedAnimal.id
+    // Store the animal type - use custom name if provided, otherwise use selected animal ID
+    const animalTypeId = customAnimalName.trim() ? `custom:${animalName}` : (selectedAnimal?.id || `custom:${animalName}`)
 
     try {
       const { data, error } = await supabase
@@ -1151,10 +1152,10 @@ function FusionLabContent({ childId, child, onGoToStory, user }) {
                         key={animal.id}
                         onClick={() => {
                           setSelectedAnimal(animal)
-                          if (!animal.isCustom) setCustomAnimalName('')
+                          setCustomAnimalName('') // Clear custom input when selecting a predefined animal
                         }}
                         className={`p-2 sm:p-3 rounded-xl text-center transition-all ${
-                          selectedAnimal?.id === animal.id
+                          selectedAnimal?.id === animal.id && !customAnimalName.trim()
                             ? 'bg-purple-500/30 border-2 border-purple-500'
                             : 'bg-white/5 border-2 border-transparent hover:bg-white/10'
                         }`}
@@ -1180,10 +1181,9 @@ function FusionLabContent({ childId, child, onGoToStory, user }) {
                       value={customAnimalName}
                       onChange={(e) => {
                         setCustomAnimalName(e.target.value)
-                        // Auto-select custom when typing
+                        // Clear selected animal when typing custom (visual feedback)
                         if (e.target.value.trim()) {
-                          const customAnimal = ANIMAL_TYPES.find(a => a.isCustom)
-                          if (customAnimal) setSelectedAnimal(customAnimal)
+                          setSelectedAnimal(null)
                         }
                       }}
                       className={`w-full mt-3 px-3 sm:px-4 py-2.5 sm:py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 transition-colors text-sm sm:text-base ${isRTL ? 'text-right' : ''}`}
@@ -1534,6 +1534,10 @@ function PlotWorldContent({ childId, child, initialCharacter, onCharacterUsed, u
   const [deleteStoryConfirm, setDeleteStoryConfirm] = useState(null)
   const [isDeletingStory, setIsDeletingStory] = useState(false)
 
+  // Share story state
+  const [shareModal, setShareModal] = useState(null) // { story, shareUrl, copied }
+  const [isGeneratingShareLink, setIsGeneratingShareLink] = useState(false)
+
   // Adventure theme options - using translations
   const ADVENTURE_THEMES = [
     { id: 'space', emoji: '🚀', label: t('studio.plotWorld.adventures.space.label'), desc: t('studio.plotWorld.adventures.space.desc') },
@@ -1597,31 +1601,18 @@ function PlotWorldContent({ childId, child, initialCharacter, onCharacterUsed, u
     return () => clearInterval(interval)
   }, [step, currentStory?.id, currentStory?.images?.length])
 
-  // Preload upcoming images in the background while reading
+  // Preload all story images in background while reading
   useEffect(() => {
     if (step !== 6 || !currentStory?.images) return
 
-    // Determine which images to preload based on current spread
-    const imagesToPreload = []
-    if (currentPage === 0 && currentStory.images[1]?.url) {
-      imagesToPreload.push(currentStory.images[1].url) // Preload image 2 while on spread 0
-    }
-    if (currentPage === 1 && currentStory.images[1]?.url) {
-      imagesToPreload.push(currentStory.images[1].url) // Preload image 2 while on spread 1
-    }
-    if (currentPage === 2 && currentStory.images[2]?.url) {
-      imagesToPreload.push(currentStory.images[2].url) // Preload image 3 while on spread 2
-    }
-    if (currentPage === 3 && currentStory.images[2]?.url) {
-      imagesToPreload.push(currentStory.images[2].url) // Preload image 3 while on spread 3
-    }
-
-    // Preload images
-    imagesToPreload.forEach(url => {
-      const img = new Image()
-      img.src = url
+    // Preload all images that exist
+    currentStory.images.forEach(img => {
+      if (img?.url) {
+        const preloadImg = new Image()
+        preloadImg.src = img.url
+      }
     })
-  }, [step, currentPage, currentStory?.images])
+  }, [step, currentStory?.images])
 
   const fetchData = async () => {
     // Fetch characters
@@ -1884,6 +1875,75 @@ function PlotWorldContent({ childId, child, initialCharacter, onCharacterUsed, u
     setDeleteStoryConfirm(null)
   }
 
+  // Generate a random share token
+  const generateShareToken = () => {
+    const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
+    let result = ''
+    for (let i = 0; i < 12; i++) {
+      result += chars.charAt(Math.floor(Math.random() * chars.length))
+    }
+    return result
+  }
+
+  // Handle sharing a story
+  const handleShareStory = async (story) => {
+    setIsGeneratingShareLink(true)
+
+    try {
+      let shareToken = story.share_token
+
+      // Generate share token if story doesn't have one
+      if (!shareToken) {
+        shareToken = generateShareToken()
+
+        // Try to save to database, but don't block if it fails
+        // (column might not exist yet)
+        try {
+          const { error } = await supabase
+            .from('stories')
+            .update({ share_token: shareToken })
+            .eq('id', story.id)
+
+          if (!error) {
+            // Update local stories state only if DB update succeeded
+            setStories(stories.map(s =>
+              s.id === story.id ? { ...s, share_token: shareToken } : s
+            ))
+          } else {
+            console.warn('Could not save share token to database:', error.message)
+          }
+        } catch (dbErr) {
+          console.warn('Database update failed:', dbErr)
+        }
+      }
+
+      // Build the share URL
+      const baseUrl = window.location.origin + (import.meta.env.BASE_URL || '')
+      const shareUrl = `${baseUrl}story/${shareToken}`
+
+      setShareModal({ story, shareUrl, copied: false })
+    } catch (err) {
+      console.error('Share error:', err)
+    } finally {
+      setIsGeneratingShareLink(false)
+    }
+  }
+
+  // Copy share URL to clipboard
+  const copyShareUrl = async () => {
+    if (!shareModal?.shareUrl) return
+
+    try {
+      await navigator.clipboard.writeText(shareModal.shareUrl)
+      setShareModal({ ...shareModal, copied: true })
+      setTimeout(() => {
+        setShareModal(prev => prev ? { ...prev, copied: false } : null)
+      }, 2000)
+    } catch (err) {
+      console.error('Copy failed:', err)
+    }
+  }
+
   const openStory = (story) => {
     setCurrentStory(story)
     setCurrentPage(0)
@@ -1963,19 +2023,35 @@ function PlotWorldContent({ childId, child, initialCharacter, onCharacterUsed, u
                   key={story.id}
                   className="relative bg-white/5 border border-white/10 rounded-2xl overflow-hidden hover:bg-white/10 transition-colors group"
                 >
-                  {/* Delete button */}
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      setDeleteStoryConfirm(story)
-                    }}
-                    className={`absolute top-2 ${isRTL ? 'left-2' : 'right-2'} z-10 p-2 bg-black/50 hover:bg-red-500 rounded-full text-gray-300 hover:text-white transition-all opacity-0 group-hover:opacity-100`}
-                    title={t('studio.plotWorld.storyCard.deleteStory')}
-                  >
-                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                    </svg>
-                  </button>
+                  {/* Action buttons */}
+                  <div className={`absolute top-2 ${isRTL ? 'left-2' : 'right-2'} z-10 flex gap-1 opacity-0 group-hover:opacity-100 transition-all`}>
+                    {/* Share button */}
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        handleShareStory(story)
+                      }}
+                      className="p-2 bg-black/50 hover:bg-purple-500 rounded-full text-gray-300 hover:text-white transition-all"
+                      title={isRTL ? 'שתף סיפור' : 'Share Story'}
+                    >
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+                      </svg>
+                    </button>
+                    {/* Delete button */}
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        setDeleteStoryConfirm(story)
+                      }}
+                      className="p-2 bg-black/50 hover:bg-red-500 rounded-full text-gray-300 hover:text-white transition-all"
+                      title={t('studio.plotWorld.storyCard.deleteStory')}
+                    >
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                      </svg>
+                    </button>
+                  </div>
                   <div onClick={() => openStory(story)} className="cursor-pointer">
                     {story.images?.[0]?.url ? (
                       <OptimizedImage
@@ -2313,38 +2389,133 @@ function PlotWorldContent({ childId, child, initialCharacter, onCharacterUsed, u
           </div>
         </div>
       ) : step === 6 && currentStory ? (
-        /* Step 6: Story Reader - Book Style with smart layout for image loading */
+        /* Step 6: Story Reader - Dynamic Book with flexible page count */
         (() => {
           /*
-           * NEW LAYOUT: Single page per image spread for better text display
-           * This gives more time for images 2 and 3 to load while user reads
+           * DYNAMIC LAYOUT: Pages are created based on text length
+           * - Each story page text is split into chunks that fit comfortably
+           * - Images appear on their own spreads
+           * - No scrolling - text flows to next page if needed
            *
-           * Spread 0: Image 1 + Page 1 text
-           * Spread 1: Pages 2-3 text only (no image - time for image 2 to load)
-           * Spread 2: Image 2 + Page 4 text
-           * Spread 3: Pages 5-6 text only (no image - time for image 3 to load)
-           * Spread 4: Image 3 + "The End"
+           * Structure:
+           * - Image spreads: Image on left, can have text on right if short
+           * - Text spreads: Two text pages side by side
+           * - End spread: Final image + "The End"
            */
-          const totalSpreads = 5
-          const isTheEndSpread = currentPage === 4
 
-          // Determine spread type and content
-          const getSpreadConfig = () => {
-            switch (currentPage) {
-              case 0: return { type: 'image-text', imageIndex: 0, storyPage: 0 }
-              case 1: return { type: 'text-only', storyPages: [1, 2] }
-              case 2: return { type: 'image-text', imageIndex: 1, storyPage: 3 }
-              case 3: return { type: 'text-only', storyPages: [4, 5] }
-              case 4: return { type: 'end', imageIndex: 2 }
-              default: return { type: 'text-only', storyPages: [0, 1] }
+          // Split story text into display chunks (roughly 200 chars for half-page, 350 for full page)
+          // Hebrew needs fewer chars per page due to larger font and wider characters
+          const MAX_CHARS_HALF_PAGE = isRTL ? 140 : 200
+          const MAX_CHARS_FULL_PAGE = isRTL ? 250 : 350
+
+          // Collect all story text and split into displayable chunks
+          const allStoryPages = currentStory.pages || []
+          const textChunks = []
+
+          allStoryPages.forEach((page, pageIdx) => {
+            const text = page?.text || ''
+            // Split by sentences to avoid cutting mid-sentence
+            const sentences = text.match(/[^.!?]+[.!?]+/g) || [text]
+            let currentChunk = ''
+
+            sentences.forEach((sentence) => {
+              const potentialChunk = currentChunk + sentence
+              if (potentialChunk.length > MAX_CHARS_HALF_PAGE && currentChunk.length > 0) {
+                textChunks.push({ text: currentChunk.trim(), originalPage: pageIdx })
+                currentChunk = sentence
+              } else {
+                currentChunk = potentialChunk
+              }
+            })
+
+            if (currentChunk.trim()) {
+              textChunks.push({ text: currentChunk.trim(), originalPage: pageIdx })
+            }
+          })
+
+          // Build spread configuration dynamically
+          // Pattern: Image1 + text, text pages, Image2 + text, ALL remaining text, Image3 + The End
+          // Note: Image 3 ONLY appears on "The End" page to avoid duplication
+          const spreads = []
+          let textIndex = 0
+          const numImages = currentStory.images?.length || 3
+
+          // Add spreads for first 2 images only (image 3 is reserved for The End)
+          const imagesForContent = Math.min(numImages - 1, 2) // Use images 0 and 1 for content
+
+          for (let imgIdx = 0; imgIdx < imagesForContent; imgIdx++) {
+            // Image spread with one text chunk
+            if (textIndex < textChunks.length) {
+              spreads.push({
+                type: 'image-text',
+                imageIndex: imgIdx,
+                textChunk: textChunks[textIndex]
+              })
+              textIndex++
+            } else {
+              spreads.push({
+                type: 'image-only',
+                imageIndex: imgIdx
+              })
+            }
+
+            // Add text-only spreads after each image (up to 2 spreads = 4 text chunks)
+            const textsAfterImage = Math.min(4, textChunks.length - textIndex)
+            for (let i = 0; i < textsAfterImage; i += 2) {
+              const leftText = textChunks[textIndex] || null
+              const rightText = textChunks[textIndex + 1] || null
+              if (leftText || rightText) {
+                spreads.push({
+                  type: 'text-only',
+                  leftText,
+                  rightText
+                })
+                textIndex += 2
+              }
             }
           }
-          const spreadConfig = getSpreadConfig()
 
-          // Image component - responsive with proper aspect ratio and priority loading
+          // Add ALL remaining text as text-only spreads BEFORE "The End"
+          while (textIndex < textChunks.length) {
+            const leftText = textChunks[textIndex] || null
+            const rightText = textChunks[textIndex + 1] || null
+            if (leftText || rightText) {
+              spreads.push({
+                type: 'text-only',
+                leftText,
+                rightText
+              })
+            }
+            textIndex += 2
+          }
+
+          // Add "The End" as the final spread with IMAGE 3 (the last image)
+          spreads.push({
+            type: 'end',
+            imageIndex: numImages - 1 // Always use the last image (index 2 for 3 images)
+          })
+
+          const totalSpreads = spreads.length
+          const currentSpread = spreads[currentPage] || spreads[0]
+
+          // Fixed book content height for consistent UI
+          const BOOK_CONTENT_HEIGHT = 'h-[320px] sm:h-[380px] md:h-[420px]'
+
+          // Calculate ONE font size for the ENTIRE book based on the longest text chunk
+          // Like a real book - same font size on every page
+          const longestChunkLength = Math.max(...textChunks.map(chunk => chunk.text.length), 0)
+          const getBookFontSize = () => {
+            // Use the same font size everywhere - sized for the longest chunk to fit
+            if (longestChunkLength > 120) return isRTL ? 'text-base sm:text-lg md:text-xl' : 'text-sm sm:text-base md:text-lg'
+            if (longestChunkLength > 80) return isRTL ? 'text-lg sm:text-xl md:text-2xl' : 'text-base sm:text-lg md:text-xl'
+            return isRTL ? 'text-xl sm:text-2xl md:text-3xl' : 'text-lg sm:text-xl md:text-2xl'
+          }
+          const bookFontSize = getBookFontSize()
+
+          // Image component
           const ImageSection = ({ imgIndex }) => (
             <div className="w-full md:w-1/2 bg-gradient-to-br from-amber-100 to-orange-100 p-4 sm:p-6 flex items-center justify-center">
-              <div className="relative w-full max-w-[280px] sm:max-w-[320px] md:max-w-[85%] aspect-square rounded-xl overflow-hidden shadow-lg border-4 border-amber-200/50">
+              <div className="relative w-full max-w-[200px] sm:max-w-[240px] md:max-w-[280px] aspect-square rounded-xl overflow-hidden shadow-lg border-4 border-amber-200/50">
                 {currentStory.images?.[imgIndex]?.url ? (
                   <OptimizedImage
                     src={currentStory.images[imgIndex].url}
@@ -2368,59 +2539,44 @@ function PlotWorldContent({ childId, child, initialCharacter, onCharacterUsed, u
             </div>
           )
 
-          // Single page text component
-          const SingleTextSection = ({ pageIndex, isFullWidth = false }) => {
-            const pageText = currentStory.pages?.[pageIndex]?.text || 'Loading...'
-            const textLength = pageText.length
-
-            const getFontSizeClass = () => {
-              if (isFullWidth) {
-                // Full width/height single page (next to image) - can use larger fonts
-                if (textLength > 400) return isRTL ? 'text-lg sm:text-xl md:text-2xl' : 'text-base sm:text-lg md:text-xl'
-                if (textLength > 300) return isRTL ? 'text-xl sm:text-2xl md:text-3xl' : 'text-lg sm:text-xl md:text-2xl'
-                return isRTL ? 'text-2xl sm:text-3xl md:text-4xl' : 'text-xl sm:text-2xl md:text-3xl'
-              }
-              // Half width (in text-only spread, side by side)
-              if (textLength > 350) return isRTL ? 'text-base sm:text-lg md:text-xl' : 'text-sm sm:text-base md:text-lg'
-              if (textLength > 250) return isRTL ? 'text-lg sm:text-xl md:text-2xl' : 'text-base sm:text-lg md:text-xl'
-              return isRTL ? 'text-xl sm:text-2xl md:text-3xl' : 'text-lg sm:text-xl md:text-2xl'
+          // Text page component - no scrolling, fixed size, SAME font size on ALL pages
+          const TextPage = ({ textChunk, isHalfWidth = true }) => {
+            if (!textChunk) {
+              return (
+                <div className={`${isHalfWidth ? 'w-full md:w-1/2' : 'w-full'} bg-gradient-to-br from-amber-50 to-orange-50 p-5 sm:p-6 md:p-8 flex items-center justify-center`}>
+                  <div className="text-amber-300 text-4xl">~</div>
+                </div>
+              )
             }
 
             return (
-              <div className={`${isFullWidth ? 'w-full' : 'w-full md:w-1/2'} bg-gradient-to-br from-amber-50 to-orange-50 p-4 sm:p-6 md:p-8 flex flex-col h-full overflow-hidden`} dir={isRTL ? 'rtl' : 'ltr'}>
-                <div className="text-center mb-3 sm:mb-4 flex-shrink-0">
-                  <span
-                    className="inline-block px-4 sm:px-5 py-1.5 bg-purple-500/20 text-purple-700 rounded-full text-sm sm:text-base font-bold"
-                    style={{ fontFamily: '"Comic Sans MS", "Chalkboard", cursive' }}
-                  >
-                    {t('studio.plotWorld.reader.page')} {pageIndex + 1}
-                  </span>
-                </div>
-                <div className="flex-1 flex items-center justify-center overflow-hidden min-h-0">
-                  <div
-                    className={`text-center leading-relaxed space-y-3 sm:space-y-4 px-4 sm:px-6 md:px-8 max-h-full overflow-y-auto ${getFontSizeClass()}`}
-                    style={{
-                      fontFamily: isRTL ? '"David Libre", "Frank Ruhl Libre", Georgia, serif' : 'Georgia, "Times New Roman", serif',
-                      lineHeight: isRTL ? '1.9' : '1.7'
-                    }}
-                  >
-                    {pageText.split('\n').map((line, idx) => (
-                      <p key={idx} className="text-gray-900 font-medium">{line}</p>
-                    ))}
-                  </div>
+              <div
+                className={`${isHalfWidth ? 'w-full md:w-1/2' : 'w-full'} bg-gradient-to-br from-amber-50 to-orange-50 p-5 sm:p-6 md:p-8 flex flex-col justify-center`}
+                dir={isRTL ? 'rtl' : 'ltr'}
+              >
+                <div
+                  className={`text-center leading-relaxed space-y-2 sm:space-y-3 ${bookFontSize}`}
+                  style={{
+                    fontFamily: isRTL ? '"David Libre", "Frank Ruhl Libre", Georgia, serif' : 'Georgia, "Times New Roman", serif',
+                    lineHeight: isRTL ? '1.8' : '1.7'
+                  }}
+                >
+                  {textChunk.text.split('\n').map((line, idx) => (
+                    <p key={idx} className="text-gray-900 font-medium">{line}</p>
+                  ))}
                 </div>
               </div>
             )
           }
 
-          // Navigation dots component
+          // Navigation dots
           const NavigationDots = () => (
-            <div className="flex justify-center gap-1.5 sm:gap-2 mt-2 sm:mt-3 flex-shrink-0">
+            <div className="flex justify-center gap-1 sm:gap-1.5 flex-wrap max-w-[200px] mx-auto">
               {Array.from({ length: totalSpreads }).map((_, idx) => (
                 <button
                   key={idx}
                   onClick={() => setCurrentPage(idx)}
-                  className={`w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full transition-all ${
+                  className={`w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full transition-all ${
                     idx === currentPage
                       ? 'bg-purple-500 scale-125'
                       : 'bg-purple-300 hover:bg-purple-400'
@@ -2431,8 +2587,8 @@ function PlotWorldContent({ childId, child, initialCharacter, onCharacterUsed, u
           )
 
           return (
-            <div className="w-full max-w-5xl mx-auto px-2 sm:px-4 md:h-[calc(100vh-120px)] md:flex md:items-center md:justify-center">
-              <div className="relative bg-gradient-to-br from-amber-800/20 to-amber-700/20 rounded-3xl p-2 sm:p-3 shadow-2xl border-4 border-amber-600/40 w-full md:max-h-[calc(100vh-140px)]">
+            <div className="w-full max-w-5xl mx-auto px-2 sm:px-4 md:min-h-[500px] md:flex md:items-center md:justify-center">
+              <div className="relative bg-gradient-to-br from-amber-800/20 to-amber-700/20 rounded-3xl p-2 sm:p-3 shadow-2xl border-4 border-amber-600/40 w-full">
 
                 {/* Close button */}
                 <button
@@ -2445,14 +2601,14 @@ function PlotWorldContent({ childId, child, initialCharacter, onCharacterUsed, u
                 </button>
 
                 {/* Inner book pages */}
-                <div className="bg-gradient-to-br from-amber-50 to-orange-50 rounded-2xl overflow-hidden shadow-inner flex flex-col md:max-h-[calc(100vh-180px)]">
+                <div className="bg-gradient-to-br from-amber-50 to-orange-50 rounded-2xl overflow-hidden shadow-inner flex flex-col">
                   {/* Story Title */}
                   <div className="bg-gradient-to-r from-pink-400 via-purple-400 to-blue-400 py-2 sm:py-3 px-4 sm:px-6 flex-shrink-0">
                     <h1
-                      className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-black text-white text-center drop-shadow-lg"
+                      className="text-base sm:text-lg md:text-xl lg:text-2xl font-black text-white text-center drop-shadow-lg"
                       style={{
                         fontFamily: '"Comic Sans MS", "Chalkboard", "Comic Neue", cursive',
-                        textShadow: '3px 3px 0 rgba(0,0,0,0.2), -1px -1px 0 rgba(255,255,255,0.3)',
+                        textShadow: '2px 2px 0 rgba(0,0,0,0.2), -1px -1px 0 rgba(255,255,255,0.3)',
                         letterSpacing: '0.05em'
                       }}
                     >
@@ -2460,29 +2616,29 @@ function PlotWorldContent({ childId, child, initialCharacter, onCharacterUsed, u
                     </h1>
                   </div>
 
-                  {/* Book content */}
-                  {spreadConfig.type === 'end' ? (
-                    /* THE END spread with final image */
-                    <div className="flex flex-col md:flex-row min-h-[350px] sm:min-h-[400px] md:min-h-[300px] md:flex-1">
-                      <ImageSection imgIndex={spreadConfig.imageIndex} />
+                  {/* Book content based on spread type - FIXED HEIGHT for consistent UI */}
+                  {currentSpread.type === 'end' ? (
+                    /* THE END spread */
+                    <div className={`flex flex-col md:flex-row ${BOOK_CONTENT_HEIGHT}`}>
+                      <ImageSection imgIndex={currentSpread.imageIndex} />
                       <div className="hidden md:block w-0.5 bg-amber-200" />
-                      <div className="w-full md:w-1/2 flex flex-col items-center justify-center bg-gradient-to-br from-amber-100 via-orange-50 to-pink-100 p-6 sm:p-8 relative overflow-hidden">
-                        {/* Decorative sparkle icons */}
-                        <svg className="absolute top-8 left-6 w-6 h-6 sm:w-8 sm:h-8 text-amber-400 animate-pulse" fill="currentColor" viewBox="0 0 24 24">
+                      <div className="w-full md:w-1/2 flex flex-col items-center justify-center bg-gradient-to-br from-amber-100 via-orange-50 to-pink-100 p-4 sm:p-6 relative overflow-hidden">
+                        {/* Decorative sparkles */}
+                        <svg className="absolute top-4 left-4 w-5 h-5 sm:w-6 sm:h-6 text-amber-400 animate-pulse" fill="currentColor" viewBox="0 0 24 24">
                           <path d="M12 0L14.59 9.41L24 12L14.59 14.59L12 24L9.41 14.59L0 12L9.41 9.41L12 0Z" />
                         </svg>
-                        <svg className="absolute top-14 right-8 w-5 h-5 sm:w-6 sm:h-6 text-purple-400 animate-pulse" style={{ animationDelay: '300ms' }} fill="currentColor" viewBox="0 0 24 24">
+                        <svg className="absolute top-8 right-6 w-4 h-4 sm:w-5 sm:h-5 text-purple-400 animate-pulse" style={{ animationDelay: '300ms' }} fill="currentColor" viewBox="0 0 24 24">
                           <path d="M12 0L14.59 9.41L24 12L14.59 14.59L12 24L9.41 14.59L0 12L9.41 9.41L12 0Z" />
                         </svg>
-                        <svg className="absolute bottom-20 left-10 w-5 h-5 sm:w-7 sm:h-7 text-pink-400 animate-pulse" style={{ animationDelay: '500ms' }} fill="currentColor" viewBox="0 0 24 24">
+                        <svg className="absolute bottom-12 left-6 w-4 h-4 sm:w-5 sm:h-5 text-pink-400 animate-pulse" style={{ animationDelay: '500ms' }} fill="currentColor" viewBox="0 0 24 24">
                           <path d="M12 0L14.59 9.41L24 12L14.59 14.59L12 24L9.41 14.59L0 12L9.41 9.41L12 0Z" />
                         </svg>
-                        <svg className="absolute bottom-12 right-6 w-6 h-6 sm:w-8 sm:h-8 text-blue-400 animate-pulse" style={{ animationDelay: '700ms' }} fill="currentColor" viewBox="0 0 24 24">
+                        <svg className="absolute bottom-8 right-4 w-5 h-5 sm:w-6 sm:h-6 text-blue-400 animate-pulse" style={{ animationDelay: '700ms' }} fill="currentColor" viewBox="0 0 24 24">
                           <path d="M12 0L14.59 9.41L24 12L14.59 14.59L12 24L9.41 14.59L0 12L9.41 9.41L12 0Z" />
                         </svg>
 
                         <h2
-                          className="text-4xl sm:text-5xl md:text-6xl font-black bg-gradient-to-r from-amber-500 via-orange-500 to-pink-500 bg-clip-text text-transparent mb-6"
+                          className="text-3xl sm:text-4xl md:text-5xl font-black bg-gradient-to-r from-amber-500 via-orange-500 to-pink-500 bg-clip-text text-transparent mb-4"
                           style={{
                             fontFamily: 'Georgia, "Times New Roman", serif',
                             fontStyle: 'italic',
@@ -2491,84 +2647,85 @@ function PlotWorldContent({ childId, child, initialCharacter, onCharacterUsed, u
                         >
                           {t('studio.plotWorld.reader.theEnd')}
                         </h2>
-                        <div className="flex items-center justify-center gap-4 mb-6">
-                          {/* Book icon */}
-                          <svg className="w-8 h-8 sm:w-10 sm:h-10 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                        <div className="flex items-center justify-center gap-3 mb-3">
+                          <svg className="w-6 h-6 sm:w-8 sm:h-8 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                             <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" />
                           </svg>
-                          {/* Heart icon */}
-                          <svg className="w-7 h-7 sm:w-9 sm:h-9 text-pink-500" fill="currentColor" viewBox="0 0 24 24">
+                          <svg className="w-5 h-5 sm:w-7 sm:h-7 text-pink-500" fill="currentColor" viewBox="0 0 24 24">
                             <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
                           </svg>
-                          {/* Star icon */}
-                          <svg className="w-8 h-8 sm:w-10 sm:h-10 text-amber-500" fill="currentColor" viewBox="0 0 24 24">
+                          <svg className="w-6 h-6 sm:w-8 sm:h-8 text-amber-500" fill="currentColor" viewBox="0 0 24 24">
                             <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
                           </svg>
                         </div>
+
+                        {/* Share Story Button */}
+                        <button
+                          onClick={() => handleShareStory(currentStory)}
+                          disabled={isGeneratingShareLink}
+                          className="mb-3 px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full font-semibold text-white text-sm hover:shadow-lg hover:shadow-purple-500/30 transition-all flex items-center gap-2"
+                        >
+                          {isGeneratingShareLink ? (
+                            <>
+                              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                              {isRTL ? 'יוצר קישור...' : 'Creating link...'}
+                            </>
+                          ) : (
+                            <>
+                              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+                              </svg>
+                              {isRTL ? 'שתף סיפור' : 'Share Story'}
+                            </>
+                          )}
+                        </button>
+
                         <NavigationDots />
                       </div>
                     </div>
-                  ) : spreadConfig.type === 'image-text' ? (
-                    /* Image + Single page text spread */
-                    <div className="flex flex-col md:flex-row min-h-[350px] sm:min-h-[400px] md:min-h-[450px] md:flex-1">
-                      <ImageSection imgIndex={spreadConfig.imageIndex} />
+                  ) : currentSpread.type === 'image-text' ? (
+                    /* Image + Text spread */
+                    <div className={`flex flex-col md:flex-row ${BOOK_CONTENT_HEIGHT}`}>
+                      <ImageSection imgIndex={currentSpread.imageIndex} />
                       <div className="hidden md:block w-0.5 bg-amber-200" />
-                      <div className="w-full md:w-1/2 flex flex-col bg-gradient-to-br from-amber-50 to-orange-50" dir={isRTL ? 'rtl' : 'ltr'}>
-                        {/* Single story page with full height - allow scrolling for long text */}
-                        <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
-                          <div className="text-center py-3 sm:py-4 flex-shrink-0">
-                            <span
-                              className="inline-block px-4 sm:px-5 py-1.5 bg-purple-500/20 text-purple-700 rounded-full text-sm sm:text-base font-bold"
-                              style={{ fontFamily: '"Comic Sans MS", "Chalkboard", cursive' }}
-                            >
-                              {t('studio.plotWorld.reader.page')} {spreadConfig.storyPage + 1}
-                            </span>
-                          </div>
-                          <div className="flex-1 overflow-y-auto px-4 sm:px-6 md:px-8 pb-4">
-                            <div
-                              className={`text-center leading-relaxed space-y-3 sm:space-y-4 ${
-                                (currentStory.pages?.[spreadConfig.storyPage]?.text?.length || 0) > 400
-                                  ? (isRTL ? 'text-base sm:text-lg md:text-xl' : 'text-sm sm:text-base md:text-lg')
-                                  : (currentStory.pages?.[spreadConfig.storyPage]?.text?.length || 0) > 300
-                                    ? (isRTL ? 'text-lg sm:text-xl md:text-2xl' : 'text-base sm:text-lg md:text-xl')
-                                    : (isRTL ? 'text-xl sm:text-2xl md:text-3xl' : 'text-lg sm:text-xl md:text-2xl')
-                              }`}
-                              style={{
-                                fontFamily: isRTL ? '"David Libre", "Frank Ruhl Libre", Georgia, serif' : 'Georgia, "Times New Roman", serif',
-                                lineHeight: isRTL ? '1.9' : '1.7'
-                              }}
-                            >
-                              {(currentStory.pages?.[spreadConfig.storyPage]?.text || 'Loading...').split('\n').map((line, idx) => (
-                                <p key={idx} className="text-gray-900 font-medium">{line}</p>
-                              ))}
-                            </div>
-                          </div>
+                      <div className="w-full md:w-1/2 flex flex-col bg-gradient-to-br from-amber-50 to-orange-50">
+                        <div className="flex-1 flex flex-col justify-center">
+                          <TextPage textChunk={currentSpread.textChunk} isHalfWidth={false} />
                         </div>
-                        <div className="py-2 sm:py-3 flex-shrink-0 border-t border-amber-200/50">
+                        <div className="py-2 sm:py-3 border-t border-amber-200/50">
                           <NavigationDots />
                         </div>
                       </div>
                     </div>
-                  ) : (
-                    /* Text-only spread - two pages side by side (gives time for next image to load) */
-                    <div className="flex flex-col min-h-[350px] sm:min-h-[400px] md:min-h-[300px] md:flex-1">
-                      <div className="flex-1 flex flex-col md:flex-row" dir={isRTL ? 'rtl' : 'ltr'}>
-                        <SingleTextSection pageIndex={spreadConfig.storyPages[0]} isFullWidth={false} />
-                        <div className="hidden md:block w-0.5 bg-amber-200" />
-                        <SingleTextSection pageIndex={spreadConfig.storyPages[1]} isFullWidth={false} />
+                  ) : currentSpread.type === 'image-only' ? (
+                    /* Image only spread */
+                    <div className={`flex flex-col md:flex-row ${BOOK_CONTENT_HEIGHT}`}>
+                      <ImageSection imgIndex={currentSpread.imageIndex} />
+                      <div className="hidden md:block w-0.5 bg-amber-200" />
+                      <div className="w-full md:w-1/2 flex flex-col items-center justify-center bg-gradient-to-br from-amber-50 to-orange-50 p-4">
+                        <NavigationDots />
                       </div>
-                      <div className="bg-gradient-to-br from-amber-50 to-orange-50 py-3">
+                    </div>
+                  ) : (
+                    /* Text-only spread */
+                    <div className={`flex flex-col ${BOOK_CONTENT_HEIGHT}`}>
+                      <div className="flex-1 flex flex-col md:flex-row" dir={isRTL ? 'rtl' : 'ltr'}>
+                        <TextPage textChunk={currentSpread.leftText} isHalfWidth={true} />
+                        <div className="hidden md:block w-0.5 bg-amber-200" />
+                        <TextPage textChunk={currentSpread.rightText} isHalfWidth={true} />
+                      </div>
+                      <div className="bg-gradient-to-br from-amber-50 to-orange-50 py-2 sm:py-3 border-t border-amber-200/50">
                         <NavigationDots />
                       </div>
                     </div>
                   )}
 
-                  {/* Navigation buttons - Below the book pages */}
+                  {/* Navigation buttons */}
                   <div className="bg-gradient-to-r from-amber-100 via-orange-100 to-amber-100 px-4 sm:px-6 py-2 sm:py-3 flex items-center justify-between border-t-2 border-amber-200 flex-shrink-0">
                     <button
                       onClick={() => setCurrentPage(Math.max(0, currentPage - 1))}
                       disabled={currentPage === 0}
-                      className={`flex items-center gap-1 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 bg-purple-500 hover:bg-purple-600 text-white rounded-full font-bold text-sm transition-all disabled:opacity-30 disabled:cursor-not-allowed shadow-lg hover:shadow-xl disabled:hover:shadow-lg ${isRTL ? 'flex-row-reverse' : ''}`}
+                      className={`flex items-center gap-1 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 bg-purple-500 hover:bg-purple-600 text-white rounded-full font-bold text-sm transition-all disabled:opacity-30 disabled:cursor-not-allowed shadow-lg hover:shadow-xl ${isRTL ? 'flex-row-reverse' : ''}`}
                       style={{ fontFamily: '"Comic Sans MS", "Chalkboard", cursive' }}
                     >
                       <svg className={`w-4 h-4 sm:w-5 sm:h-5 ${isRTL ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
@@ -2577,7 +2734,6 @@ function PlotWorldContent({ childId, child, initialCharacter, onCharacterUsed, u
                       <span className="hidden sm:inline">{t('common.buttons.previous')}</span>
                     </button>
 
-                    {/* Spread indicator */}
                     <span className="text-purple-700 font-bold text-xs sm:text-sm" style={{ fontFamily: '"Comic Sans MS", "Chalkboard", cursive' }}>
                       {currentPage + 1} / {totalSpreads}
                     </span>
@@ -2585,7 +2741,7 @@ function PlotWorldContent({ childId, child, initialCharacter, onCharacterUsed, u
                     <button
                       onClick={() => setCurrentPage(Math.min(totalSpreads - 1, currentPage + 1))}
                       disabled={currentPage >= totalSpreads - 1}
-                      className={`flex items-center gap-1 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 bg-purple-500 hover:bg-purple-600 text-white rounded-full font-bold text-sm transition-all disabled:opacity-30 disabled:cursor-not-allowed shadow-lg hover:shadow-xl disabled:hover:shadow-lg ${isRTL ? 'flex-row-reverse' : ''}`}
+                      className={`flex items-center gap-1 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 bg-purple-500 hover:bg-purple-600 text-white rounded-full font-bold text-sm transition-all disabled:opacity-30 disabled:cursor-not-allowed shadow-lg hover:shadow-xl ${isRTL ? 'flex-row-reverse' : ''}`}
                       style={{ fontFamily: '"Comic Sans MS", "Chalkboard", cursive' }}
                     >
                       <span className="hidden sm:inline">{t('common.buttons.next')}</span>
@@ -2637,6 +2793,69 @@ function PlotWorldContent({ childId, child, initialCharacter, onCharacterUsed, u
                 )}
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Share Story Modal */}
+      {shareModal && (
+        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4" onClick={() => setShareModal(null)}>
+          <div
+            className="bg-slate-900 border border-white/10 rounded-2xl p-6 max-w-md w-full"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="text-center mb-6">
+              <div className="text-5xl mb-4">🔗</div>
+              <h3 className="text-xl font-bold mb-2">{isRTL ? 'שתף את הסיפור' : 'Share Story'}</h3>
+              <p className="text-gray-400">
+                {isRTL ? 'שלח את הקישור הזה לחברים ומשפחה כדי שיוכלו לקרוא את הסיפור!' : 'Send this link to friends and family so they can read the story!'}
+              </p>
+            </div>
+
+            {/* Share URL input */}
+            <div className="mb-4">
+              <div className={`flex gap-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
+                <input
+                  type="text"
+                  value={shareModal.shareUrl}
+                  readOnly
+                  className="flex-1 px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white text-sm"
+                  dir="ltr"
+                />
+                <button
+                  onClick={copyShareUrl}
+                  className={`px-4 py-3 rounded-xl font-semibold transition-all flex items-center gap-2 ${
+                    shareModal.copied
+                      ? 'bg-green-500 text-white'
+                      : 'bg-gradient-to-r from-purple-500 to-pink-500 text-white hover:shadow-lg hover:shadow-purple-500/30'
+                  }`}
+                >
+                  {shareModal.copied ? (
+                    <>
+                      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                      </svg>
+                      {isRTL ? 'הועתק!' : 'Copied!'}
+                    </>
+                  ) : (
+                    <>
+                      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                      </svg>
+                      {isRTL ? 'העתק' : 'Copy'}
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+
+            {/* Close button */}
+            <button
+              onClick={() => setShareModal(null)}
+              className="w-full py-3 border border-white/20 rounded-xl font-semibold hover:bg-white/5 transition-all"
+            >
+              {isRTL ? 'סגור' : 'Close'}
+            </button>
           </div>
         </div>
       )}

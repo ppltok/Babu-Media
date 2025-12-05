@@ -12,6 +12,8 @@ import AddChild from './src/pages/AddChild'
 import FusionLab from './src/pages/FusionLab'
 import Studio from './src/pages/Studio'
 import Settings from './src/pages/Settings'
+import PublicStoryReader from './src/pages/PublicStoryReader'
+import StoryLibrary from './src/pages/StoryLibrary'
 
 // Protected Route wrapper
 function ProtectedRoute({ children }) {
@@ -64,6 +66,8 @@ function AppRoutes() {
     <Routes>
       {/* Public routes */}
       <Route path="/" element={<BabuMediaLanding />} />
+      <Route path="/library" element={<StoryLibrary />} />
+      <Route path="/story/:shareToken" element={<PublicStoryReader />} />
       <Route
         path="/login"
         element={
@@ -125,6 +129,8 @@ function AppRoutes() {
 
       {/* Hebrew locale routes - same routes under /he prefix */}
       <Route path="/he" element={<BabuMediaLanding />} />
+      <Route path="/he/library" element={<StoryLibrary />} />
+      <Route path="/he/story/:shareToken" element={<PublicStoryReader />} />
       <Route
         path="/he/login"
         element={

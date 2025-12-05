@@ -38,6 +38,7 @@ export default function BabuMediaLanding() {
   const [characterIndex, setCharacterIndex] = useState(0);
   const [testimonialIndex, setTestimonialIndex] = useState(0);
   const [pricingIndex, setPricingIndex] = useState(1);
+  const [isHoveringTestimonials, setIsHoveringTestimonials] = useState(false);
 
   // Fusion Lab Images Array
   const fusionLabImages = [
@@ -120,9 +121,15 @@ export default function BabuMediaLanding() {
   // Auto-advance hero character on tablet to show "Live" demo feel
   useEffect(() => {
     const charInterval = setInterval(() => setCharacterIndex(i => (i + 1) % characters.length), 3000);
-    const testInterval = setInterval(() => setTestimonialIndex(i => (i + 1) % testimonials.length), 5000);
-    return () => { clearInterval(charInterval); clearInterval(testInterval); };
+    return () => clearInterval(charInterval);
   }, []);
+
+  // Auto-advance testimonials (pauses on hover)
+  useEffect(() => {
+    if (isHoveringTestimonials) return;
+    const testInterval = setInterval(() => setTestimonialIndex(i => (i + 1) % testimonials.length), 5000);
+    return () => clearInterval(testInterval);
+  }, [isHoveringTestimonials, testimonials.length]);
 
   return (
     <div className="min-h-screen bg-[#0B0A16] text-white selection:bg-purple-500 selection:text-white font-sans overflow-x-hidden">
@@ -147,6 +154,13 @@ export default function BabuMediaLanding() {
             <a href="#pillars" className="text-gray-400 hover:text-white transition-colors text-sm font-medium">{t('homepage.nav.pillars')}</a>
             <a href="#how-it-works" className="text-gray-400 hover:text-white transition-colors text-sm font-medium">{t('homepage.nav.howItWorks')}</a>
             <a href="#pricing" className="text-gray-400 hover:text-white transition-colors text-sm font-medium">{t('homepage.nav.pricing')}</a>
+            <button
+              onClick={() => navigate(localizedHref('/library'))}
+              className="text-gray-400 hover:text-white transition-colors text-sm font-medium flex items-center gap-1"
+            >
+              <BookIcon className="w-4 h-4" />
+              {t('homepage.nav.library') || 'Library'}
+            </button>
           </div>
           <div className="flex items-center gap-3">
             <button
@@ -199,7 +213,10 @@ export default function BabuMediaLanding() {
                    <ChevronRightIcon className={`w-5 h-5 group-hover:translate-x-1 transition-transform ${isRTL ? 'rotate-180' : ''}`} />
                  </span>
               </button>
-              <button className="flex items-center gap-2 px-8 py-4 rounded-full font-semibold border border-white/10 hover:bg-white/5 transition-all">
+              <button
+                onClick={() => navigate(localizedHref('/library'))}
+                className="flex items-center gap-2 px-8 py-4 rounded-full font-semibold border border-white/10 hover:bg-white/5 transition-all"
+              >
                 <PlayIcon className="w-5 h-5" />
                 {t('homepage.hero.secondaryCta')}
               </button>
@@ -418,26 +435,48 @@ export default function BabuMediaLanding() {
 
       {/* --- TESTIMONIALS --- */}
       <section className="py-12 md:py-16 px-6">
-        <div className="max-w-4xl mx-auto text-center">
-          <div className="mb-8 flex justify-center gap-1">
-             {[...Array(5)].map((_, i) => <StarIcon key={i} className="w-6 h-6 text-amber-400" />)}
-          </div>
-          <h2 className="text-2xl md:text-4xl font-medium leading-relaxed mb-8">
-            "{testimonials[testimonialIndex].quote}"
-          </h2>
-          <div>
-            <div className="font-bold text-lg text-white">{testimonials[testimonialIndex].author}</div>
-            <div className="text-purple-400">{testimonials[testimonialIndex].role}</div>
-          </div>
+        <div
+          className="max-w-4xl mx-auto text-center relative"
+          onMouseEnter={() => setIsHoveringTestimonials(true)}
+          onMouseLeave={() => setIsHoveringTestimonials(false)}
+        >
+          {/* Left Arrow */}
+          <button
+            onClick={() => setTestimonialIndex(i => (i - 1 + testimonials.length) % testimonials.length)}
+            className={`absolute ${isRTL ? 'right-0' : 'left-0'} top-1/2 -translate-y-1/2 w-10 h-10 md:w-12 md:h-12 bg-white/5 hover:bg-white/10 border border-white/10 rounded-full flex items-center justify-center transition-all hover:scale-110`}
+          >
+            <ChevronLeftIcon className={`w-5 h-5 md:w-6 md:h-6 text-white ${isRTL ? 'rotate-180' : ''}`} />
+          </button>
 
-          <div className="flex justify-center gap-2 mt-8">
-            {testimonials.map((_, index) => (
-              <button
-                key={index}
-                onClick={() => setTestimonialIndex(index)}
-                className={`h-1.5 rounded-full transition-all duration-500 ${testimonialIndex === index ? 'w-8 bg-purple-500' : 'w-2 bg-white/20'}`}
-              />
-            ))}
+          {/* Right Arrow */}
+          <button
+            onClick={() => setTestimonialIndex(i => (i + 1) % testimonials.length)}
+            className={`absolute ${isRTL ? 'left-0' : 'right-0'} top-1/2 -translate-y-1/2 w-10 h-10 md:w-12 md:h-12 bg-white/5 hover:bg-white/10 border border-white/10 rounded-full flex items-center justify-center transition-all hover:scale-110`}
+          >
+            <ChevronRightIcon className={`w-5 h-5 md:w-6 md:h-6 text-white ${isRTL ? 'rotate-180' : ''}`} />
+          </button>
+
+          <div className="px-14 md:px-20">
+            <div className="mb-8 flex justify-center gap-1">
+               {[...Array(5)].map((_, i) => <StarIcon key={i} className="w-6 h-6 text-amber-400" />)}
+            </div>
+            <h2 className="text-2xl md:text-4xl font-medium leading-relaxed mb-8">
+              "{testimonials[testimonialIndex].quote}"
+            </h2>
+            <div>
+              <div className="font-bold text-lg text-white">{testimonials[testimonialIndex].author}</div>
+              <div className="text-purple-400">{testimonials[testimonialIndex].role}</div>
+            </div>
+
+            <div className="flex justify-center gap-2 mt-8">
+              {testimonials.map((_, index) => (
+                <button
+                  key={index}
+                  onClick={() => setTestimonialIndex(index)}
+                  className={`h-1.5 rounded-full transition-all duration-500 ${testimonialIndex === index ? 'w-8 bg-purple-500' : 'w-2 bg-white/20'}`}
+                />
+              ))}
+            </div>
           </div>
         </div>
       </section>
