@@ -13,7 +13,7 @@ serve(async (req) => {
   }
 
   try {
-    const { storyId, characterName, characterTraits, adventureTheme, moralLesson, visualStyle, animalType, language = 'en' } = await req.json()
+    const { storyId, characterName, characterTraits, adventureTheme, moralLesson, visualStyle, animalType, gender = 'male', language = 'en' } = await req.json()
 
     if (!storyId || !characterName || !adventureTheme) {
       throw new Error('Missing required fields: storyId, characterName, adventureTheme')
@@ -21,9 +21,24 @@ serve(async (req) => {
 
     // Language-specific settings
     const isHebrew = language === 'he'
+
+    // Gender-specific pronouns and grammar
+    const pronouns = gender === 'female'
+      ? { subject: 'she', object: 'her', possessive: 'her', reflexive: 'herself' }
+      : { subject: 'he', object: 'him', possessive: 'his', reflexive: 'himself' }
+
+    // Hebrew gender instructions (Hebrew has grammatical gender affecting verbs and adjectives)
+    const hebrewGenderInstruction = gender === 'female'
+      ? `CRITICAL HEBREW GRAMMAR: The character is FEMALE (נקבה). Use feminine verb conjugations (e.g., הלכה not הלך, ראתה not ראה, אמרה not אמר). Use feminine adjectives (e.g., אמיצה not אמיץ, קטנה not קטן, יפה stays יפה). Use היא not הוא.`
+      : `CRITICAL HEBREW GRAMMAR: The character is MALE (זכר). Use masculine verb conjugations (e.g., הלך not הלכה, ראה not ראתה, אמר not אמרה). Use masculine adjectives (e.g., אמיץ not אמיצה, קטן not קטנה). Use הוא not היא.`
+
+    const englishGenderInstruction = `PRONOUNS: Use ${pronouns.subject}/${pronouns.object}/${pronouns.possessive} pronouns for ${characterName}. Example: "${pronouns.subject.charAt(0).toUpperCase() + pronouns.subject.slice(1)} wagged ${pronouns.possessive} tail" or "${pronouns.subject} found ${pronouns.reflexive} in a magical forest."`
+
+    const genderInstruction = isHebrew ? hebrewGenderInstruction : englishGenderInstruction
+
     const languageInstruction = isHebrew
-      ? `LANGUAGE: Write the ENTIRE story in Hebrew (עברית). All page text must be in Hebrew. The title must be in Hebrew. Use natural, child-friendly Hebrew language.`
-      : `LANGUAGE: Write the entire story in English.`
+      ? `LANGUAGE: Write the ENTIRE story in Hebrew (עברית). All page text must be in Hebrew. The title must be in Hebrew. Use natural, child-friendly Hebrew language.\n\n${hebrewGenderInstruction}`
+      : `LANGUAGE: Write the entire story in English.\n\n${englishGenderInstruction}`
 
     // Get API key from environment
     const anthropicKey = Deno.env.get('ANTHROPIC_API_KEY')
@@ -49,6 +64,7 @@ serve(async (req) => {
 
     console.log('Generating story with Claude...')
     console.log('Animal type:', animalType)
+    console.log('Gender:', gender)
     console.log('Character description:', animalDescription)
     console.log('Language:', language)
 

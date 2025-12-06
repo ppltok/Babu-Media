@@ -66,6 +66,11 @@
       "nextButton": "הבא: תלבושת"
     },
     "step4": {
+      "chooseGender": "מין הדמות",
+      "genderMale": "הוא",
+      "genderFemale": "היא",
+      "genderSurprise": "הפתיעו אותי!",
+      "genderHint": "זה עוזר לנו להשתמש בלשון הנכונה בסיפורים",
       "chooseOutfit": "בחרו תלבושת",
       "orDescribeOwn": "או תארו משלכם",
       "customOutfitPlaceholder": "תארו תלבושת מותאמת אישית...",

@@ -646,6 +646,7 @@ function FusionLabContent({ childId, child, onGoToStory, user }) {
   const [selectedTraits, setSelectedTraits] = useState([])
   const [selectedOutfit, setSelectedOutfit] = useState(null)
   const [customOutfit, setCustomOutfit] = useState('')
+  const [selectedGender, setSelectedGender] = useState(null) // 'male', 'female', or null (surprise me)
   const [isGenerating, setIsGenerating] = useState(false)
   const [generatedCharacter, setGeneratedCharacter] = useState(null)
   const [generatingMessage, setGeneratingMessage] = useState('')
@@ -699,6 +700,34 @@ function FusionLabContent({ childId, child, onGoToStory, user }) {
     { id: 'bear', emoji: '🐻', name: t('studio.fusionLab.animals.bear') },
     { id: 'panda', emoji: '🐼', name: t('studio.fusionLab.animals.panda') },
   ]
+
+  // Default gender associations for animals (used when "Surprise Me" is selected)
+  const ANIMAL_DEFAULT_GENDERS = {
+    fox: 'male',
+    wolf: 'male',
+    raccoon: 'male',
+    unicorn: 'female',
+    lion: 'male',
+    owl: 'male',
+    dragon: 'male',
+    bunny: 'female',
+    cat: 'female',
+    dog: 'male',
+    bear: 'male',
+    panda: 'female',
+  }
+
+  // Get gender for story generation (uses selected or smart default)
+  const getEffectiveGender = () => {
+    if (selectedGender) return selectedGender
+    // Use animal default or random if custom animal
+    const animalId = selectedAnimal?.id
+    if (animalId && ANIMAL_DEFAULT_GENDERS[animalId]) {
+      return ANIMAL_DEFAULT_GENDERS[animalId]
+    }
+    // For custom animals, randomly pick
+    return Math.random() > 0.5 ? 'male' : 'female'
+  }
 
   // Get the actual animal name (prioritizes custom input if provided)
   const getAnimalName = () => {
@@ -827,6 +856,9 @@ function FusionLabContent({ childId, child, onGoToStory, user }) {
     const animalTypeId = customAnimalName.trim() ? `custom:${animalName}` : (selectedAnimal?.id || `custom:${animalName}`)
 
     try {
+      // Get effective gender (selected or smart default)
+      const effectiveGender = getEffectiveGender()
+
       const { data, error } = await supabase
         .from('characters')
         .insert({
@@ -837,6 +869,7 @@ function FusionLabContent({ childId, child, onGoToStory, user }) {
           visual_style: selectedStyle,
           outfit_description: outfitDesc,
           custom_prompt: prompt,
+          gender: effectiveGender,
           image_url: null
         })
         .select()
@@ -916,6 +949,7 @@ function FusionLabContent({ childId, child, onGoToStory, user }) {
     setSelectedTraits([])
     setSelectedOutfit(null)
     setCustomOutfit('')
+    setSelectedGender(null)
     setGeneratedCharacter(null)
   }
 
@@ -1320,6 +1354,68 @@ function FusionLabContent({ childId, child, onGoToStory, user }) {
                   </div>
                 ) : (
                   <>
+                    {/* Gender Selection */}
+                    <div className="mb-6">
+                      <label className="block text-sm font-medium text-gray-300 mb-2 sm:mb-3">{t('studio.fusionLab.step4.chooseGender')}</label>
+                      <div className={`grid grid-cols-3 gap-2 sm:gap-3 ${isRTL ? 'direction-rtl' : ''}`}>
+                        {/* Male */}
+                        <button
+                          onClick={() => setSelectedGender('male')}
+                          className={`p-3 sm:p-4 rounded-xl text-center transition-all ${
+                            selectedGender === 'male'
+                              ? 'bg-blue-500/30 border-2 border-blue-500'
+                              : 'bg-white/5 border-2 border-transparent hover:bg-white/10'
+                          }`}
+                        >
+                          <div className="flex flex-col items-center gap-1">
+                            <svg className="w-8 h-8 sm:w-10 sm:h-10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                              <circle cx="10" cy="14" r="5"/>
+                              <path d="M19 5l-5.4 5.4"/>
+                              <path d="M15 5h4v4"/>
+                            </svg>
+                            <span className="text-xs sm:text-sm font-medium">{t('studio.fusionLab.step4.genderMale')}</span>
+                          </div>
+                        </button>
+
+                        {/* Female */}
+                        <button
+                          onClick={() => setSelectedGender('female')}
+                          className={`p-3 sm:p-4 rounded-xl text-center transition-all ${
+                            selectedGender === 'female'
+                              ? 'bg-pink-500/30 border-2 border-pink-500'
+                              : 'bg-white/5 border-2 border-transparent hover:bg-white/10'
+                          }`}
+                        >
+                          <div className="flex flex-col items-center gap-1">
+                            <svg className="w-8 h-8 sm:w-10 sm:h-10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                              <circle cx="12" cy="8" r="5"/>
+                              <path d="M12 13v8"/>
+                              <path d="M9 18h6"/>
+                            </svg>
+                            <span className="text-xs sm:text-sm font-medium">{t('studio.fusionLab.step4.genderFemale')}</span>
+                          </div>
+                        </button>
+
+                        {/* Surprise Me */}
+                        <button
+                          onClick={() => setSelectedGender(null)}
+                          className={`p-3 sm:p-4 rounded-xl text-center transition-all ${
+                            selectedGender === null
+                              ? 'bg-purple-500/30 border-2 border-purple-500'
+                              : 'bg-white/5 border-2 border-transparent hover:bg-white/10'
+                          }`}
+                        >
+                          <div className="flex flex-col items-center gap-1">
+                            <span className="text-2xl sm:text-3xl">✨</span>
+                            <span className="text-xs sm:text-sm font-medium">{t('studio.fusionLab.step4.genderSurprise')}</span>
+                          </div>
+                        </button>
+                      </div>
+                      <p className="text-xs text-gray-500 mt-2 text-center">
+                        {t('studio.fusionLab.step4.genderHint')}
+                      </p>
+                    </div>
+
                     <div>
                       <label className="block text-sm font-medium text-gray-300 mb-2 sm:mb-3">{t('studio.fusionLab.step4.chooseOutfit')}</label>
                       <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5 sm:gap-2 mb-3 sm:mb-4">
@@ -1752,6 +1848,7 @@ function PlotWorldContent({ childId, child, initialCharacter, onCharacterUsed, u
           moralLesson: wantsMoral ? getMoralLabel() : null,
           visualStyle: visualStyle,
           animalType: selectedCharacter.animal_type, // Pass animal type so Claude knows the character is an animal
+          gender: selectedCharacter.gender, // Pass gender for proper pronoun usage (he/she, הוא/היא)
           language: language // Pass language for story generation (en/he)
         }
       })

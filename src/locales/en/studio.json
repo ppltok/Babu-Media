@@ -66,6 +66,11 @@
       "nextButton": "Next: Outfit"
     },
     "step4": {
+      "chooseGender": "Character's Gender",
+      "genderMale": "He",
+      "genderFemale": "She",
+      "genderSurprise": "Surprise Me!",
+      "genderHint": "This helps us use the right pronouns in stories",
       "chooseOutfit": "Choose an Outfit",
       "orDescribeOwn": "or describe your own",
       "customOutfitPlaceholder": "Describe a custom outfit...",
