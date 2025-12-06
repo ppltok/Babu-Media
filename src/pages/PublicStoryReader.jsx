@@ -244,7 +244,7 @@ export default function PublicStoryReader() {
   const TextPage = ({ textChunk, isHalfWidth = true }) => {
     if (!textChunk) {
       return (
-        <div className={`${isHalfWidth ? 'w-full md:w-1/2' : 'w-full'} bg-gradient-to-br from-amber-50 to-orange-50 p-5 sm:p-6 md:p-8 flex items-center justify-center`}>
+        <div className={`${isHalfWidth ? 'w-full md:w-1/2' : 'w-full'} bg-gradient-to-br from-amber-50 to-orange-50 p-3 sm:p-6 md:p-8 flex items-center justify-center overflow-hidden`}>
           <div className="text-amber-300 text-4xl">~</div>
         </div>
       )
@@ -252,18 +252,20 @@ export default function PublicStoryReader() {
 
     return (
       <div
-        className={`${isHalfWidth ? 'w-full md:w-1/2' : 'w-full'} bg-gradient-to-br from-amber-50 to-orange-50 p-5 sm:p-6 md:p-8 flex flex-col justify-center`}
+        className={`${isHalfWidth ? 'w-full md:w-1/2' : 'w-full'} bg-gradient-to-br from-amber-50 to-orange-50 p-3 sm:p-6 md:p-8 flex flex-col justify-center overflow-hidden`}
         dir={isRTL ? 'rtl' : 'ltr'}
       >
         <div
-          className={`text-center leading-relaxed space-y-2 sm:space-y-3 ${bookFontSize}`}
+          className={`text-center leading-relaxed space-y-1 sm:space-y-2 md:space-y-3 ${bookFontSize} max-w-full overflow-hidden`}
           style={{
             fontFamily: isRTL ? '"David Libre", "Frank Ruhl Libre", Georgia, serif' : 'Georgia, "Times New Roman", serif',
-            lineHeight: isRTL ? '1.8' : '1.7'
+            lineHeight: isRTL ? '1.6' : '1.5',
+            wordBreak: 'break-word',
+            overflowWrap: 'break-word'
           }}
         >
           {textChunk.text.split('\n').map((line, idx) => (
-            <p key={idx} className="text-gray-900 font-medium">{line}</p>
+            <p key={idx} className="text-gray-900 font-medium px-1">{line}</p>
           ))}
         </div>
       </div>
