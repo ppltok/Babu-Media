@@ -8,7 +8,9 @@ import { supabase } from '../lib/supabase'
 const FEATURED_SHARE_TOKENS = [
   'rZt0e7gGc2nA',
   'idMeDtwlXJ09',
-  'JYT9YUJBGnyu'
+  'JYT9YUJBGnyu',
+  'GQzszSG3q5Uj',
+  'LhfVjqxDwpL9'
 ]
 
 // Additional featured stories by title

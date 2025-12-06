@@ -6,6 +6,9 @@ import { supabase } from '../lib/supabase'
 import { canCreate, trackCreation, getUsageSummary } from '../lib/usageTracking'
 import { checkDevBypass } from '../lib/devBypass'
 import PaymentWall from '../components/PaymentWall'
+import Confetti from '../components/Confetti'
+import FunFacts from '../components/FunFacts'
+import RunnerGame from '../components/RunnerGame'
 
 // Optimized Image Component with loading state and eager loading for story images
 const OptimizedImage = ({ src, alt, className, fallback, priority = false }) => {
@@ -646,6 +649,7 @@ function FusionLabContent({ childId, child, onGoToStory, user }) {
   const [isGenerating, setIsGenerating] = useState(false)
   const [generatedCharacter, setGeneratedCharacter] = useState(null)
   const [generatingMessage, setGeneratingMessage] = useState('')
+  const [showConfetti, setShowConfetti] = useState(false)
 
   // Payment wall state
   const [showPaymentWall, setShowPaymentWall] = useState(false)
@@ -874,6 +878,9 @@ function FusionLabContent({ childId, child, onGoToStory, user }) {
         const updatedCharacter = { ...data, image_url: result.imageUrl }
         setGeneratedCharacter(updatedCharacter)
         setCharacters(prev => prev.map(c => c.id === data.id ? updatedCharacter : c))
+        // Trigger confetti celebration!
+        setShowConfetti(true)
+        setTimeout(() => setShowConfetti(false), 4000)
       }
 
       setStep(5)
@@ -922,6 +929,9 @@ function FusionLabContent({ childId, child, onGoToStory, user }) {
 
   return (
     <div className={`p-4 sm:p-6 lg:p-8 ${isRTL ? 'text-right' : 'text-left'}`}>
+      {/* Confetti Effect for Character Creation */}
+      <Confetti active={showConfetti} duration={4000} />
+
       {/* Payment Wall Modal */}
       <PaymentWall
         isOpen={showPaymentWall}
@@ -1538,6 +1548,9 @@ function PlotWorldContent({ childId, child, initialCharacter, onCharacterUsed, u
   const [shareModal, setShareModal] = useState(null) // { story, shareUrl, copied }
   const [isGeneratingShareLink, setIsGeneratingShareLink] = useState(false)
 
+  // Confetti state
+  const [showConfetti, setShowConfetti] = useState(false)
+
   // Adventure theme options - using translations
   const ADVENTURE_THEMES = [
     { id: 'space', emoji: '🚀', label: t('studio.plotWorld.adventures.space.label'), desc: t('studio.plotWorld.adventures.space.desc') },
@@ -1753,79 +1766,73 @@ function PlotWorldContent({ childId, child, initialCharacter, onCharacterUsed, u
 
       const imagePrompts = storyResult.story.imagePrompts || []
 
-      // PROGRESSIVE LOADING: Generate first image, show reader, then generate rest in background
-      setGenerationStatus(`🎨 ${t('studio.plotWorld.generating.paintingOpening')}`)
+      // WAIT FOR ALL IMAGES: Generate all images sequentially, then show the book
+      // This ensures no race conditions and correct image order
+      const totalImages = imagePrompts.length
 
-      // Generate ONLY the first image and wait for it
-      const firstImagePrompt = imagePrompts[0]
-      if (firstImagePrompt) {
-        const firstImageResponse = await supabase.functions.invoke('generate-story-image', {
-          body: {
-            storyId: storyData.id,
-            imageNumber: firstImagePrompt.imageNumber,
-            prompt: firstImagePrompt.prompt,
-            characterImageUrl: selectedCharacter.image_url,
-            visualStyle: visualStyle,
-            animalType: selectedCharacter.animal_type
-          }
-        })
+      for (let i = 0; i < imagePrompts.length; i++) {
+        const imagePrompt = imagePrompts[i]
+        const imageNum = i + 1
 
-        if (firstImageResponse.error) {
-          console.error('First image generation error:', firstImageResponse.error)
+        // Update status for each image
+        if (imageNum === 1) {
+          setGenerationStatus(isRTL ? `🎨 מצייר את הדף הראשון... (${imageNum}/${totalImages})` : `🎨 Painting page ${imageNum} of ${totalImages}...`)
+        } else if (imageNum === totalImages) {
+          setGenerationStatus(isRTL ? `🎨 מסיים את האיור האחרון... (${imageNum}/${totalImages})` : `🎨 Finishing the last illustration... (${imageNum}/${totalImages})`)
         } else {
-          console.log('First image generated successfully')
-          // Preload the first image
-          if (firstImageResponse.data?.imageUrl) {
-            const img = new Image()
-            img.src = firstImageResponse.data.imageUrl
-          }
+          setGenerationStatus(isRTL ? `🎨 מצייר דף ${imageNum} מתוך ${totalImages}...` : `🎨 Painting page ${imageNum} of ${totalImages}...`)
         }
-      }
 
-      // Show reader immediately with first image
-      setGenerationStatus(`📖 ${t('studio.plotWorld.generating.showAboutToBegin')}`)
+        try {
+          console.log(`Starting image ${imageNum} generation...`)
+          const response = await supabase.functions.invoke('generate-story-image', {
+            body: {
+              storyId: storyData.id,
+              imageNumber: imagePrompt.imageNumber,
+              prompt: imagePrompt.prompt,
+              characterImageUrl: selectedCharacter.image_url,
+              visualStyle: visualStyle,
+              animalType: selectedCharacter.animal_type
+            }
+          })
 
-      // Fetch story with first image
-      const { data: storyWithFirstImage } = await supabase
-        .from('stories')
-        .select('*, characters(name, image_url)')
-        .eq('id', storyData.id)
-        .single()
-
-      // Show reader immediately - user can start reading while other images generate
-      setCurrentStory(storyWithFirstImage)
-      setCurrentPage(0)
-      setStep(6)
-      setStories([storyWithFirstImage, ...stories])
-      setIsGenerating(false)
-
-      // Generate remaining images in background (don't await - fire and forget)
-      const remainingPrompts = imagePrompts.slice(1)
-      remainingPrompts.forEach((imagePrompt) => {
-        supabase.functions.invoke('generate-story-image', {
-          body: {
-            storyId: storyData.id,
-            imageNumber: imagePrompt.imageNumber,
-            prompt: imagePrompt.prompt,
-            characterImageUrl: selectedCharacter.image_url,
-            visualStyle: visualStyle,
-            animalType: selectedCharacter.animal_type
-          }
-        }).then((response) => {
           if (response.error) {
-            console.error(`Image ${imagePrompt.imageNumber} generation error:`, response.error)
+            console.error(`Image ${imageNum} generation error:`, response.error)
           } else {
-            console.log(`Image ${imagePrompt.imageNumber} generated successfully in background`)
+            console.log(`Image ${imageNum} generated successfully`)
             // Preload the image
             if (response.data?.imageUrl) {
               const img = new Image()
               img.src = response.data.imageUrl
             }
           }
-        })
-      })
+        } catch (err) {
+          console.error(`Image ${imageNum} error:`, err)
+        }
+      }
 
-      // Update story status to completed after all images are queued
+      // All images generated - now show the book!
+      setGenerationStatus(isRTL ? '📖 הסיפור מוכן!' : '📖 Your story is ready!')
+
+      // Fetch complete story with all images
+      const { data: completeStory } = await supabase
+        .from('stories')
+        .select('*, characters(name, image_url)')
+        .eq('id', storyData.id)
+        .single()
+
+      // Show reader with all images
+      setCurrentStory(completeStory)
+      setCurrentPage(0)
+      setStep(6)
+      setStories([completeStory, ...stories])
+      setIsGenerating(false)
+
+      // Trigger confetti celebration!
+      setShowConfetti(true)
+      setTimeout(() => setShowConfetti(false), 4000)
+
+      // Update story status to completed
       await supabase
         .from('stories')
         .update({ status: 'completed' })
@@ -1960,6 +1967,9 @@ function PlotWorldContent({ childId, child, initialCharacter, onCharacterUsed, u
 
   return (
     <div className={`p-4 sm:p-6 lg:p-8 ${isRTL ? 'text-right' : 'text-left'}`}>
+      {/* Confetti Effect for Story Creation */}
+      <Confetti active={showConfetti} duration={4000} />
+
       {/* Payment Wall Modal */}
       <PaymentWall
         isOpen={showPaymentWall}
@@ -2363,29 +2373,50 @@ function PlotWorldContent({ childId, child, initialCharacter, onCharacterUsed, u
           </div>
         </div>
       ) : step === 5 ? (
-        /* Step 5: Generating */
-        <div className="max-w-2xl mx-auto px-2 sm:px-0">
-          <div className="bg-gradient-to-br from-blue-900/20 to-purple-900/20 border border-blue-500/20 rounded-2xl p-6 sm:p-12 text-center">
-            <div className="w-20 h-20 sm:w-28 sm:h-28 mx-auto mb-6 sm:mb-8 relative">
-              <div className="absolute inset-0 border-4 border-blue-500/30 rounded-full"></div>
-              <div className="absolute inset-0 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
-              <div className="absolute inset-0 flex items-center justify-center">
-                {selectedCharacter?.image_url ? (
-                  <img
-                    src={selectedCharacter.image_url}
-                    alt={selectedCharacter.name}
-                    className="w-12 h-12 sm:w-16 sm:h-16 rounded-full object-cover animate-pulse"
-                  />
-                ) : (
-                  <span className="text-3xl sm:text-4xl animate-bounce">📖</span>
-                )}
+        /* Step 5: Generating - with Runner Game */
+        <div className="max-w-3xl mx-auto px-2 sm:px-0">
+          {/* Header with status */}
+          <div className="bg-gradient-to-br from-blue-900/20 to-purple-900/20 border border-blue-500/20 rounded-2xl p-4 sm:p-6 text-center mb-6">
+            <div className="flex items-center justify-center gap-3 mb-3">
+              <div className="w-12 h-12 sm:w-16 sm:h-16 relative">
+                <div className="absolute inset-0 border-3 border-blue-500/30 rounded-full"></div>
+                <div className="absolute inset-0 border-3 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+                <div className="absolute inset-0 flex items-center justify-center">
+                  {selectedCharacter?.image_url ? (
+                    <img
+                      src={selectedCharacter.image_url}
+                      alt={selectedCharacter.name}
+                      className="w-8 h-8 sm:w-10 sm:h-10 rounded-full object-cover"
+                    />
+                  ) : (
+                    <span className="text-xl sm:text-2xl">📖</span>
+                  )}
+                </div>
+              </div>
+              <div className="text-left">
+                <h2 className="text-lg sm:text-xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
+                  {isRTL ? 'יוצרים את הסיפור שלך...' : 'Creating Your Story...'}
+                </h2>
+                <p className="text-gray-400 text-xs sm:text-sm">{generationStatus}</p>
               </div>
             </div>
-            <h2 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4 bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
-              {selectedCharacter?.name}{t('studio.plotWorld.generating.personalizedHeader')}
-            </h2>
-            <p className="text-gray-300 text-sm sm:text-base mb-3 sm:mb-4 font-medium">{generationStatus}</p>
-            <p className="text-xs sm:text-sm text-gray-500">{t('studio.plotWorld.generating.showAboutToBegin')}</p>
+            <p className="text-xs text-gray-500">
+              {isRTL ? '🎮 שחקו במשחק בזמן שאנחנו יוצרים את הקסם!' : '🎮 Play the game while we create the magic!'}
+            </p>
+          </div>
+
+          {/* Runner Game */}
+          <div className="mb-6">
+            <RunnerGame
+              characterImage={selectedCharacter?.image_url}
+              characterName={selectedCharacter?.name}
+              isRTL={isRTL}
+            />
+          </div>
+
+          {/* Fun Facts below the game */}
+          <div className="mt-4">
+            <FunFacts theme={adventureTheme || 'default'} isRTL={isRTL} />
           </div>
         </div>
       ) : step === 6 && currentStory ? (

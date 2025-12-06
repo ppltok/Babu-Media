@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from './src/contexts/AuthContext';
 import { useLanguage } from './src/contexts/LanguageContext';
+import Confetti from './src/components/Confetti';
 
 // Lemon Squeezy Payment URLs
 const LEMON_SQUEEZY_CREATOR_URL = 'https://babumedia.lemonsqueezy.com/buy/870ca6c4-80e6-440f-8bb4-a795be72ce39';
@@ -39,6 +40,7 @@ export default function BabuMediaLanding() {
   const [testimonialIndex, setTestimonialIndex] = useState(0);
   const [pricingIndex, setPricingIndex] = useState(1);
   const [isHoveringTestimonials, setIsHoveringTestimonials] = useState(false);
+  const [showConfetti, setShowConfetti] = useState(false);
 
   // Fusion Lab Images Array
   const fusionLabImages = [
@@ -133,6 +135,20 @@ export default function BabuMediaLanding() {
 
   return (
     <div className="min-h-screen bg-[#0B0A16] text-white selection:bg-purple-500 selection:text-white font-sans overflow-x-hidden">
+
+      {/* Confetti Effect */}
+      <Confetti active={showConfetti} duration={4000} />
+
+      {/* TEST BUTTON - Remove after testing */}
+      <button
+        onClick={() => {
+          setShowConfetti(true);
+          setTimeout(() => setShowConfetti(false), 4000);
+        }}
+        className="fixed bottom-4 right-4 z-[9998] px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full text-white font-bold text-sm shadow-lg hover:scale-105 transition-transform"
+      >
+        🎉 Party
+      </button>
 
       {/* --- BACKGROUND EFFECTS --- */}
       <div className="fixed inset-0 pointer-events-none">
