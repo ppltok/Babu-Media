@@ -35,12 +35,13 @@ const SchoolIcon = ({ className }) => (<svg className={className} fill="none" vi
 export default function BabuMediaLanding() {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { t, isRTL, localizedHref } = useLanguage();
+  const { t, isRTL, localizedHref, language, setLanguage } = useLanguage();
   const [characterIndex, setCharacterIndex] = useState(0);
   const [testimonialIndex, setTestimonialIndex] = useState(0);
   const [pricingIndex, setPricingIndex] = useState(1);
   const [isHoveringTestimonials, setIsHoveringTestimonials] = useState(false);
   const [showConfetti, setShowConfetti] = useState(false);
+  const [langDropdownOpen, setLangDropdownOpen] = useState(false);
 
   // Fusion Lab Images Array
   const fusionLabImages = [
@@ -178,10 +179,57 @@ export default function BabuMediaLanding() {
               {t('homepage.nav.library') || 'Library'}
             </button>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
+            {/* Language Dropdown */}
+            <div className="relative">
+              <button
+                onClick={() => setLangDropdownOpen(!langDropdownOpen)}
+                className="flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-2 bg-white/10 hover:bg-white/20 border border-white/10 rounded-full text-sm font-medium transition-all"
+              >
+                <span className="text-base">{language === 'en' ? '🇺🇸' : '🇮🇱'}</span>
+                <span className="hidden sm:inline text-xs">{language === 'en' ? 'EN' : 'עב'}</span>
+                <svg className={`w-3 h-3 transition-transform ${langDropdownOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+              {langDropdownOpen && (
+                <>
+                  {/* Backdrop to close dropdown */}
+                  <div
+                    className="fixed inset-0 z-40"
+                    onClick={() => setLangDropdownOpen(false)}
+                  />
+                  {/* Dropdown menu */}
+                  <div className="absolute top-full right-0 mt-2 bg-[#1a1a2e] border border-white/10 rounded-xl shadow-xl z-50 overflow-hidden min-w-[140px]">
+                    <button
+                      onClick={() => {
+                        setLanguage('en');
+                        setLangDropdownOpen(false);
+                      }}
+                      className={`w-full flex items-center gap-3 px-4 py-3 hover:bg-white/10 transition-colors ${language === 'en' ? 'bg-purple-500/20' : ''}`}
+                    >
+                      <span className="text-lg">🇺🇸</span>
+                      <span className="text-sm font-medium">English</span>
+                      {language === 'en' && <span className="ml-auto text-purple-400">✓</span>}
+                    </button>
+                    <button
+                      onClick={() => {
+                        setLanguage('he');
+                        setLangDropdownOpen(false);
+                      }}
+                      className={`w-full flex items-center gap-3 px-4 py-3 hover:bg-white/10 transition-colors ${language === 'he' ? 'bg-purple-500/20' : ''}`}
+                    >
+                      <span className="text-lg">🇮🇱</span>
+                      <span className="text-sm font-medium">עברית</span>
+                      {language === 'he' && <span className="ml-auto text-purple-400">✓</span>}
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
             <button
               onClick={() => navigate(user ? localizedHref('/dashboard') : localizedHref('/signup'))}
-              className="group relative bg-gradient-to-r from-purple-500 to-pink-500 px-6 py-2.5 rounded-full text-sm font-semibold transition-all overflow-hidden hover:shadow-xl hover:shadow-purple-500/30 hover:scale-105">
+              className="group relative bg-gradient-to-r from-purple-500 to-pink-500 px-4 sm:px-6 py-2.5 rounded-full text-sm font-semibold transition-all overflow-hidden hover:shadow-xl hover:shadow-purple-500/30 hover:scale-105">
               <span className="absolute inset-0 rounded-full bg-white/20 animate-pulse"></span>
               <span className="relative">
                 {t('homepage.nav.create')}
@@ -189,7 +237,7 @@ export default function BabuMediaLanding() {
             </button>
             <button
               onClick={() => navigate(localizedHref('/login'))}
-              className="bg-white/10 hover:bg-white/20 border border-white/10 px-5 py-2 rounded-full text-sm font-semibold transition-all">
+              className="hidden sm:block bg-white/10 hover:bg-white/20 border border-white/10 px-5 py-2 rounded-full text-sm font-semibold transition-all">
               {t('homepage.nav.login')}
             </button>
           </div>
@@ -216,7 +264,10 @@ export default function BabuMediaLanding() {
             </h1>
 
             <p className="text-xl text-gray-400 mb-8 leading-relaxed max-w-2xl mx-auto lg:mx-0">
-              {t('homepage.hero.subtitle')}
+              {t('homepage.hero.subtitlePart1')}{' '}
+              <span className="text-red-400 font-semibold">{t('homepage.hero.subtitlePassive')}</span>{' '}
+              {t('homepage.hero.subtitlePart2')}{' '}
+              <span className="text-purple-400 font-semibold">{t('homepage.hero.subtitleActive')}</span>
             </p>
 
             <div className={`flex flex-col sm:flex-row items-center justify-center lg:justify-${isRTL ? 'end' : 'start'} gap-4`}>

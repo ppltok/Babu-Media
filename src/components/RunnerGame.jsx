@@ -1,10 +1,22 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 
+// Local storage key for persistent best score
+const BEST_SCORE_KEY = 'babu_runner_best_score'
+
 // Simple endless runner game for kids while waiting for story generation
 export default function RunnerGame({ characterImage, characterName, isRTL = false }) {
   const [gameState, setGameState] = useState('idle') // 'idle', 'playing', 'gameover'
   const [score, setScore] = useState(0)
-  const [highScore, setHighScore] = useState(0)
+  const [highScore, setHighScore] = useState(() => {
+    // Load best score from localStorage on initial render
+    try {
+      const saved = localStorage.getItem(BEST_SCORE_KEY)
+      return saved ? parseInt(saved, 10) : 0
+    } catch {
+      return 0
+    }
+  })
+  const [isNewRecord, setIsNewRecord] = useState(false)
 
   // Use refs for game state that changes rapidly
   const characterYRef = useRef(0)
@@ -35,6 +47,7 @@ export default function RunnerGame({ characterImage, characterName, isRTL = fals
     starsRef.current = []
     scoreRef.current = 0
     setScore(0)
+    setIsNewRecord(false)
     lastTimeRef.current = 0
   }, [])
 
@@ -185,7 +198,20 @@ export default function RunnerGame({ characterImage, characterName, isRTL = fals
       // Check game over
       if (hitObstacle) {
         setGameState('gameover')
-        setHighScore(prev => Math.max(prev, scoreRef.current))
+        const finalScore = scoreRef.current
+        setHighScore(prev => {
+          if (finalScore > prev) {
+            // New record! Save to localStorage
+            setIsNewRecord(true)
+            try {
+              localStorage.setItem(BEST_SCORE_KEY, finalScore.toString())
+            } catch {
+              // Ignore localStorage errors
+            }
+            return finalScore
+          }
+          return prev
+        })
         return
       }
 
@@ -350,9 +376,9 @@ export default function RunnerGame({ characterImage, characterName, isRTL = fals
               <p className="text-white text-lg mb-1">
                 {isRTL ? `ניקוד: ${score}` : `Score: ${score}`}
               </p>
-              {score >= highScore && score > 0 && (
-                <p className="text-green-400 text-sm mb-2">
-                  {isRTL ? '🏆 שיא חדש!' : '🏆 New High Score!'}
+              {isNewRecord && (
+                <p className="text-green-400 text-sm mb-2 animate-pulse">
+                  {isRTL ? '🏆 שיא חדש!' : '🏆 New Best Score!'}
                 </p>
               )}
               <p className="text-gray-300 text-sm animate-pulse mt-2">

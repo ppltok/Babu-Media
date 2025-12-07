@@ -1,6 +1,6 @@
 {
   "meta": {
-    "title": "Babu Media - Build Your Own Disney World",
+    "title": "Babu Media - From Readers to Creators",
     "description": "Transform passive screen time into active bonding with personalized bedtime stories"
   },
   "nav": {
@@ -13,17 +13,21 @@
   },
   "hero": {
     "tagline": "Reimagining Bedtime Stories",
-    "titleLine1": "Build Your Own",
-    "titleLine2": "Disney World",
+    "titleLine1": "From Readers",
+    "titleLine2": "to Creators",
     "subtitle": "Transform Passive Screen Time into Active Bonding",
+    "subtitlePart1": "Transform",
+    "subtitlePassive": "Passive Screen Time",
+    "subtitlePart2": "into",
+    "subtitleActive": "Active Bonding",
     "description": "Create AI-powered characters with your child, then watch them come to life in personalized bedtime adventures. No coding. No drawing skills. Just imagination.",
     "cta": "Start Creating Free",
     "secondaryCta": "See the Magic",
     "socialProof": "from 1,000+ Fathers"
   },
   "stats": {
-    "bondingTime": "20m Avg. Bonding Time",
-    "imaginationYears": "3-10 Prime Imagination Years",
+    "bondingTime": "Avg. Bonding Time",
+    "imaginationYears": "Prime Imagination Years",
     "storyPossibilities": "Story Possibilities"
   },
   "pillars": {
@@ -78,17 +82,17 @@
     "testimonial1": {
       "quote": "For the first time, bedtime isn't a battle. My daughter asks to create stories with me. The bonding is real—we're building something together.",
       "author": "Sarah M.",
-      "role": "Mom of 2"
+      "role": "Mother of Daniel"
     },
     "testimonial2": {
       "quote": "The 'Ikea Effect' is real. My son is obsessed with HIS fox character. He cares about these stories because he helped create them.",
       "author": "David R.",
-      "role": "Dad of 1"
+      "role": "Father of Nova"
     },
     "testimonial3": {
       "quote": "Finally, an app that makes ME the hero sidekick. We create together, read together, laugh together. Screen time I actually feel good about.",
       "author": "Michael K.",
-      "role": "Dad of 3"
+      "role": "Father of Ethan"
     }
   },
   "pricing": {

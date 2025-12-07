@@ -176,6 +176,79 @@ Return ONLY the JSON, no other text.`
       throw new Error('Failed to parse story response')
     }
 
+    // For Hebrew stories, run a grammar/language correction pass
+    // This fixes issues where Claude sometimes outputs Arabic letters or grammar errors
+    if (isHebrew) {
+      console.log('Running Hebrew grammar correction pass...')
+
+      const hebrewCorrectionResponse = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': anthropicKey,
+          'anthropic-version': '2023-06-01'
+        },
+        body: JSON.stringify({
+          model: 'claude-sonnet-4-20250514',
+          max_tokens: 3000,
+          messages: [{
+            role: 'user',
+            content: `You are a Hebrew language editor. Your task is to correct a children's story written in Hebrew.
+
+IMPORTANT CORRECTIONS TO MAKE:
+1. Replace ANY Arabic letters with the correct Hebrew letters (e.g., ا→א, ب→ב, ت→ת, etc.)
+2. Fix any Hebrew grammar errors (verb conjugations, gender agreement, etc.)
+3. Ensure natural, child-friendly Hebrew language
+4. Keep the story content and meaning EXACTLY the same - only fix language issues
+5. The character ${characterName} is ${gender === 'female' ? 'FEMALE (נקבה)' : 'MALE (זכר)'} - ensure all verbs and adjectives match this gender
+
+Here is the story to correct:
+
+Title: ${storyData.title}
+
+${storyData.pages.map((p: { pageNumber: number; text: string }) => `Page ${p.pageNumber}:\n${p.text}`).join('\n\n')}
+
+Return ONLY a JSON object with the corrected text in this exact format:
+{
+  "title": "הכותרת המתוקנת",
+  "pages": [
+    {"pageNumber": 1, "text": "טקסט מתוקן..."},
+    {"pageNumber": 2, "text": "..."},
+    {"pageNumber": 3, "text": "..."},
+    {"pageNumber": 4, "text": "..."},
+    {"pageNumber": 5, "text": "..."},
+    {"pageNumber": 6, "text": "..."}
+  ]
+}
+
+Return ONLY the JSON, no other text. Keep \\n line breaks in the text.`
+          }]
+        })
+      })
+
+      if (hebrewCorrectionResponse.ok) {
+        const correctionData = await hebrewCorrectionResponse.json()
+        const correctionContent = correctionData.content[0].text
+
+        try {
+          const correctionJsonMatch = correctionContent.match(/\{[\s\S]*\}/)
+          if (correctionJsonMatch) {
+            const correctedStory = JSON.parse(correctionJsonMatch[0])
+            // Update only title and pages, keep original imagePrompts (they're in English for image generation)
+            storyData.title = correctedStory.title
+            storyData.pages = correctedStory.pages
+            console.log('Hebrew correction applied successfully')
+          }
+        } catch (correctionParseError) {
+          console.error('Hebrew correction parse error (using original):', correctionParseError)
+          // Continue with original story if correction fails
+        }
+      } else {
+        console.error('Hebrew correction API error (using original):', await hebrewCorrectionResponse.text())
+        // Continue with original story if correction fails
+      }
+    }
+
     // Update story with generated content
     const { error: updateError } = await supabase
       .from('stories')

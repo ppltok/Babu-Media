@@ -65,6 +65,25 @@ export default function PublicStoryReader() {
   const [error, setError] = useState(null)
   const [currentPage, setCurrentPage] = useState(0)
 
+  // Gradient templates for book headlines - each story gets a consistent gradient based on its ID
+  const HEADLINE_GRADIENTS = [
+    'from-pink-400 via-purple-400 to-blue-400',
+    'from-amber-400 via-orange-500 to-red-400',
+    'from-emerald-400 via-teal-400 to-cyan-400',
+    'from-violet-400 via-fuchsia-400 to-pink-400',
+    'from-blue-400 via-indigo-400 to-purple-400',
+    'from-rose-400 via-pink-400 to-orange-400',
+    'from-cyan-400 via-sky-400 to-blue-400',
+    'from-lime-400 via-green-400 to-emerald-400',
+  ]
+
+  // Get a consistent gradient for a story based on its ID
+  const getStoryGradient = (storyId) => {
+    if (!storyId) return HEADLINE_GRADIENTS[0]
+    const sum = storyId.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0)
+    return HEADLINE_GRADIENTS[sum % HEADLINE_GRADIENTS.length]
+  }
+
   useEffect(() => {
     const fetchStory = async () => {
       try {
@@ -207,19 +226,25 @@ export default function PublicStoryReader() {
   const totalSpreads = spreads.length
   const currentSpread = spreads[currentPage] || spreads[0]
 
-  const BOOK_CONTENT_HEIGHT = 'h-[320px] sm:h-[380px] md:h-[420px]'
+  // Book uses 16:9 vertical (portrait) on mobile for more text space
+  // On mobile: aspect-[9/16] gives tall portrait view
+  // On tablet/desktop: fixed height for side-by-side layout
+  const BOOK_CONTENT_HEIGHT = 'aspect-[9/16] sm:aspect-auto sm:h-[420px] md:h-[420px]'
 
   const longestChunkLength = Math.max(...textChunks.map(chunk => chunk.text.length), 0)
   const getBookFontSize = () => {
+    // 16:9 portrait on mobile gives us more room for text
+    if (longestChunkLength > 150) return isRTL ? 'text-sm sm:text-base md:text-lg' : 'text-sm sm:text-sm md:text-base'
     if (longestChunkLength > 120) return isRTL ? 'text-base sm:text-lg md:text-xl' : 'text-sm sm:text-base md:text-lg'
-    if (longestChunkLength > 80) return isRTL ? 'text-lg sm:text-xl md:text-2xl' : 'text-base sm:text-lg md:text-xl'
-    return isRTL ? 'text-xl sm:text-2xl md:text-3xl' : 'text-lg sm:text-xl md:text-2xl'
+    if (longestChunkLength > 80) return isRTL ? 'text-base sm:text-xl md:text-2xl' : 'text-base sm:text-lg md:text-xl'
+    return isRTL ? 'text-lg sm:text-2xl md:text-3xl' : 'text-lg sm:text-xl md:text-2xl'
   }
   const bookFontSize = getBookFontSize()
 
+  // Image component - landscape on mobile, square on desktop
   const ImageSection = ({ imgIndex }) => (
-    <div className="w-full md:w-1/2 bg-gradient-to-br from-amber-100 to-orange-100 p-4 sm:p-6 flex items-center justify-center">
-      <div className="relative w-full max-w-[200px] sm:max-w-[240px] md:max-w-[280px] aspect-square rounded-xl overflow-hidden shadow-lg border-4 border-amber-200/50">
+    <div className="w-full md:w-1/2 bg-gradient-to-br from-amber-100 to-orange-100 p-3 sm:p-4 md:p-6 flex items-center justify-center flex-shrink-0">
+      <div className="relative w-full max-w-[280px] sm:max-w-[220px] md:max-w-[280px] aspect-[4/3] md:aspect-square rounded-xl overflow-hidden shadow-lg border-4 border-amber-200/50">
         {story.images?.[imgIndex]?.url ? (
           <OptimizedImage
             src={story.images[imgIndex].url}
@@ -244,7 +269,7 @@ export default function PublicStoryReader() {
   const TextPage = ({ textChunk, isHalfWidth = true }) => {
     if (!textChunk) {
       return (
-        <div className={`${isHalfWidth ? 'w-full md:w-1/2' : 'w-full'} bg-gradient-to-br from-amber-50 to-orange-50 p-3 sm:p-6 md:p-8 flex items-center justify-center overflow-hidden`}>
+        <div className={`${isHalfWidth ? 'w-full md:w-1/2' : 'w-full h-full'} bg-gradient-to-br from-amber-50 to-orange-50 p-2 sm:p-4 md:p-8 flex items-center justify-center overflow-hidden`}>
           <div className="text-amber-300 text-4xl">~</div>
         </div>
       )
@@ -252,11 +277,11 @@ export default function PublicStoryReader() {
 
     return (
       <div
-        className={`${isHalfWidth ? 'w-full md:w-1/2' : 'w-full'} bg-gradient-to-br from-amber-50 to-orange-50 p-3 sm:p-6 md:p-8 flex flex-col justify-center overflow-hidden`}
+        className={`${isHalfWidth ? 'w-full md:w-1/2' : 'w-full h-full'} bg-gradient-to-br from-amber-50 to-orange-50 p-4 sm:p-5 md:p-8 flex flex-col justify-center`}
         dir={isRTL ? 'rtl' : 'ltr'}
       >
         <div
-          className={`text-center leading-relaxed space-y-1 sm:space-y-2 md:space-y-3 ${bookFontSize} max-w-full overflow-hidden`}
+          className={`text-center leading-relaxed space-y-2 sm:space-y-2 md:space-y-3 ${bookFontSize} max-w-full`}
           style={{
             fontFamily: isRTL ? '"David Libre", "Frank Ruhl Libre", Georgia, serif' : 'Georgia, "Times New Roman", serif',
             lineHeight: isRTL ? '1.6' : '1.5',
@@ -265,7 +290,7 @@ export default function PublicStoryReader() {
           }}
         >
           {textChunk.text.split('\n').map((line, idx) => (
-            <p key={idx} className="text-gray-900 font-medium px-1">{line}</p>
+            <p key={idx} className="text-gray-900 font-medium px-2">{line}</p>
           ))}
         </div>
       </div>
@@ -337,8 +362,8 @@ export default function PublicStoryReader() {
 
           {/* Inner book pages */}
           <div className="bg-gradient-to-br from-amber-50 to-orange-50 rounded-2xl overflow-hidden shadow-inner flex flex-col">
-            {/* Story Title */}
-            <div className="bg-gradient-to-r from-pink-400 via-purple-400 to-blue-400 py-2 sm:py-3 px-4 sm:px-6 flex-shrink-0">
+            {/* Story Title - gradient varies per story */}
+            <div className={`bg-gradient-to-r ${getStoryGradient(story?.id)} py-2 sm:py-3 px-4 sm:px-6 flex-shrink-0`}>
               <h1
                 className="text-base sm:text-lg md:text-xl lg:text-2xl font-black text-white text-center drop-shadow-lg"
                 style={{
@@ -399,24 +424,26 @@ export default function PublicStoryReader() {
                 </div>
               </div>
             ) : currentSpread.type === 'image-text' ? (
-              <div className={`flex flex-col md:flex-row ${BOOK_CONTENT_HEIGHT}`}>
+              <div className={`flex flex-col md:flex-row ${BOOK_CONTENT_HEIGHT} overflow-hidden`}>
                 <ImageSection imgIndex={currentSpread.imageIndex} />
                 <div className="hidden md:block w-0.5 bg-amber-200" />
-                <div className="w-full md:w-1/2 flex flex-col bg-gradient-to-br from-amber-50 to-orange-50">
-                  <div className="flex-1 flex flex-col justify-center">
+                <div className="w-full md:w-1/2 flex flex-col bg-gradient-to-br from-amber-50 to-orange-50 min-h-0 flex-1 overflow-hidden">
+                  <div className="flex-1 flex flex-col justify-center min-h-0 overflow-hidden">
                     <TextPage textChunk={currentSpread.textChunk} isHalfWidth={false} />
                   </div>
-                  <div className="py-2 sm:py-3 border-t border-amber-200/50">
+                  <div className="py-2 sm:py-3 border-t border-amber-200/50 flex-shrink-0">
                     <NavigationDots />
                   </div>
                 </div>
               </div>
             ) : (
-              <div className={`flex flex-col md:flex-row ${BOOK_CONTENT_HEIGHT}`}>
-                <TextPage textChunk={currentSpread.textChunk} />
-                <div className="hidden md:block w-0.5 bg-amber-200" />
-                <TextPage textChunk={currentSpread.textChunk2} />
-                <div className="py-2 sm:py-3 md:absolute md:bottom-2 md:left-0 md:right-0">
+              <div className={`flex flex-col ${BOOK_CONTENT_HEIGHT}`}>
+                <div className="flex-1 flex flex-col md:flex-row items-center justify-center">
+                  <TextPage textChunk={currentSpread.textChunk} />
+                  <div className="hidden md:block w-0.5 bg-amber-200" />
+                  <TextPage textChunk={currentSpread.textChunk2} />
+                </div>
+                <div className="bg-gradient-to-br from-amber-50 to-orange-50 py-2 sm:py-3 border-t border-amber-200/50">
                   <NavigationDots />
                 </div>
               </div>
