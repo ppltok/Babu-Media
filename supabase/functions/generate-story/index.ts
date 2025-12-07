@@ -99,7 +99,7 @@ CRITICAL CHARACTER REQUIREMENT:
 - ${characterName} should act like a cute animated animal character (like in Pixar/Disney movies)
 
 REQUIREMENTS:
-- Create exactly 6 pages (scenes) for the story
+- Create exactly 8 pages (scenes) for the story
 - Each page should have 3-4 sentences (about 40-60 words per page)
 - Put each sentence on its own line using \\n for line breaks
 - The language should be simple, engaging, and age-appropriate
@@ -109,10 +109,11 @@ REQUIREMENTS:
 - The character should face a challenge and overcome it
 - End on a positive, heartwarming note
 
-ALSO create image prompts for 3 illustrations (one for every 2 pages):
-- Image 1: For pages 1-2 (story beginning)
-- Image 2: For pages 3-4 (story middle/challenge)
-- Image 3: For pages 5-6 (story resolution/ending)
+ALSO create image prompts for 4 illustrations (one for every 2 pages):
+- Image 1: For pages 1-2 (story introduction/setting)
+- Image 2: For pages 3-4 (adventure begins)
+- Image 3: For pages 5-6 (challenge/climax)
+- Image 4: For pages 7-8 (resolution/happy ending)
 
 CRITICAL IMAGE PROMPT REQUIREMENTS:
 - Describe ${characterName} as "the ${animalType}" or "a cute ${animalType}" in EVERY image prompt - NEVER as a human
@@ -136,12 +137,15 @@ Return your response in this exact JSON format:
     {"pageNumber": 3, "text": "..."},
     {"pageNumber": 4, "text": "..."},
     {"pageNumber": 5, "text": "..."},
-    {"pageNumber": 6, "text": "..."}
+    {"pageNumber": 6, "text": "..."},
+    {"pageNumber": 7, "text": "..."},
+    {"pageNumber": 8, "text": "..."}
   ],
   "imagePrompts": [
     {"imageNumber": 1, "forPages": [1, 2], "prompt": "A ${visualStyle || 'Pixar/Disney'} style illustration of a cute ${animalType}..."},
     {"imageNumber": 2, "forPages": [3, 4], "prompt": "A ${visualStyle || 'Pixar/Disney'} style illustration of a cute ${animalType}..."},
-    {"imageNumber": 3, "forPages": [5, 6], "prompt": "A ${visualStyle || 'Pixar/Disney'} style illustration of a cute ${animalType}..."}
+    {"imageNumber": 3, "forPages": [5, 6], "prompt": "A ${visualStyle || 'Pixar/Disney'} style illustration of a cute ${animalType}..."},
+    {"imageNumber": 4, "forPages": [7, 8], "prompt": "A ${visualStyle || 'Pixar/Disney'} style illustration of a cute ${animalType}..."}
   ]
 }
 
@@ -217,7 +221,9 @@ Return ONLY a JSON object with the corrected text in this exact format:
     {"pageNumber": 3, "text": "..."},
     {"pageNumber": 4, "text": "..."},
     {"pageNumber": 5, "text": "..."},
-    {"pageNumber": 6, "text": "..."}
+    {"pageNumber": 6, "text": "..."},
+    {"pageNumber": 7, "text": "..."},
+    {"pageNumber": 8, "text": "..."}
   ]
 }
 
