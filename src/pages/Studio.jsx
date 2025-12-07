@@ -64,6 +64,56 @@ const OptimizedImage = ({ src, alt, className, fallback, priority = false }) => 
   )
 }
 
+// ActionCard component for interactive bonding cues - bold italic on own row
+const ActionCard = ({ instruction }) => {
+  const getActionStyle = (text) => {
+    const lower = text.toLowerCase()
+    if (lower.includes('sound') || lower.includes('roar') || lower.includes('noise') || lower.includes('shout') || lower.includes('call'))
+      return { emoji: '🔊', color: 'text-blue-600' }
+    if (lower.includes('whisper') || lower.includes('quiet') || lower.includes('softly') || lower.includes('gentle'))
+      return { emoji: '🤫', color: 'text-purple-600' }
+    if (lower.includes('hug') || lower.includes('squeeze') || lower.includes('cuddle') || lower.includes('snuggle'))
+      return { emoji: '🤗', color: 'text-pink-600' }
+    if (lower.includes('ask') || lower.includes('what') || lower.includes('?') || lower.includes('think'))
+      return { emoji: '❓', color: 'text-amber-600' }
+    if (lower.includes('wiggle') || lower.includes('dance') || lower.includes('move') || lower.includes('jump') || lower.includes('clap'))
+      return { emoji: '💃', color: 'text-green-600' }
+    if (lower.includes('count') || lower.includes('point') || lower.includes('find') || lower.includes('look'))
+      return { emoji: '👆', color: 'text-cyan-600' }
+    if (lower.includes('sing') || lower.includes('hum') || lower.includes('melody'))
+      return { emoji: '🎵', color: 'text-indigo-600' }
+    return { emoji: '✨', color: 'text-purple-600' }
+  }
+
+  const style = getActionStyle(instruction)
+
+  return (
+    <div className="block my-3 text-center">
+      <span className={`${style.color} font-bold italic text-base sm:text-lg`}>
+        {style.emoji} [{instruction}] {style.emoji}
+      </span>
+    </div>
+  )
+}
+
+// Parse and render story text with ACTION tags
+const renderStoryText = (text) => {
+  if (!text) return null
+
+  // Split text by [ACTION: ...] patterns
+  const parts = text.split(/\[ACTION:\s*([^\]]+)\]/gi)
+
+  return parts.map((part, index) => {
+    // Odd indices are the ACTION content (captured group)
+    if (index % 2 === 1) {
+      return <ActionCard key={index} instruction={part.trim()} />
+    }
+    // Even indices are regular text - skip empty parts
+    if (!part.trim()) return null
+    return <span key={index}>{part}</span>
+  })
+}
+
 // Icons
 const SparklesIcon = ({ className }) => (
   <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -1635,6 +1685,7 @@ function PlotWorldContent({ childId, child, initialCharacter, onCharacterUsed, u
   const [generationStatus, setGenerationStatus] = useState('')
   const [currentStory, setCurrentStory] = useState(null)
   const [currentPage, setCurrentPage] = useState(0)
+  const [fontSizeLevel, setFontSizeLevel] = useState(2) // 0=smallest, 1=small, 2=medium, 3=large, 4=largest
 
   // Delete story state
   const [deleteStoryConfirm, setDeleteStoryConfirm] = useState(null)
@@ -2560,15 +2611,57 @@ function PlotWorldContent({ childId, child, initialCharacter, onCharacterUsed, u
           const allStoryPages = currentStory.pages || []
           const textChunks = []
 
+          // Helper to split text into sentences while keeping ACTION tags intact
+          const splitIntoSentences = (text) => {
+            // First, temporarily replace ACTION tags with unique placeholders
+            const actionTags = []
+            let processedText = text.replace(/\[ACTION:\s*[^\]]+\]/gi, (match) => {
+              const placeholder = `<<<ACTION_${actionTags.length}>>>`
+              actionTags.push(match)
+              return placeholder
+            })
+
+            // Split by sentences (match sentences ending with .!? and any trailing space)
+            const sentenceMatches = processedText.match(/[^.!?]*[.!?]+\s*/g) || []
+
+            // Check if there's remaining text after the last sentence
+            const matchedLength = sentenceMatches.join('').length
+            if (matchedLength < processedText.length) {
+              const remaining = processedText.slice(matchedLength)
+              if (remaining.trim()) {
+                sentenceMatches.push(remaining)
+              }
+            }
+
+            // If no sentences found, return the whole text
+            if (sentenceMatches.length === 0) {
+              sentenceMatches.push(processedText)
+            }
+
+            // Restore ACTION tags in each sentence
+            return sentenceMatches.map(sentence => {
+              return sentence.replace(/<<<ACTION_(\d+)>>>/g, (_, idx) => actionTags[parseInt(idx)] || '')
+            })
+          }
+
+          // Helper to check if text has incomplete quotes
+          const hasIncompleteQuote = (text) => {
+            const quotes = text.match(/"/g) || []
+            return quotes.length % 2 !== 0 // Odd number of quotes means incomplete
+          }
+
           allStoryPages.forEach((page, pageIdx) => {
             const text = page?.text || ''
-            // Split by sentences to avoid cutting mid-sentence
-            const sentences = text.match(/[^.!?]+[.!?]+/g) || [text]
+            // Split by sentences while keeping ACTION tags intact
+            const sentences = splitIntoSentences(text)
             let currentChunk = ''
 
             sentences.forEach((sentence) => {
               const potentialChunk = currentChunk + sentence
-              if (potentialChunk.length > MAX_CHARS_HALF_PAGE && currentChunk.length > 0) {
+              // Don't split if it would break an ACTION tag or quote
+              const hasIncompleteAction = potentialChunk.includes('[ACTION:') && !potentialChunk.match(/\[ACTION:[^\]]+\]/gi)
+              const wouldBreakQuote = hasIncompleteQuote(currentChunk) && currentChunk.length > 0
+              if (potentialChunk.length > MAX_CHARS_HALF_PAGE && currentChunk.length > 0 && !hasIncompleteAction && !wouldBreakQuote) {
                 textChunks.push({ text: currentChunk.trim(), originalPage: pageIdx })
                 currentChunk = sentence
               } else {
@@ -2588,8 +2681,8 @@ function PlotWorldContent({ childId, child, initialCharacter, onCharacterUsed, u
           let textIndex = 0
           const numImages = currentStory.images?.length || 3
 
-          // Add spreads for first 2 images only (image 3 is reserved for The End)
-          const imagesForContent = Math.min(numImages - 1, 2) // Use images 0 and 1 for content
+          // Add spreads for first 3 images (image 4 is reserved for The End)
+          const imagesForContent = Math.min(numImages - 1, 3) // Use images 0, 1, and 2 for content
 
           for (let imgIdx = 0; imgIdx < imagesForContent; imgIdx++) {
             // Image spread with one text chunk
@@ -2651,18 +2744,15 @@ function PlotWorldContent({ childId, child, initialCharacter, onCharacterUsed, u
           // On tablet/desktop: fixed height for side-by-side layout
           const BOOK_CONTENT_HEIGHT = 'aspect-[9/16] sm:aspect-auto sm:h-[420px] md:h-[420px]'
 
-          // Calculate ONE font size for the ENTIRE book based on the longest text chunk
-          // Like a real book - same font size on every page
-          const longestChunkLength = Math.max(...textChunks.map(chunk => chunk.text.length), 0)
-          const getBookFontSize = () => {
-            // Use the same font size everywhere - sized for the longest chunk to fit
-            // 16:9 portrait on mobile gives us more room for text
-            if (longestChunkLength > 150) return isRTL ? 'text-sm sm:text-base md:text-lg' : 'text-sm sm:text-sm md:text-base'
-            if (longestChunkLength > 120) return isRTL ? 'text-base sm:text-lg md:text-xl' : 'text-sm sm:text-base md:text-lg'
-            if (longestChunkLength > 80) return isRTL ? 'text-base sm:text-xl md:text-2xl' : 'text-base sm:text-lg md:text-xl'
-            return isRTL ? 'text-lg sm:text-2xl md:text-3xl' : 'text-lg sm:text-xl md:text-2xl'
-          }
-          const bookFontSize = getBookFontSize()
+          // Font size levels - user can adjust with +/- buttons
+          const FONT_SIZE_CLASSES = [
+            isRTL ? 'text-xs sm:text-sm md:text-base' : 'text-xs sm:text-xs md:text-sm',      // 0 - smallest
+            isRTL ? 'text-sm sm:text-base md:text-lg' : 'text-sm sm:text-sm md:text-base',    // 1 - small
+            isRTL ? 'text-base sm:text-lg md:text-xl' : 'text-sm sm:text-base md:text-lg',    // 2 - medium (default)
+            isRTL ? 'text-lg sm:text-xl md:text-2xl' : 'text-base sm:text-lg md:text-xl',     // 3 - large
+            isRTL ? 'text-xl sm:text-2xl md:text-3xl' : 'text-lg sm:text-xl md:text-2xl',     // 4 - largest
+          ]
+          const bookFontSize = FONT_SIZE_CLASSES[fontSizeLevel] || FONT_SIZE_CLASSES[2]
 
           // Image component - landscape on mobile, square on desktop
           const ImageSection = ({ imgIndex }) => (
@@ -2716,7 +2806,7 @@ function PlotWorldContent({ childId, child, initialCharacter, onCharacterUsed, u
                   }}
                 >
                   {textChunk.text.split('\n').map((line, idx) => (
-                    <p key={idx} className="text-gray-900 font-medium px-2">{line}</p>
+                    <p key={idx} className="text-gray-900 font-medium px-2">{renderStoryText(line)}</p>
                   ))}
                 </div>
               </div>
@@ -2740,6 +2830,37 @@ function PlotWorldContent({ childId, child, initialCharacter, onCharacterUsed, u
             </div>
           )
 
+          // Font size controls
+          const FontSizeControls = () => (
+            <div className="flex items-center gap-1 bg-amber-100/80 rounded-full px-2 py-1 shadow-md border border-amber-300/50">
+              <button
+                onClick={() => setFontSizeLevel(prev => Math.max(0, prev - 1))}
+                disabled={fontSizeLevel === 0}
+                className={`w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center rounded-full transition-all ${
+                  fontSizeLevel === 0
+                    ? 'text-amber-300 cursor-not-allowed'
+                    : 'text-amber-700 hover:bg-amber-200 active:scale-95'
+                }`}
+                title={isRTL ? 'הקטן טקסט' : 'Decrease text size'}
+              >
+                <span className="text-lg font-bold">A-</span>
+              </button>
+              <span className="text-amber-600 text-xs font-medium px-1">{fontSizeLevel + 1}/5</span>
+              <button
+                onClick={() => setFontSizeLevel(prev => Math.min(4, prev + 1))}
+                disabled={fontSizeLevel === 4}
+                className={`w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center rounded-full transition-all ${
+                  fontSizeLevel === 4
+                    ? 'text-amber-300 cursor-not-allowed'
+                    : 'text-amber-700 hover:bg-amber-200 active:scale-95'
+                }`}
+                title={isRTL ? 'הגדל טקסט' : 'Increase text size'}
+              >
+                <span className="text-lg font-bold">A+</span>
+              </button>
+            </div>
+          )
+
           return (
             <div className="w-full max-w-5xl mx-auto px-2 sm:px-4 md:min-h-[500px] md:flex md:items-center md:justify-center">
               <div className="relative bg-gradient-to-br from-amber-800/20 to-amber-700/20 rounded-3xl p-2 sm:p-3 shadow-2xl border-4 border-amber-600/40 w-full">
@@ -2753,6 +2874,11 @@ function PlotWorldContent({ childId, child, initialCharacter, onCharacterUsed, u
                     <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
                   </svg>
                 </button>
+
+                {/* Font size controls - top right */}
+                <div className="absolute -top-3 -right-3 sm:-top-4 sm:-right-4 z-20">
+                  <FontSizeControls />
+                </div>
 
                 {/* Inner book pages */}
                 <div className="bg-gradient-to-br from-amber-50 to-orange-50 rounded-2xl overflow-hidden shadow-inner flex flex-col">

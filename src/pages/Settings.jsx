@@ -5,8 +5,8 @@ import { useLanguage } from '../contexts/LanguageContext'
 import { supabase } from '../lib/supabase'
 import { getUsageSummary, TIER_LIMITS } from '../lib/usageTracking'
 
-const LEMON_SQUEEZY_CREATOR_URL = 'https://babumedia.lemonsqueezy.com/buy/870ca6c4-80e6-440f-8bb4-a795be72ce39'
-const LEMON_SQUEEZY_PRO_URL = 'https://babumedia.lemonsqueezy.com/buy/a1a0c205-5ab5-49d4-b628-c2f3d43101b3'
+const LEMON_SQUEEZY_CREATOR_URL = 'https://babumedia.lemonsqueezy.com/buy/4640a90d-a41b-4db3-9782-50d3e6949536'
+const LEMON_SQUEEZY_PRO_URL = 'https://babumedia.lemonsqueezy.com/buy/1be0d26c-370b-4b2f-94db-8922a798c9f1'
 // Lemon Squeezy customer portal for managing subscriptions
 const LEMON_SQUEEZY_BILLING_URL = 'https://babumedia.lemonsqueezy.com/billing'
 
@@ -150,11 +150,18 @@ export default function Settings() {
                   {tierName === 'pro' && <span className={`text-sm font-normal text-amber-300 ${isRTL ? 'mr-2' : 'ml-2'}`}>$19.99/mo</span>}
                 </div>
               </div>
-              {tierName !== 'free' && (
-                <span className="px-3 py-1 bg-emerald-500/20 text-emerald-400 text-sm font-semibold rounded-full">
-                  {t('settings.subscription.active')}
-                </span>
-              )}
+              <div className="flex items-center gap-2">
+                {subscription?.is_test && (
+                  <span className="px-3 py-1 bg-yellow-500/20 text-yellow-400 text-sm font-semibold rounded-full">
+                    TEST MODE
+                  </span>
+                )}
+                {tierName !== 'free' && (
+                  <span className="px-3 py-1 bg-emerald-500/20 text-emerald-400 text-sm font-semibold rounded-full">
+                    {t('settings.subscription.active')}
+                  </span>
+                )}
+              </div>
             </div>
           </div>
 
@@ -275,26 +282,26 @@ export default function Settings() {
                 <tr>
                   <td className="py-3">{t('settings.planComparison.childProfiles')}</td>
                   <td className="text-center py-3">1</td>
-                  <td className="text-center py-3">{t('settings.planComparison.unlimited')}</td>
-                  <td className="text-center py-3">{t('settings.planComparison.unlimited')}</td>
+                  <td className="text-center py-3"><span className="px-2 py-0.5 bg-purple-500/20 text-purple-300 rounded-md font-medium">{t('settings.planComparison.unlimited')}</span></td>
+                  <td className="text-center py-3"><span className="px-2 py-0.5 bg-amber-500/20 text-amber-300 rounded-md font-medium">{t('settings.planComparison.unlimited')}</span></td>
                 </tr>
                 <tr>
                   <td className="py-3">{t('settings.planComparison.characters')}</td>
                   <td className="text-center py-3">2 {t('settings.planComparison.total')}</td>
                   <td className="text-center py-3">5{t('settings.planComparison.perMonth')}</td>
-                  <td className="text-center py-3">{t('settings.planComparison.unlimited')}</td>
+                  <td className="text-center py-3"><span className="px-2 py-0.5 bg-amber-500/20 text-amber-300 rounded-md font-medium">{t('settings.planComparison.unlimited')}</span></td>
                 </tr>
                 <tr>
                   <td className="py-3">{t('settings.planComparison.stories')}</td>
                   <td className="text-center py-3">1 {t('settings.planComparison.total')}</td>
                   <td className="text-center py-3">10{t('settings.planComparison.perWeek')}</td>
-                  <td className="text-center py-3">{t('settings.planComparison.unlimited')}</td>
+                  <td className="text-center py-3"><span className="px-2 py-0.5 bg-amber-500/20 text-amber-300 rounded-md font-medium">{t('settings.planComparison.unlimited')}</span></td>
                 </tr>
                 <tr>
                   <td className="py-3">{t('settings.planComparison.storage')}</td>
                   <td className="text-center py-3">{t('settings.planComparison.basic')}</td>
                   <td className="text-center py-3">{t('settings.planComparison.extended')}</td>
-                  <td className="text-center py-3">{t('settings.planComparison.unlimited')}</td>
+                  <td className="text-center py-3"><span className="px-2 py-0.5 bg-amber-500/20 text-amber-300 rounded-md font-medium">{t('settings.planComparison.unlimited')}</span></td>
                 </tr>
               </tbody>
             </table>

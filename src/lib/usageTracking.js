@@ -69,6 +69,13 @@ const getPeriodEnd = (periodType, periodStart) => {
 
 // Get user's subscription tier
 export const getUserSubscription = async (userId) => {
+  // Check for test subscription mode first
+  const testTier = checkSubscriptionTestMode()
+  if (testTier) {
+    console.log(`🧪 Using test subscription tier: ${testTier}`)
+    return { tier: testTier, status: 'active', is_test: true }
+  }
+
   const { data, error } = await supabase
     .from('subscriptions')
     .select('*')
@@ -208,6 +215,29 @@ const checkPaywallTestMode = () => {
 
   // Check localStorage for persisted test mode
   return localStorage.getItem('babu_test_paywall') === 'true'
+}
+
+// Check for URL-based subscription test mode
+// Use ?test_subscription=creator or ?test_subscription=pro to simulate subscriptions
+// Use ?test_subscription=free to clear the test subscription
+const checkSubscriptionTestMode = () => {
+  if (typeof window === 'undefined') return null
+
+  const urlParams = new URLSearchParams(window.location.search)
+  const testTier = urlParams.get('test_subscription')
+
+  if (testTier === 'creator' || testTier === 'pro') {
+    localStorage.setItem('babu_test_subscription', testTier)
+    console.log(`🧪 Subscription TEST MODE: ${testTier.toUpperCase()} tier - add ?test_subscription=free to clear`)
+    return testTier
+  } else if (testTier === 'free') {
+    localStorage.removeItem('babu_test_subscription')
+    console.log('🧪 Subscription test mode CLEARED - back to real subscription')
+    return null
+  }
+
+  // Check localStorage for persisted test subscription
+  return localStorage.getItem('babu_test_subscription')
 }
 
 const PAYMENT_WALL_ENABLED = ENV_PAYMENT_WALL || checkPaywallTestMode()
@@ -351,71 +381,84 @@ export const trackCreation = async (userId, resourceType) => {
 
 // Get full usage summary for display
 export const getUsageSummary = async (userId) => {
+  console.log('📊 Getting usage summary for user:', userId)
+
   const subscription = await getUserSubscription(userId)
   const tier = subscription.tier || 'free'
   const limits = TIER_LIMITS[tier]
   const bypass = await hasDevBypass(userId)
 
-  // Get children count
-  const { count: childrenCount } = await supabase
+  console.log('📊 User tier:', tier, 'limits:', limits)
+
+  // Get children with their IDs in one query
+  const { data: children, error: childrenError } = await supabase
     .from('children')
-    .select('*', { count: 'exact', head: true })
+    .select('id')
     .eq('user_id', userId)
+
+  if (childrenError) {
+    console.error('❌ Error fetching children:', childrenError)
+  }
+
+  const childrenCount = children?.length || 0
+  const childIds = children?.map(c => c.id) || []
+
+  console.log('📊 Children count:', childrenCount, 'Child IDs:', childIds)
 
   // Get character usage - count from actual characters table for accurate display
   const characterPeriod = tier === 'free' ? 'lifetime' : limits.characterPeriod
   let characterCount = 0
 
-  if (characterPeriod === 'lifetime') {
-    // For lifetime, count all characters across all children for this user
-    const { data: children } = await supabase
-      .from('children')
-      .select('id')
-      .eq('user_id', userId)
-
-    if (children && children.length > 0) {
-      const childIds = children.map(c => c.id)
-      const { count } = await supabase
+  if (childIds.length > 0) {
+    if (characterPeriod === 'lifetime' || tier === 'free') {
+      // For lifetime/free tier, count all characters across all children
+      const { count, error: charError } = await supabase
         .from('characters')
         .select('*', { count: 'exact', head: true })
         .in('child_id', childIds)
+
+      if (charError) {
+        console.error('❌ Error fetching characters count:', charError)
+      }
       characterCount = count || 0
+      console.log('📊 Characters count (from table):', characterCount)
+    } else {
+      characterCount = await getUsageCount(userId, 'character', characterPeriod)
+      console.log('📊 Characters count (from usage tracking):', characterCount)
     }
-  } else {
-    characterCount = await getUsageCount(userId, 'character', characterPeriod)
   }
 
   // Get story usage - count from actual stories table for accurate display
   const storyPeriod = tier === 'free' ? 'lifetime' : limits.storyPeriod
   let storyCount = 0
 
-  if (storyPeriod === 'lifetime') {
-    // For lifetime, count all stories across all children for this user
-    const { data: children } = await supabase
-      .from('children')
-      .select('id')
-      .eq('user_id', userId)
-
-    if (children && children.length > 0) {
-      const childIds = children.map(c => c.id)
-      const { count } = await supabase
+  if (childIds.length > 0) {
+    if (storyPeriod === 'lifetime' || tier === 'free') {
+      // For lifetime/free tier, count all stories across all children
+      const { count, error: storyError } = await supabase
         .from('stories')
         .select('*', { count: 'exact', head: true })
         .in('child_id', childIds)
+
+      if (storyError) {
+        console.error('❌ Error fetching stories count:', storyError)
+      }
       storyCount = count || 0
+      console.log('📊 Stories count (from table):', storyCount)
+    } else {
+      storyCount = await getUsageCount(userId, 'story', storyPeriod)
+      console.log('📊 Stories count (from usage tracking):', storyCount)
     }
-  } else {
-    storyCount = await getUsageCount(userId, 'story', storyPeriod)
   }
 
-  return {
+  const summary = {
     tier,
     bypass,
     subscription,
     children: {
-      current: childrenCount || 0,
+      current: childrenCount,
       limit: limits.children,
-      remaining: Math.max(0, limits.children - (childrenCount || 0))
+      remaining: Math.max(0, limits.children - childrenCount)
     },
     characters: {
       current: characterCount,
@@ -430,4 +473,7 @@ export const getUsageSummary = async (userId) => {
       period: storyPeriod
     }
   }
+
+  console.log('📊 Final usage summary:', summary)
+  return summary
 }

@@ -87,10 +87,10 @@ serve(async (req) => {
       },
       body: JSON.stringify({
         model: 'claude-sonnet-4-20250514',
-        max_tokens: 4000,
+        max_tokens: 5000,
         messages: [{
           role: 'user',
-          content: `You are a children's story writer creating magical, engaging stories for children ages 5-12.
+          content: `You are a DISNEY-LEVEL children's story writer creating magical, immersive bedtime stories for children ages 3-8. Your stories must be as memorable as "The Gruffalo" or "Goodnight Moon."
 
 Create an illustrated children's story with the following details:
 
@@ -102,45 +102,110 @@ CHARACTER TRAITS: ${characterTraits || 'Brave and curious'}
 ADVENTURE THEME: ${adventureTheme}
 ${moralInstruction}
 
-CRITICAL CHARACTER REQUIREMENT:
+═══════════════════════════════════════════════════════════════
+MODULE A: CHARACTER FLAW (Relatability)
+═══════════════════════════════════════════════════════════════
+Perfect characters are boring. ${characterName} MUST have ONE silly, endearing flaw:
+- A fear (afraid of the dark, scared of loud noises, worried about getting messy)
+- A quirk (always forgets things, hiccups when nervous, trips over own feet)
+- A weakness (too curious, can't resist snacks, talks too fast)
+
+This flaw MUST:
+1. Be introduced early in the story
+2. Cause a minor funny problem in the middle
+3. Be overcome or embraced by the end
+
+═══════════════════════════════════════════════════════════════
+MODULE B: THE REFRAIN (Rhythm & Repetition)
+═══════════════════════════════════════════════════════════════
+Children LOVE repetition. Create a 1-2 line CATCHPHRASE or RHYME for ${characterName}.
+Examples: "I think I can!" / "Clank, clunk, beep!" / "Hop, hop, stop!"
+
+This refrain MUST appear EXACTLY 3 times:
+1. When ${characterName} sets out on the adventure (pages 2-3)
+2. When ${characterName} faces the main obstacle (pages 5-6)
+3. When ${characterName} succeeds at the end (pages 7-8)
+
+═══════════════════════════════════════════════════════════════
+MODULE C: SENSORY IMMERSION (Show, Don't Tell)
+═══════════════════════════════════════════════════════════════
+Bad: "It was a nice forest."
+Good: "The moss felt like a soft sponge and the air smelled like pine needles."
+
+EVERY location description MUST include:
+- At least ONE sound (onomatopoeia: WHOOSH, CRUNCH, SPLASH, BUZZ)
+- At least ONE texture OR smell (soft, scratchy, sticky, sweet-smelling)
+DO NOT rely only on visual descriptions!
+
+═══════════════════════════════════════════════════════════════
+MODULE D: PARENT-CHILD BONDING CUES (Interaction)
+═══════════════════════════════════════════════════════════════
+Insert [ACTION: instruction] tags at emotional moments for parent interaction:
+
+Examples:
+- When a character makes a sound: [ACTION: Make this sound together!]
+- When something scary happens: [ACTION: Give your child a little squeeze!]
+- When whispering: [ACTION: Whisper this part softly]
+- When something exciting happens: [ACTION: Ask: What do you think happens next?]
+- When character is happy: [ACTION: Do a little happy wiggle together!]
+
+Include 3-4 [ACTION] tags spread throughout the story.
+
+═══════════════════════════════════════════════════════════════
+MODULE E: THE SLEEPY LANDING (Bedtime Wind-Down)
+═══════════════════════════════════════════════════════════════
+This is a BEDTIME story. The energy curve MUST be:
+- Pages 1-2: HIGH energy, curiosity, excitement
+- Pages 3-6: ADVENTURE energy, challenges, action
+- Pages 7-8: DECREASING energy, calm, cozy, sleepy
+
+The FINAL PAGE (page 8) is CRITICAL:
+- Use ONLY calm, sleepy words: soft, warm, cozy, gentle, moonlight, stars, quiet, peaceful, drifting, heavy (eyelids), safe
+- AVOID action verbs (run, jump, play, shout)
+- The story MUST end with ${characterName} falling asleep, getting cozy, or settling down to rest
+- Final sentences should have a hypnotic, lullaby quality
+
+═══════════════════════════════════════════════════════════════
+CHARACTER REQUIREMENTS
+═══════════════════════════════════════════════════════════════
 - ${characterName} is a ${animalType || 'character'}${isHumanCharacter ? ' (a human character)' : ' (NOT a human - an animal character)'}
 - Always refer to ${characterName} as "the ${animalType}" or "the little ${animalType}" throughout the story
 - ${isHumanCharacter ? `Give ${characterName} human features, expressions, and appropriate clothing` : `Describe ${characterName} with animal features (paws, fur, tail, whiskers, etc. as appropriate for a ${animalType})`}
 - ${characterName} should act like a cute animated character (like in Pixar/Disney movies)
+- ${characterName} should be the ONLY main character - no other named characters
 
-REQUIREMENTS:
+═══════════════════════════════════════════════════════════════
+STRUCTURE REQUIREMENTS
+═══════════════════════════════════════════════════════════════
 - Create exactly 8 pages (scenes) for the story
 - Each page should have 3-4 sentences (about 40-60 words per page)
 - Put each sentence on its own line using \\n for line breaks
-- The language should be simple, engaging, and age-appropriate
-- Include vivid descriptions that can be illustrated
-- Make the story exciting with a clear beginning, middle, and end
-- ${characterName} should be the ONLY main character in the story - no other named characters
-- The character should face a challenge and overcome it
-- End on a positive, heartwarming note
+- The language should be simple, engaging, and age-appropriate for ages 3-8
 
-ALSO create image prompts for 4 illustrations (one for every 2 pages):
-- Image 1: For pages 1-2 (story introduction/setting)
-- Image 2: For pages 3-4 (adventure begins)
-- Image 3: For pages 5-6 (challenge/climax)
-- Image 4: For pages 7-8 (resolution/happy ending)
+═══════════════════════════════════════════════════════════════
+IMAGE PROMPT REQUIREMENTS
+═══════════════════════════════════════════════════════════════
+Create 4 image prompts (one for every 2 pages):
+- Image 1: Pages 1-2 (introduction/setting)
+- Image 2: Pages 3-4 (adventure begins)
+- Image 3: Pages 5-6 (challenge/climax)
+- Image 4: Pages 7-8 (resolution/sleepy ending)
 
-CRITICAL IMAGE PROMPT REQUIREMENTS:
-- Describe ${characterName} as "the ${animalType}" or "a cute ${animalType}" in EVERY image prompt
-- The ${animalType} MUST be the ONLY character in EVERY image - no other characters, people, or creatures
-- The ${animalType} MUST be prominently placed in the CENTER of the image
-- ${isHumanCharacter ? `Include human features appropriate for a ${animalType} (face, hands, clothing, hair, etc.)` : `Include ${animalType}-specific features (fur color, paws, ears, tail, etc.)`}
-- The image should be a close-up or medium shot focusing on the ${animalType}
-- Do NOT include any other characters, sidekicks, friends, or companions in any image
-- Be detailed enough for AI image generation
+Each image prompt MUST:
+- Start with: "A ${visualStyle || 'Pixar/Disney'} style illustration of a cute ${animalType}..."
+- Have the ${animalType} as the ONLY character, prominently centered
+- ${isHumanCharacter ? `Include human features appropriate for a ${animalType}` : `Include ${animalType}-specific features (fur, paws, ears, tail, etc.)`}
 - Match the ${visualStyle || 'Pixar/Disney'} animation style
 - Be child-friendly and colorful
-- Include the setting and action from those pages
-- Always start the prompt with: "A ${visualStyle || 'Pixar/Disney'} style illustration of a cute ${animalType}..."
+- Image 4 should show a peaceful, sleepy scene (moonlight, cozy bed, closed eyes)
+
+═══════════════════════════════════════════════════════════════
 
 Return your response in this exact JSON format:
 {
   "title": "The story title",
+  "characterFlaw": "Brief description of the character's silly flaw",
+  "refrain": "The catchphrase/rhyme that repeats 3 times",
   "pages": [
     {"pageNumber": 1, "text": "First sentence.\\\\nSecond sentence.\\\\nThird sentence.\\\\nFourth sentence."},
     {"pageNumber": 2, "text": "..."},
@@ -173,7 +238,8 @@ Return ONLY the JSON, no other text.`
     const claudeData = await claudeResponse.json()
     const storyContent = claudeData.content[0].text
 
-    console.log('Story generated:', storyContent)
+    console.log('Story generated successfully')
+    console.log('Story content length:', storyContent.length)
 
     // Parse the JSON response
     let storyData
@@ -281,6 +347,10 @@ Return ONLY the JSON, no other text. Keep \\n line breaks in the text.`
     }
 
     console.log('Story saved successfully')
+    console.log('=== DISNEY-LEVEL STORY MODULES ===')
+    console.log('Character Flaw:', storyData.characterFlaw || 'Not specified')
+    console.log('Refrain:', storyData.refrain || 'Not specified')
+    console.log('==================================')
 
     return new Response(
       JSON.stringify({ success: true, story: storyData }),

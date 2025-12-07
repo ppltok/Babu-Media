@@ -7,6 +7,27 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-signature',
 }
 
+// Lemon Squeezy Product/Variant IDs for tier detection
+const CREATOR_PRODUCT_ID = '718584'
+const CREATOR_VARIANT_ID = '1130990'
+const PRO_PRODUCT_ID = '718585'
+const PRO_VARIANT_ID = '1130991'
+
+// Determine tier based on product/variant ID
+function getTierFromProduct(productId: string | number, variantId: string | number): string {
+  const pId = productId?.toString()
+  const vId = variantId?.toString()
+
+  if (pId === PRO_PRODUCT_ID || vId === PRO_VARIANT_ID) {
+    return 'pro'
+  }
+  if (pId === CREATOR_PRODUCT_ID || vId === CREATOR_VARIANT_ID) {
+    return 'creator'
+  }
+  // Default to creator if unknown
+  return 'creator'
+}
+
 // Verify Lemon Squeezy webhook signature
 async function verifySignature(payload: string, signature: string, secret: string): Promise<boolean> {
   const encoder = new TextEncoder()
@@ -63,6 +84,8 @@ serve(async (req) => {
 
     console.log('Lemon Squeezy webhook received:', eventName)
     console.log('Custom data:', JSON.stringify(customData))
+    console.log('Product ID:', data?.product_id)
+    console.log('Variant ID:', data?.variant_id)
 
     // Initialize Supabase client
     const supabase = createClient(supabaseUrl, supabaseServiceKey)
@@ -94,14 +117,20 @@ serve(async (req) => {
           break
         }
 
+        // Determine tier based on product/variant
+        const tier = getTierFromProduct(data?.product_id, data?.variant_id)
+        console.log('Determined tier:', tier)
+
         // Update subscription
         const { error: updateError } = await supabase
           .from('subscriptions')
           .upsert({
             user_id: user.id,
-            tier: 'creator',
+            tier: tier,
             lemon_squeezy_customer_id: data?.customer_id?.toString(),
             lemon_squeezy_subscription_id: payload.data?.id?.toString(),
+            lemon_squeezy_product_id: data?.product_id?.toString(),
+            lemon_squeezy_variant_id: data?.variant_id?.toString(),
             status: data?.status === 'active' ? 'active' : data?.status,
             current_period_start: data?.current_period_start,
             current_period_end: data?.current_period_end,
