@@ -57,15 +57,25 @@ serve(async (req) => {
       ? `The story should teach a valuable lesson about: ${moralLesson}. Weave this lesson naturally into the narrative without being preachy.`
       : ''
 
-    // Build character description - IMPORTANT: Tell Claude what type of animal the character is
-    const animalDescription = animalType
-      ? `${characterName} is a cute, anthropomorphic ${animalType} character (an animal, NOT a human). Always describe ${characterName} as "the ${animalType}" or "the little ${animalType}" in the story.`
-      : `${characterName} is the main character.`
+    // Detect if the character type is a human/person or an animal
+    const humanTypes = ['boy', 'girl', 'child', 'kid', 'baby', 'person', 'human', 'prince', 'princess', 'knight', 'wizard', 'witch', 'fairy', 'superhero', 'pirate', 'astronaut', 'cowboy', 'cowgirl', 'ninja', 'samurai', 'ילד', 'ילדה', 'נסיך', 'נסיכה', 'אביר', 'קוסם', 'מכשפה', 'פיה', 'גיבור על', 'פיראט', 'אסטרונאוט', 'נינג\'ה']
+    const isHumanCharacter = animalType ? humanTypes.some(type => animalType.toLowerCase().includes(type)) : false
+
+    // Build character description based on whether it's human or animal
+    let characterDescription
+    if (isHumanCharacter) {
+      characterDescription = `${characterName} is a cute, animated ${animalType} character (a human character, like in Pixar/Disney movies). Describe ${characterName} as "the ${animalType}" or "the little ${animalType}" throughout the story. Give them human features and clothing appropriate for a ${animalType}.`
+    } else if (animalType) {
+      characterDescription = `${characterName} is a cute, anthropomorphic ${animalType} character (an animal, NOT a human). Always describe ${characterName} as "the ${animalType}" or "the little ${animalType}" in the story. Describe ${characterName} with animal features (paws, fur, tail, whiskers, etc. as appropriate for a ${animalType}).`
+    } else {
+      characterDescription = `${characterName} is the main character.`
+    }
 
     console.log('Generating story with Claude...')
-    console.log('Animal type:', animalType)
+    console.log('Character type:', animalType)
+    console.log('Is human character:', isHumanCharacter)
     console.log('Gender:', gender)
-    console.log('Character description:', animalDescription)
+    console.log('Character description:', characterDescription)
     console.log('Language:', language)
 
     const claudeResponse = await fetch('https://api.anthropic.com/v1/messages', {
@@ -87,16 +97,16 @@ Create an illustrated children's story with the following details:
 ${languageInstruction}
 
 MAIN CHARACTER: ${characterName}
-CHARACTER TYPE: ${animalDescription}
+CHARACTER TYPE: ${characterDescription}
 CHARACTER TRAITS: ${characterTraits || 'Brave and curious'}
 ADVENTURE THEME: ${adventureTheme}
 ${moralInstruction}
 
 CRITICAL CHARACTER REQUIREMENT:
-- ${characterName} is a ${animalType || 'character'}, NOT a human child or person
+- ${characterName} is a ${animalType || 'character'}${isHumanCharacter ? ' (a human character)' : ' (NOT a human - an animal character)'}
 - Always refer to ${characterName} as "the ${animalType}" or "the little ${animalType}" throughout the story
-- Describe ${characterName} with animal features (paws, fur, tail, whiskers, etc. as appropriate for a ${animalType})
-- ${characterName} should act like a cute animated animal character (like in Pixar/Disney movies)
+- ${isHumanCharacter ? `Give ${characterName} human features, expressions, and appropriate clothing` : `Describe ${characterName} with animal features (paws, fur, tail, whiskers, etc. as appropriate for a ${animalType})`}
+- ${characterName} should act like a cute animated character (like in Pixar/Disney movies)
 
 REQUIREMENTS:
 - Create exactly 8 pages (scenes) for the story
@@ -116,10 +126,10 @@ ALSO create image prompts for 4 illustrations (one for every 2 pages):
 - Image 4: For pages 7-8 (resolution/happy ending)
 
 CRITICAL IMAGE PROMPT REQUIREMENTS:
-- Describe ${characterName} as "the ${animalType}" or "a cute ${animalType}" in EVERY image prompt - NEVER as a human
+- Describe ${characterName} as "the ${animalType}" or "a cute ${animalType}" in EVERY image prompt
 - The ${animalType} MUST be the ONLY character in EVERY image - no other characters, people, or creatures
 - The ${animalType} MUST be prominently placed in the CENTER of the image
-- Include ${animalType}-specific features (fur color, paws, ears, tail, etc.)
+- ${isHumanCharacter ? `Include human features appropriate for a ${animalType} (face, hands, clothing, hair, etc.)` : `Include ${animalType}-specific features (fur color, paws, ears, tail, etc.)`}
 - The image should be a close-up or medium shot focusing on the ${animalType}
 - Do NOT include any other characters, sidekicks, friends, or companions in any image
 - Be detailed enough for AI image generation

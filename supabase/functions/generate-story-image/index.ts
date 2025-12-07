@@ -34,17 +34,23 @@ serve(async (req) => {
     console.log('=== STORY IMAGE GENERATION ===')
     console.log('Character image URL:', characterImageUrl)
     console.log('Visual style:', visualStyle)
-    console.log('Animal type:', animalType)
+    console.log('Character type:', animalType)
     console.log('Original prompt:', prompt)
 
-    // Transform the prompt to use animal type instead of character name
-    // This helps the image generator focus on the animal type rather than a random name
+    // Detect if the character type is a human/person or an animal
+    const humanTypes = ['boy', 'girl', 'child', 'kid', 'baby', 'person', 'human', 'prince', 'princess', 'knight', 'wizard', 'witch', 'fairy', 'superhero', 'pirate', 'astronaut', 'cowboy', 'cowgirl', 'ninja', 'samurai', 'ילד', 'ילדה', 'נסיך', 'נסיכה', 'אביר', 'קוסם', 'מכשפה', 'פיה', 'גיבור על', 'פיראט', 'אסטרונאוט', 'נינג\'ה']
+    const isHumanCharacter = animalType ? humanTypes.some(type => animalType.toLowerCase().includes(type)) : false
+
+    console.log('Is human character:', isHumanCharacter)
+
+    // Transform the prompt to use character type instead of character name
+    // This helps the image generator focus on the character type rather than a random name
     let transformedPrompt = prompt
 
-    // Replace any character name with "the [animal type]"
+    // Replace any character name with "the [character type]"
     // Common patterns: "[Name] is...", "[Name]'s...", "with [Name]..."
     if (animalType) {
-      const animalDescription = `the ${animalType}`
+      const characterDescription = `the ${animalType}`
 
       // Replace character names that appear at the start or in the middle
       // This regex matches capitalized names followed by typical sentence patterns
@@ -53,15 +59,18 @@ serve(async (req) => {
         .replace(/centered composition/gi, '')
         .replace(/medium shot of/gi, '')
         // Replace "A [style] illustration with [Name]" patterns
-        .replace(/illustration with \w+/gi, `illustration with ${animalDescription}`)
+        .replace(/illustration with \w+/gi, `illustration with ${characterDescription}`)
         // Replace standalone capitalized words that look like names before verbs
-        .replace(/\b[A-Z][a-z]+\b(?=\s+(is|was|has|had|looks|stands|sits|runs|walks|flies|swims|explores|discovers|finds|sees|watches|plays|holds|carries|enters|reaches|climbs|jumps))/g, animalDescription)
+        .replace(/\b[A-Z][a-z]+\b(?=\s+(is|was|has|had|looks|stands|sits|runs|walks|flies|swims|explores|discovers|finds|sees|watches|plays|holds|carries|enters|reaches|climbs|jumps))/g, characterDescription)
         // Replace possessive forms like "Name's"
-        .replace(/\b[A-Z][a-z]+'s\b/g, `${animalDescription}'s`)
+        .replace(/\b[A-Z][a-z]+'s\b/g, `${characterDescription}'s`)
     }
 
-    // Build the final prompt for Seedream
-    const finalPrompt = `${visualStyle || 'Pixar/Disney'} animation style, children's book illustration. ${transformedPrompt}. Vibrant colors, magical atmosphere, beautiful background, professional quality, high detail.`
+    // Build the final prompt for Seedream - adjust based on human vs animal character
+    const characterTypeHint = isHumanCharacter
+      ? `human child character, NOT an animal`
+      : `anthropomorphic animal character`
+    const finalPrompt = `${visualStyle || 'Pixar/Disney'} animation style, children's book illustration, ${characterTypeHint}. ${transformedPrompt}. Vibrant colors, magical atmosphere, beautiful background, professional quality, high detail.`
 
     console.log('Transformed prompt:', finalPrompt)
 
