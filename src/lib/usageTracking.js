@@ -184,7 +184,33 @@ export const incrementUsage = async (userId, resourceType, periodType) => {
 
 // Feature flag to enable/disable payment walls
 // Set VITE_ENABLE_PAYMENT_WALL=true in .env to activate payment restrictions
-const PAYMENT_WALL_ENABLED = import.meta.env.VITE_ENABLE_PAYMENT_WALL === 'true'
+// OR add ?test_paywall=true to URL for testing (sets localStorage flag)
+// OR add ?test_paywall=false to disable testing mode
+const ENV_PAYMENT_WALL = import.meta.env.VITE_ENABLE_PAYMENT_WALL === 'true'
+
+// Check for URL-based testing mode (persists in localStorage)
+const checkPaywallTestMode = () => {
+  if (typeof window === 'undefined') return false
+
+  // Check URL param first
+  const urlParams = new URLSearchParams(window.location.search)
+  const testParam = urlParams.get('test_paywall')
+
+  if (testParam === 'true') {
+    localStorage.setItem('babu_test_paywall', 'true')
+    console.log('🧪 Payment wall TEST MODE ENABLED - add ?test_paywall=false to disable')
+    return true
+  } else if (testParam === 'false') {
+    localStorage.removeItem('babu_test_paywall')
+    console.log('🧪 Payment wall test mode DISABLED')
+    return false
+  }
+
+  // Check localStorage for persisted test mode
+  return localStorage.getItem('babu_test_paywall') === 'true'
+}
+
+const PAYMENT_WALL_ENABLED = ENV_PAYMENT_WALL || checkPaywallTestMode()
 
 // Check if user can create a resource
 export const canCreate = async (userId, resourceType, childId = null) => {
