@@ -3129,15 +3129,17 @@ function PlotWorldContent({ childId, child, initialCharacter, onCharacterUsed, u
                   {/* Navigation buttons - direction based on STORY language (like a real book) */}
                   {/* Hebrew books: next page is on LEFT, previous on RIGHT */}
                   {/* English books: next page is on RIGHT, previous on LEFT */}
+                  {/* Arrow icons point toward the edge of the screen they're on */}
                   <div className={`bg-gradient-to-r from-amber-100 via-orange-100 to-amber-100 px-4 sm:px-6 py-2 sm:py-3 flex items-center justify-between border-t-2 border-amber-200 flex-shrink-0 ${storyIsRTL ? 'flex-row-reverse' : ''}`}>
                     <button
                       onClick={() => setCurrentPage(Math.max(0, currentPage - 1))}
                       disabled={currentPage === 0}
-                      className="flex items-center gap-1 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 bg-purple-500 hover:bg-purple-600 text-white rounded-full font-bold text-sm transition-all disabled:opacity-30 disabled:cursor-not-allowed shadow-lg hover:shadow-xl"
+                      className={`flex items-center gap-1 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 bg-purple-500 hover:bg-purple-600 text-white rounded-full font-bold text-sm transition-all disabled:opacity-30 disabled:cursor-not-allowed shadow-lg hover:shadow-xl ${storyIsRTL ? 'flex-row-reverse' : ''}`}
                       style={{ fontFamily: '"Comic Sans MS", "Chalkboard", cursive' }}
                     >
+                      {/* Previous arrow - points toward edge (left for English, right for Hebrew) */}
                       <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+                        <path strokeLinecap="round" strokeLinejoin="round" d={storyIsRTL ? "M9 5l7 7-7 7" : "M15 19l-7-7 7-7"} />
                       </svg>
                       <span className="hidden sm:inline">{t('common.buttons.previous')}</span>
                     </button>
@@ -3149,12 +3151,13 @@ function PlotWorldContent({ childId, child, initialCharacter, onCharacterUsed, u
                     <button
                       onClick={() => setCurrentPage(Math.min(totalSpreads - 1, currentPage + 1))}
                       disabled={currentPage >= totalSpreads - 1}
-                      className="flex items-center gap-1 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 bg-purple-500 hover:bg-purple-600 text-white rounded-full font-bold text-sm transition-all disabled:opacity-30 disabled:cursor-not-allowed shadow-lg hover:shadow-xl"
+                      className={`flex items-center gap-1 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 bg-purple-500 hover:bg-purple-600 text-white rounded-full font-bold text-sm transition-all disabled:opacity-30 disabled:cursor-not-allowed shadow-lg hover:shadow-xl ${storyIsRTL ? 'flex-row-reverse' : ''}`}
                       style={{ fontFamily: '"Comic Sans MS", "Chalkboard", cursive' }}
                     >
                       <span className="hidden sm:inline">{t('common.buttons.next')}</span>
+                      {/* Next arrow - points toward edge (right for English, left for Hebrew) */}
                       <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                        <path strokeLinecap="round" strokeLinejoin="round" d={storyIsRTL ? "M15 19l-7-7 7-7" : "M9 5l7 7-7 7"} />
                       </svg>
                     </button>
                   </div>

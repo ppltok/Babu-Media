@@ -662,13 +662,15 @@ export default function PublicStoryReader() {
           {/* Navigation arrows - direction based on STORY language (like a real book) */}
           {/* Hebrew books: next page is on LEFT, previous on RIGHT */}
           {/* English books: next page is on RIGHT, previous on LEFT */}
+          {/* Arrow icons always point in their natural direction - only positions swap */}
           <button
             onClick={() => setCurrentPage(Math.max(0, currentPage - 1))}
             disabled={currentPage === 0}
             className={`absolute top-1/2 -translate-y-1/2 ${storyIsRTL ? 'right-0 -mr-3 sm:-mr-5' : 'left-0 -ml-3 sm:-ml-5'} w-10 h-10 sm:w-12 sm:h-12 bg-amber-600/80 hover:bg-amber-500 rounded-full flex items-center justify-center shadow-lg transition-all ${currentPage === 0 ? 'opacity-30 cursor-not-allowed' : 'hover:scale-110'}`}
           >
-            <svg className={`w-5 h-5 sm:w-6 sm:h-6 text-white ${storyIsRTL ? '' : 'rotate-180'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+            {/* Previous arrow - points left for English (on left side), points right for Hebrew (on right side) */}
+            <svg className="w-5 h-5 sm:w-6 sm:h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+              <path strokeLinecap="round" strokeLinejoin="round" d={storyIsRTL ? "M9 5l7 7-7 7" : "M15 19l-7-7 7-7"} />
             </svg>
           </button>
 
@@ -677,8 +679,9 @@ export default function PublicStoryReader() {
             disabled={currentPage === totalSpreads - 1}
             className={`absolute top-1/2 -translate-y-1/2 ${storyIsRTL ? 'left-0 -ml-3 sm:-ml-5' : 'right-0 -mr-3 sm:-mr-5'} w-10 h-10 sm:w-12 sm:h-12 bg-amber-600/80 hover:bg-amber-500 rounded-full flex items-center justify-center shadow-lg transition-all ${currentPage === totalSpreads - 1 ? 'opacity-30 cursor-not-allowed' : 'hover:scale-110'}`}
           >
-            <svg className={`w-5 h-5 sm:w-6 sm:h-6 text-white ${storyIsRTL ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+            {/* Next arrow - points right for English (on right side), points left for Hebrew (on left side) */}
+            <svg className="w-5 h-5 sm:w-6 sm:h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+              <path strokeLinecap="round" strokeLinejoin="round" d={storyIsRTL ? "M15 19l-7-7 7-7" : "M9 5l7 7-7 7"} />
             </svg>
           </button>
         </div>
