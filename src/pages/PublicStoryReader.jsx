@@ -424,18 +424,26 @@ export default function PublicStoryReader() {
     )
   }
 
+  // Instagram-style story progress bars
   const NavigationDots = () => (
-    <div className="flex justify-center gap-1 sm:gap-1.5 flex-wrap max-w-[200px] mx-auto">
+    <div className="flex justify-center gap-1 w-full max-w-[280px] sm:max-w-[320px] mx-auto px-2">
       {Array.from({ length: totalSpreads }).map((_, idx) => (
         <button
           key={idx}
           onClick={() => setCurrentPage(idx)}
-          className={`w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full transition-all ${
-            idx === currentPage
-              ? 'bg-purple-500 scale-125'
-              : 'bg-purple-300 hover:bg-purple-400'
-          }`}
-        />
+          className="flex-1 h-1 sm:h-1.5 rounded-full overflow-hidden bg-purple-200/50 transition-all hover:bg-purple-300/50"
+          title={`${idx + 1}/${totalSpreads}`}
+        >
+          <div
+            className={`h-full rounded-full transition-all duration-300 ${
+              idx < currentPage
+                ? 'w-full bg-purple-500'
+                : idx === currentPage
+                  ? 'w-full bg-gradient-to-r from-purple-500 to-pink-500 animate-pulse'
+                  : 'w-0 bg-purple-400'
+            }`}
+          />
+        </button>
       ))}
     </div>
   )
@@ -529,7 +537,7 @@ export default function PublicStoryReader() {
                   </svg>
 
                   <h2
-                    className="text-3xl sm:text-4xl md:text-5xl font-black bg-gradient-to-r from-amber-500 via-orange-500 to-pink-500 bg-clip-text text-transparent mb-2"
+                    className={`text-3xl sm:text-4xl md:text-5xl font-black bg-gradient-to-r ${getStoryGradient(story?.id)} bg-clip-text text-transparent mb-2`}
                     style={{
                       fontFamily: 'Georgia, "Times New Roman", serif',
                       fontStyle: 'italic',

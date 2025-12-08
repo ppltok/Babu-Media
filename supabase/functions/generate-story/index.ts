@@ -13,7 +13,7 @@ serve(async (req) => {
   }
 
   try {
-    const { storyId, characterName, characterTraits, adventureTheme, moralLesson, visualStyle, animalType, gender = 'male', language = 'en' } = await req.json()
+    const { storyId, characterName, characterTraits, adventureTheme, moralLesson, visualStyle, animalType, gender = 'male', language = 'en', childAge = 5 } = await req.json()
 
     if (!storyId || !characterName || !adventureTheme) {
       throw new Error('Missing required fields: storyId, characterName, adventureTheme')
@@ -21,6 +21,9 @@ serve(async (req) => {
 
     // Language-specific settings
     const isHebrew = language === 'he'
+
+    // Determine if this is a toddler (under 3 years old)
+    const isToddlerMode = childAge < 3
 
     // Gender-specific pronouns and grammar
     const pronouns = gender === 'female'
@@ -77,20 +80,222 @@ serve(async (req) => {
     console.log('Gender:', gender)
     console.log('Character description:', characterDescription)
     console.log('Language:', language)
+    console.log('Child age:', childAge)
+    console.log('Toddler mode:', isToddlerMode)
 
-    const claudeResponse = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': anthropicKey,
-        'anthropic-version': '2023-06-01'
-      },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 5000,
-        messages: [{
-          role: 'user',
-          content: `You are a DISNEY-LEVEL children's story writer creating magical, immersive bedtime stories for children ages 3-8. Your stories must be as memorable as "The Gruffalo" or "Goodnight Moon."
+    // Build the appropriate prompt based on child's age
+    let storyPrompt: string
+
+    if (isToddlerMode) {
+      // TODDLER MODE (ages 0-3): Pattern Engine with simple slides
+      // Research-based design: See Toddler Mode.md for full documentation
+
+      // Hebrew-specific toddler elements
+      const hebrewToddlerPhrases = isHebrew ? `
+HEBREW TODDLER PHRASES TO USE:
+- "תראו!" / "הסתכלו!" (Look!)
+- "איפה...?" (Where is...?)
+- "הנה!" (Here!)
+- "ביחד!" (Together!)
+- "עוד פעם!" (Again!)
+- "לילה טוב" (Goodnight)
+- "ששששש..." (Shhh...)
+- "כל הכבוד!" (Well done!)
+
+HEBREW DIMINUTIVES (use these for cuteness):
+- Add "-ון" suffix: חתולון (little cat), כלבלב (puppy), ארנבון (little bunny)
+- Use warm terms: מתוק/מתוקה, חמוד/חמודה
+
+HEBREW ONOMATOPOEIA:
+- Animals: שְׁאָגָה (roar), הָאו הָאו (woof), מְיָאו (meow), צִיּוּץ (tweet)
+- Vehicles: ברום ברום (vroom), טוּ טוּ (choo choo), טוט טוט (beep)
+- Nature: טִיף טַף (pitter patter), בּוּם (boom)
+` : ''
+
+      storyPrompt = `You are writing a TODDLER BEDTIME BOOK (ages 0-3). This is NOT a traditional story - it's a PATTERN BOOK designed for parent-child bonding before sleep.
+
+THE GOLDEN RULE: "If it can't be said in one breath, it is too long."
+
+${languageInstruction}
+${hebrewToddlerPhrases}
+
+MAIN CHARACTER: ${characterName}
+CHARACTER TYPE: ${characterDescription}
+THEME: ${adventureTheme}
+
+═══════════════════════════════════════════════════════════════
+MODULE A: THE "12-WORD CONSTRAINT" (Brevity)
+═══════════════════════════════════════════════════════════════
+- Maximum 12 words per slide/page
+- Use ONLY Subject-Verb-Object sentences
+- NO dependent clauses, NO complex sentences
+- BANNED WORDS: "suddenly," "therefore," "however," "although," "because," "meanwhile"
+- Vocabulary: Kindergarten level or below
+
+BAD: "The fluffy cat sat on the mat because she was very tired."
+GOOD: "Look! A cat. The cat is sleepy. Shhh."
+
+═══════════════════════════════════════════════════════════════
+MODULE B: "SOUND & MOTION" TRIGGER (Parent-Child Bonding)
+═══════════════════════════════════════════════════════════════
+- EVERY slide MUST include an [ACTION: ...] tag
+- These are BONDING MOMENTS between parent and child
+- ALL sounds MUST be wrapped in [ACTION: ...] format
+
+BONDING ACTION EXAMPLES:
+Physical Touch:
+- [ACTION: Can you touch ${characterName}'s soft nose?]
+- [ACTION: Give a big squeeze hug!]
+- [ACTION: Tickle time!]
+- [ACTION: Pat your tummy!]
+
+Sounds Together:
+- [ACTION: Let's make this sound: ROAR!]
+- [ACTION: Whisper together: Shhhhh...]
+- [ACTION: Do a big yawn: AHHHHH!]
+- [ACTION: Clap your hands!]
+
+Questions:
+- [ACTION: Where do you think ${characterName} went?]
+- [ACTION: Can you see ${characterName}?]
+
+═══════════════════════════════════════════════════════════════
+MODULE C: THE "PEEK-A-BOO" DISCOVERY LOOP (The Plot)
+═══════════════════════════════════════════════════════════════
+Use hide-and-seek structure to create anticipation:
+
+Pattern:
+1. QUESTION: "Where is ${characterName}?"
+2. WRONG GUESS: "Is ${pronouns.subject} behind the tree? No! That's a bird!"
+3. DISCOVERY: "There ${pronouns.subject} is!"
+
+This creates anticipation (the toddler version of plot tension).
+
+═══════════════════════════════════════════════════════════════
+MODULE D: RHYTHMIC REPETITION (The Refrain)
+═══════════════════════════════════════════════════════════════
+Create a UNIQUE, CREATIVE refrain for this story. The refrain should:
+- Be 4-8 words long
+- Be rhythmic and fun to say
+- Fit the character and adventure theme
+- Feel DIFFERENT from other stories
+
+VARIETY IS KEY! Don't always use "Sound Sound, Name!" pattern.
+Choose from these DIFFERENT refrain styles:
+
+Style 1 - Action + Name:
+- "Splish splash, little ${characterName}!"
+- "Zoom zoom goes ${characterName}!"
+- "Twirl and spin, ${characterName}!"
+
+Style 2 - Descriptive:
+- "${characterName}, so brave and true!"
+- "Silly ${characterName}, full of fun!"
+- "Clever ${characterName} finds the way!"
+
+Style 3 - Question/Call:
+- "What will ${characterName} find today?"
+- "Go ${characterName}, go go go!"
+- "Where are you, ${characterName}?"
+
+Style 4 - Emotional/Cozy:
+- "${characterName} is loved so much!"
+- "Sweet dreams, dear ${characterName}!"
+- "Cuddle time with ${characterName}!"
+
+Style 5 - Story-specific:
+- Make it unique to this ${adventureTheme} adventure!
+- Reference something from the story
+
+${isHebrew ? `Hebrew refrain examples (choose ONE style, be creative!):
+- "${characterName} האמיץ שלנו!" (Our brave ${characterName}!)
+- "קדימה ${characterName}, קדימה!" (Go ${characterName}, go!)
+- "${characterName} אוהב הרפתקאות!" (${characterName} loves adventures!)
+- "מי פה? ${characterName}!" (Who's here? ${characterName}!)
+- "${characterName} חמוד וקטן!" (${characterName} cute and small!)
+- "יש יש ${characterName}!" (Yes yes ${characterName}!)` : ''}
+
+IMPORTANT: Pick ONE refrain style and use it consistently. Make it UNIQUE to this story!
+
+═══════════════════════════════════════════════════════════════
+MODULE E: BEDTIME WIND-DOWN ENDING (Critical!)
+═══════════════════════════════════════════════════════════════
+Pages 7-8 MUST signal "time to sleep" through:
+- Softer language
+- Whisper actions
+- Yawn actions
+- Sleep imagery
+
+REQUIRED ENDING ELEMENTS:
+- Page 7: "${characterName} is tired now." + [ACTION: Do a big yawn together!]
+- Page 8: "${isHebrew ? 'לילה טוב' : 'Night night'}, ${characterName}." + [ACTION: Whisper: Shhhhh...] + "${isHebrew ? 'חלומות מתוקים' : 'Sweet dreams'}..."
+
+═══════════════════════════════════════════════════════════════
+STRUCTURE: Create exactly 8 SLIDES
+═══════════════════════════════════════════════════════════════
+Pages 1-2 (Image 1): INTRODUCTION
+- Meet ${characterName}
+- Make character's sound
+- Establish refrain
+
+Pages 3-4 (Image 2): DISCOVERY LOOP 1
+- "Where is ${characterName} going?"
+- Wrong guess with funny sound
+- Discovery moment
+
+Pages 5-6 (Image 3): DISCOVERY LOOP 2
+- Another search/discovery
+- Physical action for bonding
+- Celebration
+
+Pages 7-8 (Image 4): BEDTIME WIND-DOWN
+- ${characterName} is tired
+- Big yawn together
+- Whisper goodnight
+- Sweet dreams
+
+═══════════════════════════════════════════════════════════════
+IMAGE PROMPT REQUIREMENTS
+═══════════════════════════════════════════════════════════════
+Create 4 image prompts:
+- Image 1: ${characterName} happy, colorful, simple background
+- Image 2: ${characterName} playing/exploring
+- Image 3: ${characterName} discovering something
+- Image 4: ${characterName} cozy, sleepy, peaceful
+
+Each image prompt MUST:
+- Start with: "A ${visualStyle || 'Pixar/Disney'} style illustration of a cute ${animalType}..."
+- Be VERY colorful with simple backgrounds
+- Have big, expressive eyes
+- Be soft and child-friendly
+
+Return your response in this exact JSON format:
+{
+  "title": "${isHebrew ? 'כותרת קצרה בעברית (3-4 מילים)' : 'Short simple title (3-4 words)'}",
+  "characterFlaw": "",
+  "refrain": "${isHebrew ? 'הפזמון בעברית' : 'The refrain'}",
+  "pages": [
+    {"pageNumber": 1, "text": "Short text ending with refrain and [ACTION: ...]"},
+    {"pageNumber": 2, "text": "..."},
+    {"pageNumber": 3, "text": "..."},
+    {"pageNumber": 4, "text": "..."},
+    {"pageNumber": 5, "text": "..."},
+    {"pageNumber": 6, "text": "..."},
+    {"pageNumber": 7, "text": "Text with yawn action..."},
+    {"pageNumber": 8, "text": "${isHebrew ? 'לילה טוב' : 'Night night'}... [ACTION: Whisper: Shhhhh...]"}
+  ],
+  "imagePrompts": [
+    {"imageNumber": 1, "forPages": [1, 2], "prompt": "A ${visualStyle || 'Pixar/Disney'} style illustration of a cute ${animalType}..."},
+    {"imageNumber": 2, "forPages": [3, 4], "prompt": "A ${visualStyle || 'Pixar/Disney'} style illustration of a cute ${animalType}..."},
+    {"imageNumber": 3, "forPages": [5, 6], "prompt": "A ${visualStyle || 'Pixar/Disney'} style illustration of a cute ${animalType}..."},
+    {"imageNumber": 4, "forPages": [7, 8], "prompt": "A ${visualStyle || 'Pixar/Disney'} style illustration of a cute ${animalType} looking sleepy and cozy..."}
+  ]
+}
+
+Return ONLY the JSON, no other text.`
+    } else {
+      // REGULAR MODE (ages 3-8): Full story with Disney-level narrative
+      storyPrompt = `You are a DISNEY-LEVEL children's story writer creating magical, immersive stories for children ages 3-8. Your stories must be as memorable as "The Gruffalo" or "Goodnight Moon."
 
 Create an illustrated children's story with the following details:
 
@@ -103,7 +308,32 @@ ADVENTURE THEME: ${adventureTheme}
 ${moralInstruction}
 
 ═══════════════════════════════════════════════════════════════
-MODULE A: CHARACTER FLAW (Relatability)
+MODULE A: CREATIVE OPENING (The Hook)
+═══════════════════════════════════════════════════════════════
+Start the story with ONE of these engaging opening styles (choose randomly):
+
+1. THE WONDER OPENER: Start with something magical or surprising
+   "One morning, ${characterName} woke up to find something sparkly under ${pronouns.possessive} pillow..."
+
+2. THE ACTION OPENER: Jump straight into exciting action
+   "${characterName} was running as fast as ${pronouns.possessive} little legs could carry ${pronouns.object}!"
+
+3. THE QUESTION OPENER: Engage with a mystery
+   "Have you ever wondered what ${characterName} does when no one is watching?"
+
+4. THE SOUND OPENER: Begin with immersive sounds
+   "WHOOSH! The wind carried a special smell to ${characterName}'s nose..."
+
+5. THE DIALOGUE OPENER: Start with the character speaking
+   "'Today is going to be the BEST day ever!' said ${characterName}, stretching ${pronouns.possessive} little paws."
+
+6. THE SETTING OPENER: Paint a vivid scene
+   "Deep in the Whispering Woods, where the trees hummed soft songs, lived a little ${animalType}..."
+
+DO NOT use boring openings like "Once upon a time" or "There once was".
+
+═══════════════════════════════════════════════════════════════
+MODULE B: CHARACTER FLAW (Relatability)
 ═══════════════════════════════════════════════════════════════
 Perfect characters are boring. ${characterName} MUST have ONE silly, endearing flaw:
 - A fear (afraid of the dark, scared of loud noises, worried about getting messy)
@@ -116,7 +346,7 @@ This flaw MUST:
 3. Be overcome or embraced by the end
 
 ═══════════════════════════════════════════════════════════════
-MODULE B: THE REFRAIN (Rhythm & Repetition)
+MODULE C: THE REFRAIN (Rhythm & Repetition)
 ═══════════════════════════════════════════════════════════════
 Children LOVE repetition. Create a 1-2 line CATCHPHRASE or RHYME for ${characterName}.
 Examples: "I think I can!" / "Clank, clunk, beep!" / "Hop, hop, stop!"
@@ -127,7 +357,7 @@ This refrain MUST appear EXACTLY 3 times:
 3. When ${characterName} succeeds at the end (pages 7-8)
 
 ═══════════════════════════════════════════════════════════════
-MODULE C: SENSORY IMMERSION (Show, Don't Tell)
+MODULE D: SENSORY IMMERSION (Show, Don't Tell)
 ═══════════════════════════════════════════════════════════════
 Bad: "It was a nice forest."
 Good: "The moss felt like a soft sponge and the air smelled like pine needles."
@@ -138,7 +368,7 @@ EVERY location description MUST include:
 DO NOT rely only on visual descriptions!
 
 ═══════════════════════════════════════════════════════════════
-MODULE D: PARENT-CHILD BONDING CUES (Interaction)
+MODULE E: PARENT-CHILD BONDING CUES (Interaction)
 ═══════════════════════════════════════════════════════════════
 Insert [ACTION: instruction] tags at emotional moments for parent interaction:
 
@@ -152,18 +382,25 @@ Examples:
 Include 3-4 [ACTION] tags spread throughout the story.
 
 ═══════════════════════════════════════════════════════════════
-MODULE E: THE SLEEPY LANDING (Bedtime Wind-Down)
+MODULE F: CREATIVE SATISFYING ENDING
 ═══════════════════════════════════════════════════════════════
-This is a BEDTIME story. The energy curve MUST be:
-- Pages 1-2: HIGH energy, curiosity, excitement
-- Pages 3-6: ADVENTURE energy, challenges, action
-- Pages 7-8: DECREASING energy, calm, cozy, sleepy
+The story MUST have a satisfying, calming conclusion but BE CREATIVE with how it ends!
 
-The FINAL PAGE (page 8) is CRITICAL:
-- Use ONLY calm, sleepy words: soft, warm, cozy, gentle, moonlight, stars, quiet, peaceful, drifting, heavy (eyelids), safe
-- AVOID action verbs (run, jump, play, shout)
-- The story MUST end with ${characterName} falling asleep, getting cozy, or settling down to rest
-- Final sentences should have a hypnotic, lullaby quality
+DO NOT always end with the character falling asleep. Instead, choose ONE of these ending types:
+
+1. THE COZY HOME RETURN: ${characterName} returns home feeling accomplished, shares the adventure with loved ones, settles into a warm, safe space
+2. THE HAPPY DISCOVERY: ${characterName} finds something wonderful (a new friend, a special treasure, a beautiful view) and feels content and grateful
+3. THE SHARED MOMENT: ${characterName} ends the day with a gentle bonding moment - sharing food, watching the sunset, or being tucked in by a parent
+4. THE PEACEFUL REFLECTION: ${characterName} sits quietly, thinking about the wonderful day, with a gentle smile
+5. THE GENTLE GOODNIGHT: ${characterName} says goodnight to friends/the world, then settles down peacefully
+6. THE SLEEPY LANDING: (Use sparingly!) ${characterName} gets cozy and drifts off to sleep
+
+The final page should:
+- Have decreasing energy and calm tone
+- Use gentle, warm language
+- Feel emotionally satisfying
+- Leave the reader feeling peaceful and happy
+- NOT always be about sleeping!
 
 ═══════════════════════════════════════════════════════════════
 CHARACTER REQUIREMENTS
@@ -189,7 +426,7 @@ Create 4 image prompts (one for every 2 pages):
 - Image 1: Pages 1-2 (introduction/setting)
 - Image 2: Pages 3-4 (adventure begins)
 - Image 3: Pages 5-6 (challenge/climax)
-- Image 4: Pages 7-8 (resolution/sleepy ending)
+- Image 4: Pages 7-8 (resolution/peaceful ending)
 
 Each image prompt MUST:
 - Start with: "A ${visualStyle || 'Pixar/Disney'} style illustration of a cute ${animalType}..."
@@ -197,7 +434,7 @@ Each image prompt MUST:
 - ${isHumanCharacter ? `Include human features appropriate for a ${animalType}` : `Include ${animalType}-specific features (fur, paws, ears, tail, etc.)`}
 - Match the ${visualStyle || 'Pixar/Disney'} animation style
 - Be child-friendly and colorful
-- Image 4 should show a peaceful, sleepy scene (moonlight, cozy bed, closed eyes)
+- Image 4 should show a peaceful, satisfying ending scene (NOT always sleeping - could be hugging, watching sunset, smiling contentedly, etc.)
 
 ═══════════════════════════════════════════════════════════════
 
@@ -225,6 +462,21 @@ Return your response in this exact JSON format:
 }
 
 Return ONLY the JSON, no other text.`
+    }
+
+    const claudeResponse = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': anthropicKey,
+        'anthropic-version': '2023-06-01'
+      },
+      body: JSON.stringify({
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: 5000,
+        messages: [{
+          role: 'user',
+          content: storyPrompt
         }]
       })
     })
@@ -260,6 +512,16 @@ Return ONLY the JSON, no other text.`
     // This fixes issues where Claude sometimes outputs Arabic letters or grammar errors
     if (isHebrew) {
       console.log('Running Hebrew grammar correction pass...')
+      console.log('Toddler mode for correction:', isToddlerMode)
+
+      // Build toddler-specific instructions if applicable
+      const toddlerInstructions = isToddlerMode ? `
+TODDLER STORY SPECIFIC RULES (THIS IS A TODDLER STORY):
+- KEEP all [ACTION: ...] tags EXACTLY as they are
+- KEEP all CAPITAL LETTER sounds (like "שְׁאָגָה!", "הָאו הָאו!", "מוּ!")
+- KEEP the refrain that appears at the end of each page
+- KEEP the simple sentence structure (very short sentences)
+- Only fix grammar errors, Arabic letters, and gender agreement` : ''
 
       const hebrewCorrectionResponse = await fetch('https://api.anthropic.com/v1/messages', {
         method: 'POST',
@@ -269,7 +531,7 @@ Return ONLY the JSON, no other text.`
           'anthropic-version': '2023-06-01'
         },
         body: JSON.stringify({
-          model: 'claude-sonnet-4-20250514',
+          model: 'claude-haiku-4-5-20251001',
           max_tokens: 3000,
           messages: [{
             role: 'user',
@@ -281,6 +543,7 @@ IMPORTANT CORRECTIONS TO MAKE:
 3. Ensure natural, child-friendly Hebrew language
 4. Keep the story content and meaning EXACTLY the same - only fix language issues
 5. The character ${characterName} is ${gender === 'female' ? 'FEMALE (נקבה)' : 'MALE (זכר)'} - ensure all verbs and adjectives match this gender
+${toddlerInstructions}
 
 Here is the story to correct:
 

@@ -71,6 +71,23 @@ const OptimizedImage = ({ src, alt, className, fallback, priority = false }) => 
   )
 }
 
+// Gradient options for story headlines (matching Studio.jsx and PublicStoryReader.jsx)
+const HEADLINE_GRADIENTS = [
+  'from-pink-400 via-purple-400 to-blue-400',
+  'from-amber-400 via-orange-400 to-red-400',
+  'from-blue-400 via-indigo-400 to-purple-400',
+  'from-rose-400 via-pink-400 to-orange-400',
+  'from-cyan-400 via-sky-400 to-blue-400',
+  'from-lime-400 via-green-400 to-emerald-400',
+]
+
+// Get a consistent gradient for a story based on its ID
+const getStoryGradient = (storyId) => {
+  if (!storyId) return HEADLINE_GRADIENTS[0]
+  const sum = storyId.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0)
+  return HEADLINE_GRADIENTS[sum % HEADLINE_GRADIENTS.length]
+}
+
 // Book Reader Component (same as in Studio.jsx and PublicStoryReader.jsx)
 function BookReader({ story, onClose, isRTL, t, showCTA = true, localizedHref }) {
   const [currentPage, setCurrentPage] = useState(0)
@@ -216,18 +233,26 @@ function BookReader({ story, onClose, isRTL, t, showCTA = true, localizedHref })
     )
   }
 
+  // Instagram-style story progress bars
   const NavigationDots = () => (
-    <div className="flex justify-center gap-1 sm:gap-1.5 flex-wrap max-w-[200px] mx-auto">
+    <div className="flex justify-center gap-1 w-full max-w-[280px] sm:max-w-[320px] mx-auto px-2">
       {Array.from({ length: totalSpreads }).map((_, idx) => (
         <button
           key={idx}
           onClick={() => setCurrentPage(idx)}
-          className={`w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full transition-all ${
-            idx === currentPage
-              ? 'bg-purple-500 scale-125'
-              : 'bg-purple-300 hover:bg-purple-400'
-          }`}
-        />
+          className="flex-1 h-1 sm:h-1.5 rounded-full overflow-hidden bg-purple-200/50 transition-all hover:bg-purple-300/50"
+          title={`${idx + 1}/${totalSpreads}`}
+        >
+          <div
+            className={`h-full rounded-full transition-all duration-300 ${
+              idx < currentPage
+                ? 'w-full bg-purple-500'
+                : idx === currentPage
+                  ? 'w-full bg-gradient-to-r from-purple-500 to-pink-500 animate-pulse'
+                  : 'w-0 bg-purple-400'
+            }`}
+          />
+        </button>
       ))}
     </div>
   )
@@ -267,8 +292,8 @@ function BookReader({ story, onClose, isRTL, t, showCTA = true, localizedHref })
         <div className="relative bg-gradient-to-br from-amber-800/20 to-amber-700/20 rounded-3xl p-2 sm:p-3 shadow-2xl border-4 border-amber-600/40 w-full">
           {/* Inner book pages */}
           <div className="bg-gradient-to-br from-amber-50 to-orange-50 rounded-2xl overflow-hidden shadow-inner flex flex-col">
-            {/* Story Title */}
-            <div className="bg-gradient-to-r from-pink-400 via-purple-400 to-blue-400 py-2 sm:py-3 px-4 sm:px-6 flex-shrink-0">
+            {/* Story Title - gradient varies per story */}
+            <div className={`bg-gradient-to-r ${getStoryGradient(story?.id)} py-2 sm:py-3 px-4 sm:px-6 flex-shrink-0`}>
               <h1
                 className="text-base sm:text-lg md:text-xl lg:text-2xl font-black text-white text-center drop-shadow-lg"
                 style={{
@@ -302,7 +327,7 @@ function BookReader({ story, onClose, isRTL, t, showCTA = true, localizedHref })
                   </svg>
 
                   <h2
-                    className="text-3xl sm:text-4xl md:text-5xl font-black bg-gradient-to-r from-amber-500 via-orange-500 to-pink-500 bg-clip-text text-transparent mb-2"
+                    className={`text-3xl sm:text-4xl md:text-5xl font-black bg-gradient-to-r ${getStoryGradient(story?.id)} bg-clip-text text-transparent mb-2`}
                     style={{
                       fontFamily: 'Georgia, "Times New Roman", serif',
                       fontStyle: 'italic',

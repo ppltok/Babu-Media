@@ -8,7 +8,7 @@ import { checkDevBypass } from '../lib/devBypass'
 import PaymentWall from '../components/PaymentWall'
 import Confetti from '../components/Confetti'
 import FunFacts from '../components/FunFacts'
-import RunnerGame from '../components/RunnerGame'
+import WaitingGames from '../components/WaitingGames'
 
 // Optimized Image Component with loading state and eager loading for story images
 const OptimizedImage = ({ src, alt, className, fallback, priority = false }) => {
@@ -1884,6 +1884,10 @@ function PlotWorldContent({ childId, child, initialCharacter, onCharacterUsed, u
       const styleId = selectedCharacter.visual_style
       const visualStyle = VISUAL_STYLES.find(s => s.id === styleId)?.name || styleId
 
+      // Determine age mode based on child's age
+      const childAge = child?.age || 5
+      const ageMode = childAge < 3 ? 'toddler' : 'regular'
+
       // Create story record in database
       const { data: storyData, error: createError } = await supabase
         .from('stories')
@@ -1892,6 +1896,7 @@ function PlotWorldContent({ childId, child, initialCharacter, onCharacterUsed, u
           character_id: selectedCharacter.id,
           adventure_theme: getThemeLabel(),
           moral_lesson: wantsMoral ? getMoralLabel() : null,
+          age_mode: ageMode,
           status: 'generating'
         })
         .select()
@@ -1920,7 +1925,8 @@ function PlotWorldContent({ childId, child, initialCharacter, onCharacterUsed, u
           visualStyle: visualStyle,
           animalType: selectedCharacter.animal_type, // Pass animal type so Claude knows the character is an animal
           gender: selectedCharacter.gender, // Pass gender for proper pronoun usage (he/she, הוא/היא)
-          language: language // Pass language for story generation (en/he)
+          language: language, // Pass language for story generation (en/he)
+          childAge: child?.age || 5 // Pass child's age for age-appropriate content (Toddler Mode for under 3)
         }
       })
 
@@ -1934,38 +1940,31 @@ function PlotWorldContent({ childId, child, initialCharacter, onCharacterUsed, u
 
       const imagePrompts = storyResult.story.imagePrompts || []
 
-      // WAIT FOR ALL IMAGES: Generate all images sequentially, then show the book
-      // This ensures no race conditions and correct image order
+      // PARALLEL IMAGE GENERATION: Generate all images simultaneously for faster results
+      // This reduces total wait time from ~2-4 minutes to ~30-60 seconds
       const totalImages = imagePrompts.length
+      setGenerationStatus(isRTL ? `🎨 מצייר ${totalImages} איורים במקביל...` : `🎨 Creating ${totalImages} illustrations simultaneously...`)
 
-      for (let i = 0; i < imagePrompts.length; i++) {
-        const imagePrompt = imagePrompts[i]
+      console.log(`Starting parallel generation of ${totalImages} images...`)
+
+      // Create all image generation promises
+      const imagePromises = imagePrompts.map((imagePrompt, i) => {
         const imageNum = i + 1
+        console.log(`Queueing image ${imageNum} generation...`)
 
-        // Update status for each image
-        if (imageNum === 1) {
-          setGenerationStatus(isRTL ? `🎨 מצייר את הדף הראשון... (${imageNum}/${totalImages})` : `🎨 Painting page ${imageNum} of ${totalImages}...`)
-        } else if (imageNum === totalImages) {
-          setGenerationStatus(isRTL ? `🎨 מסיים את האיור האחרון... (${imageNum}/${totalImages})` : `🎨 Finishing the last illustration... (${imageNum}/${totalImages})`)
-        } else {
-          setGenerationStatus(isRTL ? `🎨 מצייר דף ${imageNum} מתוך ${totalImages}...` : `🎨 Painting page ${imageNum} of ${totalImages}...`)
-        }
-
-        try {
-          console.log(`Starting image ${imageNum} generation...`)
-          const response = await supabase.functions.invoke('generate-story-image', {
-            body: {
-              storyId: storyData.id,
-              imageNumber: imagePrompt.imageNumber,
-              prompt: imagePrompt.prompt,
-              characterImageUrl: selectedCharacter.image_url,
-              visualStyle: visualStyle,
-              animalType: selectedCharacter.animal_type
-            }
-          })
-
+        return supabase.functions.invoke('generate-story-image', {
+          body: {
+            storyId: storyData.id,
+            imageNumber: imagePrompt.imageNumber,
+            prompt: imagePrompt.prompt,
+            characterImageUrl: selectedCharacter.image_url,
+            visualStyle: visualStyle,
+            animalType: selectedCharacter.animal_type
+          }
+        }).then(response => {
           if (response.error) {
             console.error(`Image ${imageNum} generation error:`, response.error)
+            return null
           } else {
             console.log(`Image ${imageNum} generated successfully`)
             // Preload the image
@@ -1973,11 +1972,17 @@ function PlotWorldContent({ childId, child, initialCharacter, onCharacterUsed, u
               const img = new Image()
               img.src = response.data.imageUrl
             }
+            return response.data
           }
-        } catch (err) {
+        }).catch(err => {
           console.error(`Image ${imageNum} error:`, err)
-        }
-      }
+          return null
+        })
+      })
+
+      // Wait for all images to complete in parallel
+      await Promise.all(imagePromises)
+      console.log('All images generated in parallel!')
 
       // All images generated - now show the book!
       setGenerationStatus(isRTL ? '📖 הסיפור מוכן!' : '📖 Your story is ready!')
@@ -2201,6 +2206,14 @@ function PlotWorldContent({ childId, child, initialCharacter, onCharacterUsed, u
                   key={story.id}
                   className="relative bg-white/5 border border-white/10 rounded-2xl overflow-hidden hover:bg-white/10 transition-colors group"
                 >
+                  {/* Toddler mode badge */}
+                  {story.age_mode === 'toddler' && (
+                    <div className={`absolute top-2 ${isRTL ? 'right-2' : 'left-2'} z-10`}>
+                      <span className="px-2 py-1 bg-gradient-to-r from-pink-500 to-purple-500 rounded-full text-xs font-bold text-white shadow-lg flex items-center gap-1">
+                        👶 {isRTL ? 'לפעוטות' : 'Toddler'}
+                      </span>
+                    </div>
+                  )}
                   {/* Action buttons */}
                   <div className={`absolute top-2 ${isRTL ? 'left-2' : 'right-2'} z-10 flex gap-1 opacity-0 group-hover:opacity-100 transition-all`}>
                     {/* Share button */}
@@ -2265,109 +2278,115 @@ function PlotWorldContent({ childId, child, initialCharacter, onCharacterUsed, u
           )}
         </div>
       ) : step === 1 ? (
-        /* Step 1: Choose Your Hero */
-        <div className="max-w-4xl mx-auto px-2 sm:px-0">
-          <div className="bg-white/5 border border-white/10 rounded-2xl p-4 sm:p-6 lg:p-8">
-            <div className="text-center mb-6 sm:mb-8">
-              <span className="text-4xl sm:text-5xl mb-3 sm:mb-4 block">🦸</span>
-              <h2 className="text-xl sm:text-2xl font-bold mb-2">{t('studio.plotWorld.step1.title')}</h2>
+        /* Step 1: Choose Your Hero - with sticky button */
+        <div className="max-w-4xl mx-auto px-2 sm:px-0 flex flex-col" style={{ maxHeight: 'calc(100vh - 180px)' }}>
+          <div className="bg-white/5 border border-white/10 rounded-2xl p-4 sm:p-6 lg:p-8 flex flex-col flex-1 overflow-hidden">
+            <div className="text-center mb-4 sm:mb-6 flex-shrink-0">
+              <span className="text-4xl sm:text-5xl mb-2 sm:mb-3 block">🦸</span>
+              <h2 className="text-xl sm:text-2xl font-bold mb-1">{t('studio.plotWorld.step1.title')}</h2>
               <p className="text-gray-400 text-sm sm:text-base">{t('studio.plotWorld.step1.subtitle')}</p>
             </div>
 
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-4 mb-6 sm:mb-8">
-              {characters.map((char) => (
-                <button
-                  key={char.id}
-                  onClick={() => setSelectedCharacter(char)}
-                  className={`p-2 sm:p-4 rounded-xl text-center transition-all ${
-                    selectedCharacter?.id === char.id
-                      ? 'bg-blue-500/30 border-2 border-blue-500 shadow-lg shadow-blue-500/20'
-                      : 'bg-white/5 border-2 border-transparent hover:bg-white/10'
-                  }`}
-                >
-                  {char.image_url ? (
-                    <OptimizedImage
-                      src={char.image_url}
-                      alt={char.name}
-                      className="w-14 h-14 sm:w-20 sm:h-20 rounded-xl mx-auto mb-2 sm:mb-3"
-                      fallback={
-                        <div className="w-14 h-14 sm:w-20 sm:h-20 bg-white/10 rounded-xl flex items-center justify-center mx-auto mb-2 sm:mb-3 text-3xl sm:text-4xl">
-                          🎭
-                        </div>
-                      }
-                    />
-                  ) : (
-                    <div className="w-14 h-14 sm:w-20 sm:h-20 bg-white/10 rounded-xl flex items-center justify-center mx-auto mb-2 sm:mb-3 text-3xl sm:text-4xl">
-                      🎭
-                    </div>
-                  )}
-                  <div className="font-semibold text-sm sm:text-base truncate">{char.name}</div>
-                  <div className="text-xs text-gray-400 mt-0.5 sm:mt-1 truncate hidden sm:block">{char.personality_trait}</div>
-                </button>
-              ))}
+            <div className="flex-1 overflow-y-auto pb-4">
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-4">
+                {characters.map((char) => (
+                  <button
+                    key={char.id}
+                    onClick={() => setSelectedCharacter(char)}
+                    className={`p-2 sm:p-4 rounded-xl text-center transition-all ${
+                      selectedCharacter?.id === char.id
+                        ? 'bg-blue-500/30 border-2 border-blue-500 shadow-lg shadow-blue-500/20'
+                        : 'bg-white/5 border-2 border-transparent hover:bg-white/10'
+                    }`}
+                  >
+                    {char.image_url ? (
+                      <OptimizedImage
+                        src={char.image_url}
+                        alt={char.name}
+                        className="w-14 h-14 sm:w-20 sm:h-20 rounded-xl mx-auto mb-2 sm:mb-3"
+                        fallback={
+                          <div className="w-14 h-14 sm:w-20 sm:h-20 bg-white/10 rounded-xl flex items-center justify-center mx-auto mb-2 sm:mb-3 text-3xl sm:text-4xl">
+                            🎭
+                          </div>
+                        }
+                      />
+                    ) : (
+                      <div className="w-14 h-14 sm:w-20 sm:h-20 bg-white/10 rounded-xl flex items-center justify-center mx-auto mb-2 sm:mb-3 text-3xl sm:text-4xl">
+                        🎭
+                      </div>
+                    )}
+                    <div className="font-semibold text-sm sm:text-base truncate">{char.name}</div>
+                    <div className="text-xs text-gray-400 mt-0.5 sm:mt-1 truncate hidden sm:block">{char.personality_trait}</div>
+                  </button>
+                ))}
+              </div>
             </div>
 
-            <button
-              onClick={() => setStep(2)}
-              disabled={!selectedCharacter}
-              className="w-full py-3 sm:py-4 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-xl font-bold text-sm sm:text-base disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-lg hover:shadow-blue-500/30 transition-all"
-            >
-              {t('studio.plotWorld.step1.nextButton')}
-            </button>
+            <div className="flex-shrink-0 pt-4 border-t border-white/10">
+              <button
+                onClick={() => setStep(2)}
+                disabled={!selectedCharacter}
+                className="w-full py-3 sm:py-4 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-xl font-bold text-sm sm:text-base disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-lg hover:shadow-blue-500/30 transition-all"
+              >
+                {t('studio.plotWorld.step1.nextButton')}
+              </button>
+            </div>
           </div>
         </div>
       ) : step === 2 ? (
-        /* Step 2: What's Today's Adventure? */
-        <div className="max-w-4xl mx-auto px-2 sm:px-0">
-          <div className="bg-white/5 border border-white/10 rounded-2xl p-4 sm:p-6 lg:p-8">
-            <div className="text-center mb-6 sm:mb-8">
-              <span className="text-4xl sm:text-5xl mb-3 sm:mb-4 block">🗺️</span>
-              <h2 className="text-xl sm:text-2xl font-bold mb-2">{t('studio.plotWorld.step2.title')}</h2>
+        /* Step 2: What's Today's Adventure? - with sticky buttons */
+        <div className="max-w-4xl mx-auto px-2 sm:px-0 flex flex-col" style={{ maxHeight: 'calc(100vh - 180px)' }}>
+          <div className="bg-white/5 border border-white/10 rounded-2xl p-4 sm:p-6 lg:p-8 flex flex-col flex-1 overflow-hidden">
+            <div className="text-center mb-4 sm:mb-6 flex-shrink-0">
+              <span className="text-4xl sm:text-5xl mb-2 sm:mb-3 block">🗺️</span>
+              <h2 className="text-xl sm:text-2xl font-bold mb-1">{t('studio.plotWorld.step2.title')}</h2>
               <p className="text-gray-400 text-sm sm:text-base">{t('studio.plotWorld.step2.subtitle')} {selectedCharacter?.name}</p>
             </div>
 
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 mb-4 sm:mb-6">
-              {ADVENTURE_THEMES.map((theme) => (
-                <button
-                  key={theme.id}
-                  onClick={() => {
-                    setAdventureTheme(theme.id)
-                    setCustomTheme('')
-                  }}
-                  className={`p-2 sm:p-4 rounded-xl text-center transition-all ${
-                    adventureTheme === theme.id && !customTheme
-                      ? 'bg-blue-500/30 border-2 border-blue-500'
-                      : 'bg-white/5 border-2 border-transparent hover:bg-white/10'
-                  }`}
-                >
-                  <span className="text-2xl sm:text-3xl block mb-1 sm:mb-2">{theme.emoji}</span>
-                  <div className="font-medium text-xs sm:text-sm">{theme.label}</div>
-                </button>
-              ))}
+            <div className="flex-1 overflow-y-auto pb-4">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 mb-4">
+                {ADVENTURE_THEMES.map((theme) => (
+                  <button
+                    key={theme.id}
+                    onClick={() => {
+                      setAdventureTheme(theme.id)
+                      setCustomTheme('')
+                    }}
+                    className={`p-2 sm:p-4 rounded-xl text-center transition-all ${
+                      adventureTheme === theme.id && !customTheme
+                        ? 'bg-blue-500/30 border-2 border-blue-500'
+                        : 'bg-white/5 border-2 border-transparent hover:bg-white/10'
+                    }`}
+                  >
+                    <span className="text-2xl sm:text-3xl block mb-1 sm:mb-2">{theme.emoji}</span>
+                    <div className="font-medium text-xs sm:text-sm">{theme.label}</div>
+                  </button>
+                ))}
+              </div>
+
+              <div className="relative my-4">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-white/10"></div>
+                </div>
+                <div className="relative flex justify-center text-xs sm:text-sm">
+                  <span className="px-2 bg-[#0B0A16] text-gray-500">{t('studio.plotWorld.step2.orDescribeOwn')}</span>
+                </div>
+              </div>
+
+              <input
+                type="text"
+                value={customTheme}
+                onChange={(e) => {
+                  setCustomTheme(e.target.value)
+                  if (e.target.value) setAdventureTheme('')
+                }}
+                className={`w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 transition-colors text-sm sm:text-base ${isRTL ? 'text-right' : ''}`}
+                placeholder={t('studio.plotWorld.step2.customAdventurePlaceholder')}
+                dir={isRTL ? 'rtl' : 'ltr'}
+              />
             </div>
 
-            <div className="relative my-4 sm:my-6">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-white/10"></div>
-              </div>
-              <div className="relative flex justify-center text-xs sm:text-sm">
-                <span className="px-2 bg-[#0B0A16] text-gray-500">{t('studio.plotWorld.step2.orDescribeOwn')}</span>
-              </div>
-            </div>
-
-            <input
-              type="text"
-              value={customTheme}
-              onChange={(e) => {
-                setCustomTheme(e.target.value)
-                if (e.target.value) setAdventureTheme('')
-              }}
-              className={`w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 transition-colors text-sm sm:text-base mb-6 sm:mb-8 ${isRTL ? 'text-right' : ''}`}
-              placeholder={t('studio.plotWorld.step2.customAdventurePlaceholder')}
-              dir={isRTL ? 'rtl' : 'ltr'}
-            />
-
-            <div className={`flex gap-2 sm:gap-3 ${isRTL ? 'flex-row-reverse' : ''}`}>
+            <div className={`flex-shrink-0 pt-4 border-t border-white/10 flex gap-2 sm:gap-3 ${isRTL ? 'flex-row-reverse' : ''}`}>
               <button
                 onClick={() => setStep(1)}
                 className="flex-1 py-3 sm:py-4 border border-white/20 rounded-xl font-semibold text-sm sm:text-base hover:bg-white/5 transition-all"
@@ -2385,92 +2404,94 @@ function PlotWorldContent({ childId, child, initialCharacter, onCharacterUsed, u
           </div>
         </div>
       ) : step === 3 ? (
-        /* Step 3: Moral/Lesson Selection (Parent Question) */
-        <div className="max-w-4xl mx-auto px-2 sm:px-0">
-          <div className="bg-white/5 border border-white/10 rounded-2xl p-4 sm:p-6 lg:p-8">
-            <div className="text-center mb-6 sm:mb-8">
-              <span className="text-4xl sm:text-5xl mb-3 sm:mb-4 block">🎓</span>
-              <h2 className="text-xl sm:text-2xl font-bold mb-2">{t('studio.plotWorld.step3.title')}</h2>
+        /* Step 3: Moral/Lesson Selection (Parent Question) - with sticky buttons */
+        <div className="max-w-4xl mx-auto px-2 sm:px-0 flex flex-col" style={{ maxHeight: 'calc(100vh - 180px)' }}>
+          <div className="bg-white/5 border border-white/10 rounded-2xl p-4 sm:p-6 lg:p-8 flex flex-col flex-1 overflow-hidden">
+            <div className="text-center mb-4 sm:mb-6 flex-shrink-0">
+              <span className="text-4xl sm:text-5xl mb-2 sm:mb-3 block">🎓</span>
+              <h2 className="text-xl sm:text-2xl font-bold mb-1">{t('studio.plotWorld.step3.title')}</h2>
               <p className="text-gray-400 text-sm sm:text-base">{t('studio.plotWorld.step3.subtitle')}</p>
             </div>
 
-            <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 justify-center mb-6 sm:mb-8">
-              <button
-                onClick={() => setWantsMoral(true)}
-                className={`px-5 sm:px-8 py-3 sm:py-4 rounded-xl font-semibold text-sm sm:text-base transition-all ${
-                  wantsMoral
-                    ? 'bg-emerald-500/30 border-2 border-emerald-500'
-                    : 'bg-white/5 border-2 border-transparent hover:bg-white/10'
-                }`}
-              >
-                {t('studio.plotWorld.step3.yesAddLesson')}
-              </button>
-              <button
-                onClick={() => {
-                  setWantsMoral(false)
-                  setSelectedMoral(null)
-                  setCustomMoral('')
-                }}
-                className={`px-5 sm:px-8 py-3 sm:py-4 rounded-xl font-semibold text-sm sm:text-base transition-all ${
-                  !wantsMoral
-                    ? 'bg-blue-500/30 border-2 border-blue-500'
-                    : 'bg-white/5 border-2 border-transparent hover:bg-white/10'
-                }`}
-              >
-                {t('studio.plotWorld.step3.noJustFun')}
-              </button>
+            <div className="flex-1 overflow-y-auto pb-4">
+              <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 justify-center mb-6 sm:mb-8">
+                <button
+                  onClick={() => setWantsMoral(true)}
+                  className={`px-5 sm:px-8 py-3 sm:py-4 rounded-xl font-semibold text-sm sm:text-base transition-all ${
+                    wantsMoral
+                      ? 'bg-emerald-500/30 border-2 border-emerald-500'
+                      : 'bg-white/5 border-2 border-transparent hover:bg-white/10'
+                  }`}
+                >
+                  {t('studio.plotWorld.step3.yesAddLesson')}
+                </button>
+                <button
+                  onClick={() => {
+                    setWantsMoral(false)
+                    setSelectedMoral(null)
+                    setCustomMoral('')
+                  }}
+                  className={`px-5 sm:px-8 py-3 sm:py-4 rounded-xl font-semibold text-sm sm:text-base transition-all ${
+                    !wantsMoral
+                      ? 'bg-blue-500/30 border-2 border-blue-500'
+                      : 'bg-white/5 border-2 border-transparent hover:bg-white/10'
+                  }`}
+                >
+                  {t('studio.plotWorld.step3.noJustFun')}
+                </button>
+              </div>
+
+              {wantsMoral && (
+                <>
+                  <div className="text-center mb-4">
+                    <h3 className="text-lg font-semibold mb-1">{t('studio.plotWorld.step3.chooseLessonTitle')}</h3>
+                    <p className="text-gray-400 text-sm">{t('studio.plotWorld.step3.chooseLessonSubtitle')}</p>
+                  </div>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2 sm:gap-3 mb-4 sm:mb-6">
+                    {MORAL_LESSONS.map((moral) => (
+                      <button
+                        key={moral.id}
+                        onClick={() => {
+                          setSelectedMoral(moral.id)
+                          setCustomMoral('')
+                        }}
+                        className={`p-2 sm:p-3 rounded-xl text-center transition-all ${
+                          selectedMoral === moral.id && !customMoral
+                            ? 'bg-emerald-500/30 border-2 border-emerald-500'
+                            : 'bg-white/5 border-2 border-transparent hover:bg-white/10'
+                        }`}
+                      >
+                        <span className="text-xl sm:text-2xl block mb-0.5 sm:mb-1">{moral.emoji}</span>
+                        <div className="font-medium text-[10px] sm:text-xs">{moral.label}</div>
+                      </button>
+                    ))}
+                  </div>
+
+                  <div className="relative my-4 sm:my-6">
+                    <div className="absolute inset-0 flex items-center">
+                      <div className="w-full border-t border-white/10"></div>
+                    </div>
+                    <div className="relative flex justify-center text-xs sm:text-sm">
+                      <span className="px-2 bg-[#0B0A16] text-gray-500">{t('studio.plotWorld.step3.orDescribeOwn')}</span>
+                    </div>
+                  </div>
+
+                  <input
+                    type="text"
+                    value={customMoral}
+                    onChange={(e) => {
+                      setCustomMoral(e.target.value)
+                      if (e.target.value) setSelectedMoral(null)
+                    }}
+                    className={`w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-emerald-500 transition-colors text-sm sm:text-base ${isRTL ? 'text-right' : ''}`}
+                    placeholder={t('studio.plotWorld.step3.customLessonPlaceholder')}
+                    dir={isRTL ? 'rtl' : 'ltr'}
+                  />
+                </>
+              )}
             </div>
 
-            {wantsMoral && (
-              <>
-                <div className="text-center mb-4">
-                  <h3 className="text-lg font-semibold mb-1">{t('studio.plotWorld.step3.chooseLessonTitle')}</h3>
-                  <p className="text-gray-400 text-sm">{t('studio.plotWorld.step3.chooseLessonSubtitle')}</p>
-                </div>
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2 sm:gap-3 mb-4 sm:mb-6">
-                  {MORAL_LESSONS.map((moral) => (
-                    <button
-                      key={moral.id}
-                      onClick={() => {
-                        setSelectedMoral(moral.id)
-                        setCustomMoral('')
-                      }}
-                      className={`p-2 sm:p-3 rounded-xl text-center transition-all ${
-                        selectedMoral === moral.id && !customMoral
-                          ? 'bg-emerald-500/30 border-2 border-emerald-500'
-                          : 'bg-white/5 border-2 border-transparent hover:bg-white/10'
-                      }`}
-                    >
-                      <span className="text-xl sm:text-2xl block mb-0.5 sm:mb-1">{moral.emoji}</span>
-                      <div className="font-medium text-[10px] sm:text-xs">{moral.label}</div>
-                    </button>
-                  ))}
-                </div>
-
-                <div className="relative my-4 sm:my-6">
-                  <div className="absolute inset-0 flex items-center">
-                    <div className="w-full border-t border-white/10"></div>
-                  </div>
-                  <div className="relative flex justify-center text-xs sm:text-sm">
-                    <span className="px-2 bg-[#0B0A16] text-gray-500">{t('studio.plotWorld.step3.orDescribeOwn')}</span>
-                  </div>
-                </div>
-
-                <input
-                  type="text"
-                  value={customMoral}
-                  onChange={(e) => {
-                    setCustomMoral(e.target.value)
-                    if (e.target.value) setSelectedMoral(null)
-                  }}
-                  className={`w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-emerald-500 transition-colors text-sm sm:text-base mb-6 sm:mb-8 ${isRTL ? 'text-right' : ''}`}
-                  placeholder={t('studio.plotWorld.step3.customLessonPlaceholder')}
-                  dir={isRTL ? 'rtl' : 'ltr'}
-                />
-              </>
-            )}
-
-            <div className={`flex gap-2 sm:gap-3 mt-6 sm:mt-8 ${isRTL ? 'flex-row-reverse' : ''}`}>
+            <div className={`flex-shrink-0 pt-4 border-t border-white/10 flex gap-2 sm:gap-3 ${isRTL ? 'flex-row-reverse' : ''}`}>
               <button
                 onClick={() => setStep(2)}
                 className="flex-1 py-3 sm:py-4 border border-white/20 rounded-xl font-semibold text-sm sm:text-base hover:bg-white/5 transition-all"
@@ -2488,43 +2509,45 @@ function PlotWorldContent({ childId, child, initialCharacter, onCharacterUsed, u
           </div>
         </div>
       ) : step === 4 ? (
-        /* Step 4: Preview & Generate */
-        <div className="max-w-4xl mx-auto px-2 sm:px-0">
-          <div className="bg-white/5 border border-white/10 rounded-2xl p-4 sm:p-6 lg:p-8">
-            <div className="text-center mb-6 sm:mb-8">
-              <span className="text-4xl sm:text-5xl mb-3 sm:mb-4 block">✨</span>
-              <h2 className="text-xl sm:text-2xl font-bold mb-2">{t('studio.plotWorld.step4.title')}</h2>
+        /* Step 4: Preview & Generate - with sticky buttons */
+        <div className="max-w-4xl mx-auto px-2 sm:px-0 flex flex-col" style={{ maxHeight: 'calc(100vh - 180px)' }}>
+          <div className="bg-white/5 border border-white/10 rounded-2xl p-4 sm:p-6 lg:p-8 flex flex-col flex-1 overflow-hidden">
+            <div className="text-center mb-4 sm:mb-6 flex-shrink-0">
+              <span className="text-4xl sm:text-5xl mb-2 sm:mb-3 block">✨</span>
+              <h2 className="text-xl sm:text-2xl font-bold mb-1">{t('studio.plotWorld.step4.title')}</h2>
               <p className="text-gray-400 text-sm sm:text-base">{t('studio.plotWorld.step4.subtitle')}</p>
             </div>
 
-            <div className="bg-black/20 rounded-xl p-4 sm:p-6 mb-6 sm:mb-8">
-              <div className={`flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-6 ${isRTL ? 'sm:flex-row-reverse' : ''}`}>
-                {selectedCharacter?.image_url ? (
-                  <img
-                    src={selectedCharacter.image_url}
-                    alt={selectedCharacter.name}
-                    className="w-20 h-20 sm:w-24 sm:h-24 rounded-xl object-cover"
-                  />
-                ) : (
-                  <div className="w-20 h-20 sm:w-24 sm:h-24 bg-white/10 rounded-xl flex items-center justify-center text-4xl sm:text-5xl">
-                    🎭
-                  </div>
-                )}
-                <div className={`flex-1 text-center ${isRTL ? 'sm:text-right' : 'sm:text-left'}`}>
-                  <h3 className="text-lg sm:text-xl font-bold mb-1">{t('studio.plotWorld.step4.hero')}: {selectedCharacter?.name}</h3>
-                  <div className="space-y-1 sm:space-y-2 text-xs sm:text-sm">
-                    <p className="text-gray-400">
-                      <span className="text-blue-400">{t('studio.plotWorld.step4.adventure')}:</span> {getThemeLabel()}
-                    </p>
-                    <p className="text-gray-400">
-                      <span className="text-emerald-400">{t('studio.plotWorld.step4.lesson')}:</span> {wantsMoral ? getMoralLabel() : t('studio.plotWorld.step4.noLesson')}
-                    </p>
+            <div className="flex-1 overflow-y-auto pb-4">
+              <div className="bg-black/20 rounded-xl p-4 sm:p-6">
+                <div className={`flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-6 ${isRTL ? 'sm:flex-row-reverse' : ''}`}>
+                  {selectedCharacter?.image_url ? (
+                    <img
+                      src={selectedCharacter.image_url}
+                      alt={selectedCharacter.name}
+                      className="w-20 h-20 sm:w-24 sm:h-24 rounded-xl object-cover"
+                    />
+                  ) : (
+                    <div className="w-20 h-20 sm:w-24 sm:h-24 bg-white/10 rounded-xl flex items-center justify-center text-4xl sm:text-5xl">
+                      🎭
+                    </div>
+                  )}
+                  <div className={`flex-1 text-center ${isRTL ? 'sm:text-right' : 'sm:text-left'}`}>
+                    <h3 className="text-lg sm:text-xl font-bold mb-1">{t('studio.plotWorld.step4.hero')}: {selectedCharacter?.name}</h3>
+                    <div className="space-y-1 sm:space-y-2 text-xs sm:text-sm">
+                      <p className="text-gray-400">
+                        <span className="text-blue-400">{t('studio.plotWorld.step4.adventure')}:</span> {getThemeLabel()}
+                      </p>
+                      <p className="text-gray-400">
+                        <span className="text-emerald-400">{t('studio.plotWorld.step4.lesson')}:</span> {wantsMoral ? getMoralLabel() : t('studio.plotWorld.step4.noLesson')}
+                      </p>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
 
-            <div className={`flex gap-2 sm:gap-3 ${isRTL ? 'flex-row-reverse' : ''}`}>
+            <div className={`flex-shrink-0 pt-4 border-t border-white/10 flex gap-2 sm:gap-3 ${isRTL ? 'flex-row-reverse' : ''}`}>
               <button
                 onClick={() => setStep(3)}
                 className="flex-1 py-3 sm:py-4 border border-white/20 rounded-xl font-semibold text-sm sm:text-base hover:bg-white/5 transition-all"
@@ -2573,16 +2596,18 @@ function PlotWorldContent({ childId, child, initialCharacter, onCharacterUsed, u
             </p>
           </div>
 
-          {/* Runner Game */}
+          {/* Waiting Games - Runner, Drawing & Sound Safari */}
           <div className="mb-6">
-            <RunnerGame
-              characterImage={selectedCharacter?.image_url}
+            <WaitingGames
               characterName={selectedCharacter?.name}
+              characterImage={selectedCharacter?.image_url}
+              animalType={selectedCharacter?.animal_type}
+              theme={adventureTheme}
               isRTL={isRTL}
             />
           </div>
 
-          {/* Fun Facts below the game */}
+          {/* Fun Facts below the games */}
           <div className="mt-4">
             <FunFacts theme={adventureTheme || 'default'} isRTL={isRTL} />
           </div>
@@ -2813,19 +2838,26 @@ function PlotWorldContent({ childId, child, initialCharacter, onCharacterUsed, u
             )
           }
 
-          // Navigation dots
+          // Instagram-style story progress bars
           const NavigationDots = () => (
-            <div className="flex justify-center gap-1 sm:gap-1.5 flex-wrap max-w-[200px] mx-auto">
+            <div className="flex justify-center gap-1 w-full max-w-[280px] sm:max-w-[320px] mx-auto px-2">
               {Array.from({ length: totalSpreads }).map((_, idx) => (
                 <button
                   key={idx}
                   onClick={() => setCurrentPage(idx)}
-                  className={`w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full transition-all ${
-                    idx === currentPage
-                      ? 'bg-purple-500 scale-125'
-                      : 'bg-purple-300 hover:bg-purple-400'
-                  }`}
-                />
+                  className="flex-1 h-1 sm:h-1.5 rounded-full overflow-hidden bg-purple-200/50 transition-all hover:bg-purple-300/50"
+                  title={`${idx + 1}/${totalSpreads}`}
+                >
+                  <div
+                    className={`h-full rounded-full transition-all duration-300 ${
+                      idx < currentPage
+                        ? 'w-full bg-purple-500'
+                        : idx === currentPage
+                          ? 'w-full bg-gradient-to-r from-purple-500 to-pink-500 animate-pulse'
+                          : 'w-0 bg-purple-400'
+                    }`}
+                  />
+                </button>
               ))}
             </div>
           )
@@ -2861,9 +2893,28 @@ function PlotWorldContent({ childId, child, initialCharacter, onCharacterUsed, u
             </div>
           )
 
+          // Toddler mode styling - pink/purple theme for babies
+          const isToddlerBook = currentStory.age_mode === 'toddler'
+          const bookFrameClass = isToddlerBook
+            ? 'bg-gradient-to-br from-pink-800/30 to-purple-700/30 border-pink-500/50'
+            : 'bg-gradient-to-br from-amber-800/20 to-amber-700/20 border-amber-600/40'
+          const bookInnerClass = isToddlerBook
+            ? 'bg-gradient-to-br from-pink-50 to-purple-50'
+            : 'bg-gradient-to-br from-amber-50 to-orange-50'
+          const toddlerTitleGradient = 'from-pink-400 via-purple-400 to-pink-400'
+
           return (
             <div className="w-full max-w-5xl mx-auto px-2 sm:px-4 md:min-h-[500px] md:flex md:items-center md:justify-center">
-              <div className="relative bg-gradient-to-br from-amber-800/20 to-amber-700/20 rounded-3xl p-2 sm:p-3 shadow-2xl border-4 border-amber-600/40 w-full">
+              <div className={`relative ${bookFrameClass} rounded-3xl p-2 sm:p-3 shadow-2xl border-4 w-full`}>
+
+                {/* Toddler badge on book */}
+                {isToddlerBook && (
+                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-20">
+                    <span className="px-3 py-1 bg-gradient-to-r from-pink-500 to-purple-500 rounded-full text-xs font-bold text-white shadow-lg flex items-center gap-1">
+                      👶 {isRTL ? 'ספר לפעוטות' : 'Toddler Book'}
+                    </span>
+                  </div>
+                )}
 
                 {/* Close button */}
                 <button
@@ -2881,9 +2932,9 @@ function PlotWorldContent({ childId, child, initialCharacter, onCharacterUsed, u
                 </div>
 
                 {/* Inner book pages */}
-                <div className="bg-gradient-to-br from-amber-50 to-orange-50 rounded-2xl overflow-hidden shadow-inner flex flex-col">
-                  {/* Story Title - gradient varies per story */}
-                  <div className={`bg-gradient-to-r ${getStoryGradient(currentStory?.id)} py-2 sm:py-3 px-4 sm:px-6 flex-shrink-0`}>
+                <div className={`${bookInnerClass} rounded-2xl overflow-hidden shadow-inner flex flex-col`}>
+                  {/* Story Title - gradient varies per story (toddler books get pink theme) */}
+                  <div className={`bg-gradient-to-r ${isToddlerBook ? toddlerTitleGradient : getStoryGradient(currentStory?.id)} py-2 sm:py-3 px-4 sm:px-6 flex-shrink-0`}>
                     <h1
                       className="text-base sm:text-lg md:text-xl lg:text-2xl font-black text-white text-center drop-shadow-lg"
                       style={{
@@ -2918,7 +2969,7 @@ function PlotWorldContent({ childId, child, initialCharacter, onCharacterUsed, u
                         </svg>
 
                         <h2
-                          className="text-3xl sm:text-4xl md:text-5xl font-black bg-gradient-to-r from-amber-500 via-orange-500 to-pink-500 bg-clip-text text-transparent mb-4"
+                          className={`text-3xl sm:text-4xl md:text-5xl font-black bg-gradient-to-r ${isToddlerBook ? toddlerTitleGradient : getStoryGradient(currentStory?.id)} bg-clip-text text-transparent mb-4`}
                           style={{
                             fontFamily: 'Georgia, "Times New Roman", serif',
                             fontStyle: 'italic',
