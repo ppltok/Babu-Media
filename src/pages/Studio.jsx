@@ -2708,6 +2708,7 @@ function PlotWorldContent({ childId, child, initialCharacter, onCharacterUsed, u
           const spreads = []
           let textIndex = 0
           const numImages = currentStory.images?.length || 3
+          const isToddlerBook = currentStory.age_mode === 'toddler'
 
           // TODDLER MODE: Simpler structure - each image with its text, then The End
           // Structure: Image1+text, Image2+text, Image3+text (middle), Image4+The End
@@ -2948,7 +2949,6 @@ function PlotWorldContent({ childId, child, initialCharacter, onCharacterUsed, u
           )
 
           // Toddler mode styling - pink/purple theme for babies
-          const isToddlerBook = currentStory.age_mode === 'toddler'
           const bookFrameClass = isToddlerBook
             ? 'bg-gradient-to-br from-pink-800/30 to-purple-700/30 border-pink-500/50'
             : 'bg-gradient-to-br from-amber-800/20 to-amber-700/20 border-amber-600/40'
