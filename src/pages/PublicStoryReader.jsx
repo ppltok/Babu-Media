@@ -346,22 +346,32 @@ export default function PublicStoryReader() {
       imageIndex: numImages - 1
     })
   } else {
-    // REGULAR MODE: Build spreads - use first 3 images for content, image 4 reserved for The End
-    for (let imgIdx = 0; imgIdx < Math.min(numImages - 1, 3); imgIdx++) {
-      spreads.push({
-        type: 'image-text',
-        imageIndex: imgIdx,
-        textChunk: textChunks[textIndex] || null
-      })
-      textIndex++
+    // REGULAR MODE: Same pattern as toddler - each image repeats across multiple pages
+    // Structure: Image1 with 2 text chunks, Image2 with 2 text chunks, Image3 with 2 text chunks, Image4 + The End
+    // This creates a more immersive visual experience where images persist across story sections
+    const imagesForContent = Math.min(numImages - 1, 3)
 
-      if (textChunks[textIndex]) {
+    for (let imgIdx = 0; imgIdx < imagesForContent; imgIdx++) {
+      // Each image gets 2 text chunks (same as toddler mode)
+      const chunk1 = textChunks[textIndex] || null
+      const chunk2 = textChunks[textIndex + 1] || null
+
+      if (chunk1) {
         spreads.push({
-          type: 'text-only',
-          textChunk: textChunks[textIndex],
-          textChunk2: textChunks[textIndex + 1] || null
+          type: 'image-text',
+          imageIndex: imgIdx,
+          textChunk: chunk1
         })
-        textIndex += 2
+        textIndex++
+      }
+
+      if (chunk2) {
+        spreads.push({
+          type: 'image-text',
+          imageIndex: imgIdx,
+          textChunk: chunk2
+        })
+        textIndex++
       }
     }
 

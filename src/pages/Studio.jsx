@@ -2776,39 +2776,32 @@ function PlotWorldContent({ childId, child, initialCharacter, onCharacterUsed, u
               imageIndex: numImages - 1
             })
           } else {
-            // REGULAR MODE: Pattern: Image1 + text, text pages, Image2 + text, ALL remaining text, Image3 + The End
-            // Note: Image 3 ONLY appears on "The End" page to avoid duplication
+            // REGULAR MODE: Same pattern as toddler - each image repeats across multiple pages
+            // Structure: Image1 with 2 text chunks, Image2 with 2 text chunks, Image3 with 2 text chunks, Image4 + The End
+            // This creates a more immersive visual experience where images persist across story sections
             const imagesForContent = Math.min(numImages - 1, 3) // Use images 0, 1, and 2 for content
 
             for (let imgIdx = 0; imgIdx < imagesForContent; imgIdx++) {
-              // Image spread with one text chunk
-              if (textIndex < textChunks.length) {
+              // Each image gets 2 text chunks (same as toddler mode)
+              const chunk1 = textChunks[textIndex] || null
+              const chunk2 = textChunks[textIndex + 1] || null
+
+              if (chunk1) {
                 spreads.push({
                   type: 'image-text',
                   imageIndex: imgIdx,
-                  textChunk: textChunks[textIndex]
+                  textChunk: chunk1
                 })
                 textIndex++
-              } else {
-                spreads.push({
-                  type: 'image-only',
-                  imageIndex: imgIdx
-                })
               }
 
-              // Add text-only spreads after each image (up to 2 spreads = 4 text chunks)
-              const textsAfterImage = Math.min(4, textChunks.length - textIndex)
-              for (let i = 0; i < textsAfterImage; i += 2) {
-                const leftText = textChunks[textIndex] || null
-                const rightText = textChunks[textIndex + 1] || null
-                if (leftText || rightText) {
-                  spreads.push({
-                    type: 'text-only',
-                    leftText,
-                    rightText
-                  })
-                  textIndex += 2
-                }
+              if (chunk2) {
+                spreads.push({
+                  type: 'image-text',
+                  imageIndex: imgIdx,
+                  textChunk: chunk2
+                })
+                textIndex++
               }
             }
 
