@@ -1403,149 +1403,154 @@ function FusionLabContent({ childId, child, onGoToStory, user }) {
                     <p className="text-xs sm:text-sm text-gray-500">{t('studio.fusionLab.generating.timeEstimate')}</p>
                   </div>
                 ) : (
-                  <>
-                    {/* Gender Selection */}
-                    <div className="mb-6">
-                      <label className="block text-sm font-medium text-gray-300 mb-2 sm:mb-3">{t('studio.fusionLab.step4.chooseGender')}</label>
-                      <div className={`grid grid-cols-3 gap-2 sm:gap-3 ${isRTL ? 'direction-rtl' : ''}`}>
-                        {/* Male */}
-                        <button
-                          onClick={() => setSelectedGender('male')}
-                          className={`p-3 sm:p-4 rounded-xl text-center transition-all ${
-                            selectedGender === 'male'
-                              ? 'bg-blue-500/30 border-2 border-blue-500'
-                              : 'bg-white/5 border-2 border-transparent hover:bg-white/10'
-                          }`}
-                        >
-                          <div className="flex flex-col items-center gap-1">
-                            <svg className="w-8 h-8 sm:w-10 sm:h-10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                              <circle cx="10" cy="14" r="5"/>
-                              <path d="M19 5l-5.4 5.4"/>
-                              <path d="M15 5h4v4"/>
-                            </svg>
-                            <span className="text-xs sm:text-sm font-medium">{t('studio.fusionLab.step4.genderMale')}</span>
-                          </div>
-                        </button>
-
-                        {/* Female */}
-                        <button
-                          onClick={() => setSelectedGender('female')}
-                          className={`p-3 sm:p-4 rounded-xl text-center transition-all ${
-                            selectedGender === 'female'
-                              ? 'bg-pink-500/30 border-2 border-pink-500'
-                              : 'bg-white/5 border-2 border-transparent hover:bg-white/10'
-                          }`}
-                        >
-                          <div className="flex flex-col items-center gap-1">
-                            <svg className="w-8 h-8 sm:w-10 sm:h-10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                              <circle cx="12" cy="8" r="5"/>
-                              <path d="M12 13v8"/>
-                              <path d="M9 18h6"/>
-                            </svg>
-                            <span className="text-xs sm:text-sm font-medium">{t('studio.fusionLab.step4.genderFemale')}</span>
-                          </div>
-                        </button>
-
-                        {/* Surprise Me */}
-                        <button
-                          onClick={() => setSelectedGender(null)}
-                          className={`p-3 sm:p-4 rounded-xl text-center transition-all ${
-                            selectedGender === null
-                              ? 'bg-purple-500/30 border-2 border-purple-500'
-                              : 'bg-white/5 border-2 border-transparent hover:bg-white/10'
-                          }`}
-                        >
-                          <div className="flex flex-col items-center gap-1">
-                            <span className="text-2xl sm:text-3xl">✨</span>
-                            <span className="text-xs sm:text-sm font-medium">{t('studio.fusionLab.step4.genderSurprise')}</span>
-                          </div>
-                        </button>
-                      </div>
-                      <p className="text-xs text-gray-500 mt-2 text-center">
-                        {t('studio.fusionLab.step4.genderHint')}
-                      </p>
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-300 mb-2 sm:mb-3">{t('studio.fusionLab.step4.chooseOutfit')}</label>
-                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5 sm:gap-2 mb-3 sm:mb-4">
-                        {OUTFIT_PRESETS.map((outfit) => (
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
+                    {/* Left column: Form inputs */}
+                    <div className="space-y-4">
+                      {/* Gender Selection */}
+                      <div>
+                        <label className="block text-sm font-medium text-gray-300 mb-2 sm:mb-3">{t('studio.fusionLab.step4.chooseGender')}</label>
+                        <div className={`grid grid-cols-3 gap-2 sm:gap-3 ${isRTL ? 'direction-rtl' : ''}`}>
+                          {/* Male */}
                           <button
-                            key={outfit.id}
-                            onClick={() => {
-                              setSelectedOutfit(outfit.id)
-                              setCustomOutfit('')
-                            }}
-                            className={`p-2 sm:p-3 rounded-xl ${isRTL ? 'text-right' : 'text-left'} transition-all ${
-                              selectedOutfit === outfit.id && !customOutfit
+                            onClick={() => setSelectedGender('male')}
+                            className={`p-3 sm:p-4 rounded-xl text-center transition-all ${
+                              selectedGender === 'male'
+                                ? 'bg-blue-500/30 border-2 border-blue-500'
+                                : 'bg-white/5 border-2 border-transparent hover:bg-white/10'
+                            }`}
+                          >
+                            <div className="flex flex-col items-center gap-1">
+                              <svg className="w-8 h-8 sm:w-10 sm:h-10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <circle cx="10" cy="14" r="5"/>
+                                <path d="M19 5l-5.4 5.4"/>
+                                <path d="M15 5h4v4"/>
+                              </svg>
+                              <span className="text-xs sm:text-sm font-medium">{t('studio.fusionLab.step4.genderMale')}</span>
+                            </div>
+                          </button>
+
+                          {/* Female */}
+                          <button
+                            onClick={() => setSelectedGender('female')}
+                            className={`p-3 sm:p-4 rounded-xl text-center transition-all ${
+                              selectedGender === 'female'
+                                ? 'bg-pink-500/30 border-2 border-pink-500'
+                                : 'bg-white/5 border-2 border-transparent hover:bg-white/10'
+                            }`}
+                          >
+                            <div className="flex flex-col items-center gap-1">
+                              <svg className="w-8 h-8 sm:w-10 sm:h-10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <circle cx="12" cy="8" r="5"/>
+                                <path d="M12 13v8"/>
+                                <path d="M9 18h6"/>
+                              </svg>
+                              <span className="text-xs sm:text-sm font-medium">{t('studio.fusionLab.step4.genderFemale')}</span>
+                            </div>
+                          </button>
+
+                          {/* Surprise Me */}
+                          <button
+                            onClick={() => setSelectedGender(null)}
+                            className={`p-3 sm:p-4 rounded-xl text-center transition-all ${
+                              selectedGender === null
                                 ? 'bg-purple-500/30 border-2 border-purple-500'
                                 : 'bg-white/5 border-2 border-transparent hover:bg-white/10'
                             }`}
                           >
-                            <div className={`flex items-center gap-1.5 sm:gap-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
-                              <span className="text-lg sm:text-xl">{outfit.emoji}</span>
-                              <span className="text-xs sm:text-sm font-medium">{outfit.label}</span>
+                            <div className="flex flex-col items-center gap-1">
+                              <span className="text-2xl sm:text-3xl">✨</span>
+                              <span className="text-xs sm:text-sm font-medium">{t('studio.fusionLab.step4.genderSurprise')}</span>
                             </div>
                           </button>
-                        ))}
+                        </div>
+                        <p className="text-xs text-gray-500 mt-2 text-center">
+                          {t('studio.fusionLab.step4.genderHint')}
+                        </p>
                       </div>
 
-                      <div className="relative my-3 sm:my-4">
-                        <div className="absolute inset-0 flex items-center">
-                          <div className="w-full border-t border-white/10"></div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-300 mb-2 sm:mb-3">{t('studio.fusionLab.step4.chooseOutfit')}</label>
+                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5 sm:gap-2 mb-3 sm:mb-4">
+                          {OUTFIT_PRESETS.map((outfit) => (
+                            <button
+                              key={outfit.id}
+                              onClick={() => {
+                                setSelectedOutfit(outfit.id)
+                                setCustomOutfit('')
+                              }}
+                              className={`p-2 sm:p-3 rounded-xl ${isRTL ? 'text-right' : 'text-left'} transition-all ${
+                                selectedOutfit === outfit.id && !customOutfit
+                                  ? 'bg-purple-500/30 border-2 border-purple-500'
+                                  : 'bg-white/5 border-2 border-transparent hover:bg-white/10'
+                              }`}
+                            >
+                              <div className={`flex items-center gap-1.5 sm:gap-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
+                                <span className="text-lg sm:text-xl">{outfit.emoji}</span>
+                                <span className="text-xs sm:text-sm font-medium">{outfit.label}</span>
+                              </div>
+                            </button>
+                          ))}
                         </div>
-                        <div className="relative flex justify-center text-xs sm:text-sm">
-                          <span className="px-2 bg-[#0B0A16] text-gray-500">{t('studio.fusionLab.step4.orDescribeOwn')}</span>
-                        </div>
-                      </div>
 
-                      <input
-                        type="text"
-                        value={customOutfit}
-                        onChange={(e) => {
-                          setCustomOutfit(e.target.value)
-                          if (e.target.value) setSelectedOutfit(null)
-                        }}
-                        className={`w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 transition-colors text-sm sm:text-base ${isRTL ? 'text-right' : ''}`}
-                        placeholder={t('studio.fusionLab.step4.customOutfitPlaceholder')}
-                        dir={isRTL ? 'rtl' : 'ltr'}
-                      />
+                        <div className="relative my-3 sm:my-4">
+                          <div className="absolute inset-0 flex items-center">
+                            <div className="w-full border-t border-white/10"></div>
+                          </div>
+                          <div className="relative flex justify-center text-xs sm:text-sm">
+                            <span className="px-2 bg-[#0B0A16] text-gray-500">{t('studio.fusionLab.step4.orDescribeOwn')}</span>
+                          </div>
+                        </div>
+
+                        <input
+                          type="text"
+                          value={customOutfit}
+                          onChange={(e) => {
+                            setCustomOutfit(e.target.value)
+                            if (e.target.value) setSelectedOutfit(null)
+                          }}
+                          className={`w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 transition-colors text-sm sm:text-base ${isRTL ? 'text-right' : ''}`}
+                          placeholder={t('studio.fusionLab.step4.customOutfitPlaceholder')}
+                          dir={isRTL ? 'rtl' : 'ltr'}
+                        />
+                      </div>
                     </div>
 
-                    {/* Preview */}
-                    <div className="bg-black/20 rounded-xl p-4 sm:p-6">
-                      <h3 className="text-xs sm:text-sm font-medium text-gray-400 mb-3 sm:mb-4">{t('studio.fusionLab.step4.characterPreview')}</h3>
-                      <div className={`flex items-center gap-3 sm:gap-4 ${isRTL ? 'flex-row-reverse' : ''}`}>
-                        <div className="text-4xl sm:text-6xl">{selectedAnimal?.emoji}</div>
-                        <div className="min-w-0 flex-1">
-                          <div className="text-lg sm:text-xl font-bold truncate">{characterName}</div>
-                          <div className="text-gray-400 text-xs sm:text-sm truncate">
+                    {/* Right column: Preview and buttons */}
+                    <div className="flex flex-col justify-between lg:sticky lg:top-4">
+                      {/* Preview */}
+                      <div className="bg-gradient-to-br from-purple-500/10 to-pink-500/10 border border-purple-500/30 rounded-xl p-4 sm:p-6 mb-4">
+                        <h3 className="text-xs sm:text-sm font-medium text-gray-400 mb-3 sm:mb-4">{t('studio.fusionLab.step4.characterPreview')}</h3>
+                        <div className="flex flex-col items-center text-center">
+                          <div className="text-5xl sm:text-7xl mb-3">{selectedAnimal?.emoji}</div>
+                          <div className="text-xl sm:text-2xl font-bold mb-2">{characterName}</div>
+                          <div className="text-gray-400 text-xs sm:text-sm mb-1">
                             {selectedTraits.map(traitId => PERSONALITY_TRAITS.find(p => p.id === traitId)?.label).join(', ')}
                           </div>
-                          <div className="text-purple-400 text-xs sm:text-sm mt-0.5 sm:mt-1">
+                          <div className="text-purple-400 text-xs sm:text-sm">
                             {t('studio.fusionLab.step4.style')}: {VISUAL_STYLES.find(s => s.id === selectedStyle)?.name}
                           </div>
                           {getOutfitDescription() && (
-                            <div className="text-emerald-400 text-xs sm:text-sm mt-0.5 sm:mt-1 truncate">
+                            <div className="text-emerald-400 text-xs sm:text-sm mt-1">
                               {t('studio.fusionLab.step4.outfit')}: {getOutfitDescription()}
                             </div>
                           )}
                         </div>
                       </div>
-                    </div>
 
-                    <div className={`flex gap-2 sm:gap-3 ${isRTL ? 'flex-row-reverse' : ''}`}>
-                      <button onClick={() => setStep(3)} className="flex-1 py-3 sm:py-4 border border-white/20 rounded-xl font-semibold text-sm sm:text-base hover:bg-white/5 transition-all">
-                        {t('studio.fusionLab.step4.back')}
-                      </button>
-                      <button
-                        onClick={handleGenerate}
-                        className="flex-1 py-3 sm:py-4 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl font-bold text-sm sm:text-base hover:shadow-lg hover:shadow-purple-500/30 transition-all flex items-center justify-center gap-1.5 sm:gap-2"
-                      >
-                        <span>✨</span> <span>{t('studio.fusionLab.step4.bringToLife')}</span>
-                      </button>
+                      {/* Action buttons */}
+                      <div className={`flex flex-col gap-2 sm:gap-3`}>
+                        <button
+                          onClick={handleGenerate}
+                          className="w-full py-3 sm:py-4 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl font-bold text-sm sm:text-base hover:shadow-lg hover:shadow-purple-500/30 transition-all flex items-center justify-center gap-1.5 sm:gap-2"
+                        >
+                          <span>✨</span> <span>{t('studio.fusionLab.step4.bringToLife')}</span>
+                        </button>
+                        <button onClick={() => setStep(3)} className="w-full py-3 sm:py-4 border border-white/20 rounded-xl font-semibold text-sm sm:text-base hover:bg-white/5 transition-all">
+                          {t('studio.fusionLab.step4.back')}
+                        </button>
+                      </div>
                     </div>
-                  </>
+                  </div>
                 )}
               </div>
             )}
