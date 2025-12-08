@@ -5,16 +5,18 @@ import { useAuth } from '../contexts/AuthContext'
 import { supabase } from '../lib/supabase'
 
 // ActionCard component for interactive bonding cues - bold italic on own row
-const ActionCard = ({ instruction }) => {
+// Supports both English and Hebrew action detection
+const ActionCard = ({ instruction, isHebrew = false }) => {
   const getActionStyle = (text) => {
     const lower = text.toLowerCase()
+    // English keywords
     if (lower.includes('sound') || lower.includes('roar') || lower.includes('noise') || lower.includes('shout') || lower.includes('call'))
       return { emoji: '🔊', color: 'text-blue-600' }
-    if (lower.includes('whisper') || lower.includes('quiet') || lower.includes('softly') || lower.includes('gentle'))
+    if (lower.includes('whisper') || lower.includes('quiet') || lower.includes('softly') || lower.includes('gentle') || lower.includes('shhh'))
       return { emoji: '🤫', color: 'text-purple-600' }
     if (lower.includes('hug') || lower.includes('squeeze') || lower.includes('cuddle') || lower.includes('snuggle'))
       return { emoji: '🤗', color: 'text-pink-600' }
-    if (lower.includes('ask') || lower.includes('what') || lower.includes('?') || lower.includes('think'))
+    if (lower.includes('ask') || lower.includes('what') || lower.includes('?') || lower.includes('think') || lower.includes('where'))
       return { emoji: '❓', color: 'text-amber-600' }
     if (lower.includes('wiggle') || lower.includes('dance') || lower.includes('move') || lower.includes('jump') || lower.includes('clap'))
       return { emoji: '💃', color: 'text-green-600' }
@@ -22,6 +24,21 @@ const ActionCard = ({ instruction }) => {
       return { emoji: '👆', color: 'text-cyan-600' }
     if (lower.includes('sing') || lower.includes('hum') || lower.includes('melody'))
       return { emoji: '🎵', color: 'text-indigo-600' }
+    if (lower.includes('yawn') || lower.includes('tired') || lower.includes('sleepy'))
+      return { emoji: '😴', color: 'text-indigo-600' }
+    // Hebrew keywords
+    if (text.includes('צליל') || text.includes('שאגה') || text.includes('קול'))
+      return { emoji: '🔊', color: 'text-blue-600' }
+    if (text.includes('לחש') || text.includes('שקט') || text.includes('ששש'))
+      return { emoji: '🤫', color: 'text-purple-600' }
+    if (text.includes('חיבוק') || text.includes('לחבק'))
+      return { emoji: '🤗', color: 'text-pink-600' }
+    if (text.includes('איפה') || text.includes('מה') || text.includes('?'))
+      return { emoji: '❓', color: 'text-amber-600' }
+    if (text.includes('רקוד') || text.includes('קפוץ') || text.includes('מחיאות'))
+      return { emoji: '💃', color: 'text-green-600' }
+    if (text.includes('פיהוק') || text.includes('עייף') || text.includes('ישנ'))
+      return { emoji: '😴', color: 'text-indigo-600' }
     return { emoji: '✨', color: 'text-purple-600' }
   }
 
@@ -37,7 +54,7 @@ const ActionCard = ({ instruction }) => {
 }
 
 // Parse and render story text with ACTION tags
-const renderStoryText = (text) => {
+const renderStoryText = (text, isHebrew = false) => {
   if (!text) return null
 
   // Split text by [ACTION: ...] patterns
@@ -46,7 +63,7 @@ const renderStoryText = (text) => {
   return parts.map((part, index) => {
     // Odd indices are the ACTION content (captured group)
     if (index % 2 === 1) {
-      return <ActionCard key={index} instruction={part.trim()} />
+      return <ActionCard key={index} instruction={part.trim()} isHebrew={isHebrew} />
     }
     // Even indices are regular text - skip empty parts
     if (!part.trim()) return null
@@ -203,8 +220,13 @@ export default function PublicStoryReader() {
   // Parse story pages - extract text from page objects
   const storyPages = Array.isArray(story.pages) ? story.pages : []
 
-  // Character limit per chunk
-  const maxCharsPerChunk = isRTL ? 140 : 200
+  // Story language determines text direction - use story's language, not UI language
+  // This ensures Hebrew books always read right-to-left, English books left-to-right
+  // "Like holding a real book - it does not change"
+  const storyIsRTL = story.language === 'he'
+
+  // Character limit per chunk - based on story language
+  const maxCharsPerChunk = storyIsRTL ? 140 : 200
 
   // Helper to split text into sentences while keeping ACTION tags intact
   const splitIntoSentences = (text) => {
@@ -374,12 +396,13 @@ export default function PublicStoryReader() {
   const BOOK_CONTENT_HEIGHT = 'aspect-[9/16] sm:aspect-auto sm:h-[420px] md:h-[420px]'
 
   // Font size levels - user can adjust with +/- buttons
+  // Use storyIsRTL for font sizing since Hebrew text needs slightly larger sizes
   const FONT_SIZE_CLASSES = [
-    isRTL ? 'text-xs sm:text-sm md:text-base' : 'text-xs sm:text-xs md:text-sm',      // 0 - smallest
-    isRTL ? 'text-sm sm:text-base md:text-lg' : 'text-sm sm:text-sm md:text-base',    // 1 - small
-    isRTL ? 'text-base sm:text-lg md:text-xl' : 'text-sm sm:text-base md:text-lg',    // 2 - medium (default)
-    isRTL ? 'text-lg sm:text-xl md:text-2xl' : 'text-base sm:text-lg md:text-xl',     // 3 - large
-    isRTL ? 'text-xl sm:text-2xl md:text-3xl' : 'text-lg sm:text-xl md:text-2xl',     // 4 - largest
+    storyIsRTL ? 'text-xs sm:text-sm md:text-base' : 'text-xs sm:text-xs md:text-sm',      // 0 - smallest
+    storyIsRTL ? 'text-sm sm:text-base md:text-lg' : 'text-sm sm:text-sm md:text-base',    // 1 - small
+    storyIsRTL ? 'text-base sm:text-lg md:text-xl' : 'text-sm sm:text-base md:text-lg',    // 2 - medium (default)
+    storyIsRTL ? 'text-lg sm:text-xl md:text-2xl' : 'text-base sm:text-lg md:text-xl',     // 3 - large
+    storyIsRTL ? 'text-xl sm:text-2xl md:text-3xl' : 'text-lg sm:text-xl md:text-2xl',     // 4 - largest
   ]
   const bookFontSize = FONT_SIZE_CLASSES[fontSizeLevel] || FONT_SIZE_CLASSES[2]
 
@@ -451,19 +474,19 @@ export default function PublicStoryReader() {
     return (
       <div
         className={`${isHalfWidth ? 'w-full md:w-1/2' : 'w-full h-full'} bg-gradient-to-br from-amber-50 to-orange-50 p-4 sm:p-5 md:p-8 flex flex-col justify-center`}
-        dir={isRTL ? 'rtl' : 'ltr'}
+        dir={storyIsRTL ? 'rtl' : 'ltr'}
       >
         <div
           className={`text-center leading-relaxed space-y-2 sm:space-y-2 md:space-y-3 ${bookFontSize} max-w-full`}
           style={{
-            fontFamily: isRTL ? '"David Libre", "Frank Ruhl Libre", Georgia, serif' : 'Georgia, "Times New Roman", serif',
-            lineHeight: isRTL ? '1.6' : '1.5',
+            fontFamily: storyIsRTL ? '"David Libre", "Frank Ruhl Libre", Georgia, serif' : 'Georgia, "Times New Roman", serif',
+            lineHeight: storyIsRTL ? '1.6' : '1.5',
             wordBreak: 'break-word',
             overflowWrap: 'break-word'
           }}
         >
           {textChunk.text.split('\n').map((line, idx) => (
-            <p key={idx} className="text-gray-900 font-medium px-2">{renderStoryText(line)}</p>
+            <p key={idx} className="text-gray-900 font-medium px-2">{renderStoryText(line, storyIsRTL)}</p>
           ))}
         </div>
       </div>
@@ -636,13 +659,15 @@ export default function PublicStoryReader() {
             )}
           </div>
 
-          {/* Navigation arrows */}
+          {/* Navigation arrows - direction based on STORY language (like a real book) */}
+          {/* Hebrew books: next page is on LEFT, previous on RIGHT */}
+          {/* English books: next page is on RIGHT, previous on LEFT */}
           <button
             onClick={() => setCurrentPage(Math.max(0, currentPage - 1))}
             disabled={currentPage === 0}
-            className={`absolute top-1/2 -translate-y-1/2 ${isRTL ? 'right-0 -mr-3 sm:-mr-5' : 'left-0 -ml-3 sm:-ml-5'} w-10 h-10 sm:w-12 sm:h-12 bg-amber-600/80 hover:bg-amber-500 rounded-full flex items-center justify-center shadow-lg transition-all ${currentPage === 0 ? 'opacity-30 cursor-not-allowed' : 'hover:scale-110'}`}
+            className={`absolute top-1/2 -translate-y-1/2 ${storyIsRTL ? 'right-0 -mr-3 sm:-mr-5' : 'left-0 -ml-3 sm:-ml-5'} w-10 h-10 sm:w-12 sm:h-12 bg-amber-600/80 hover:bg-amber-500 rounded-full flex items-center justify-center shadow-lg transition-all ${currentPage === 0 ? 'opacity-30 cursor-not-allowed' : 'hover:scale-110'}`}
           >
-            <svg className={`w-5 h-5 sm:w-6 sm:h-6 text-white ${isRTL ? '' : 'rotate-180'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+            <svg className={`w-5 h-5 sm:w-6 sm:h-6 text-white ${storyIsRTL ? '' : 'rotate-180'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
             </svg>
           </button>
@@ -650,9 +675,9 @@ export default function PublicStoryReader() {
           <button
             onClick={() => setCurrentPage(Math.min(totalSpreads - 1, currentPage + 1))}
             disabled={currentPage === totalSpreads - 1}
-            className={`absolute top-1/2 -translate-y-1/2 ${isRTL ? 'left-0 -ml-3 sm:-ml-5' : 'right-0 -mr-3 sm:-mr-5'} w-10 h-10 sm:w-12 sm:h-12 bg-amber-600/80 hover:bg-amber-500 rounded-full flex items-center justify-center shadow-lg transition-all ${currentPage === totalSpreads - 1 ? 'opacity-30 cursor-not-allowed' : 'hover:scale-110'}`}
+            className={`absolute top-1/2 -translate-y-1/2 ${storyIsRTL ? 'left-0 -ml-3 sm:-ml-5' : 'right-0 -mr-3 sm:-mr-5'} w-10 h-10 sm:w-12 sm:h-12 bg-amber-600/80 hover:bg-amber-500 rounded-full flex items-center justify-center shadow-lg transition-all ${currentPage === totalSpreads - 1 ? 'opacity-30 cursor-not-allowed' : 'hover:scale-110'}`}
           >
-            <svg className={`w-5 h-5 sm:w-6 sm:h-6 text-white ${isRTL ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+            <svg className={`w-5 h-5 sm:w-6 sm:h-6 text-white ${storyIsRTL ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
             </svg>
           </button>

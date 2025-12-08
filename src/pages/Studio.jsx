@@ -65,24 +65,41 @@ const OptimizedImage = ({ src, alt, className, fallback, priority = false }) => 
 }
 
 // ActionCard component for interactive bonding cues - bold italic on own row
-const ActionCard = ({ instruction }) => {
+// Supports both English and Hebrew action detection
+const ActionCard = ({ instruction, isHebrew = false }) => {
   const getActionStyle = (text) => {
     const lower = text.toLowerCase()
+    // English keywords
     if (lower.includes('sound') || lower.includes('roar') || lower.includes('noise') || lower.includes('shout') || lower.includes('call'))
-      return { emoji: '🔊', color: 'text-blue-600' }
-    if (lower.includes('whisper') || lower.includes('quiet') || lower.includes('softly') || lower.includes('gentle'))
-      return { emoji: '🤫', color: 'text-purple-600' }
+      return { emoji: '🔊', color: 'text-blue-600', labelHe: 'בואו נעשה את הצליל הזה!' }
+    if (lower.includes('whisper') || lower.includes('quiet') || lower.includes('softly') || lower.includes('gentle') || lower.includes('shhh'))
+      return { emoji: '🤫', color: 'text-purple-600', labelHe: 'לחש...' }
     if (lower.includes('hug') || lower.includes('squeeze') || lower.includes('cuddle') || lower.includes('snuggle'))
-      return { emoji: '🤗', color: 'text-pink-600' }
-    if (lower.includes('ask') || lower.includes('what') || lower.includes('?') || lower.includes('think'))
-      return { emoji: '❓', color: 'text-amber-600' }
+      return { emoji: '🤗', color: 'text-pink-600', labelHe: 'חיבוק!' }
+    if (lower.includes('ask') || lower.includes('what') || lower.includes('?') || lower.includes('think') || lower.includes('where'))
+      return { emoji: '❓', color: 'text-amber-600', labelHe: 'מה אתם חושבים?' }
     if (lower.includes('wiggle') || lower.includes('dance') || lower.includes('move') || lower.includes('jump') || lower.includes('clap'))
-      return { emoji: '💃', color: 'text-green-600' }
+      return { emoji: '💃', color: 'text-green-600', labelHe: 'זוזו ביחד!' }
     if (lower.includes('count') || lower.includes('point') || lower.includes('find') || lower.includes('look'))
-      return { emoji: '👆', color: 'text-cyan-600' }
+      return { emoji: '👆', color: 'text-cyan-600', labelHe: 'הצביעו!' }
     if (lower.includes('sing') || lower.includes('hum') || lower.includes('melody'))
-      return { emoji: '🎵', color: 'text-indigo-600' }
-    return { emoji: '✨', color: 'text-purple-600' }
+      return { emoji: '🎵', color: 'text-indigo-600', labelHe: 'שירו ביחד!' }
+    if (lower.includes('yawn') || lower.includes('tired') || lower.includes('sleepy'))
+      return { emoji: '😴', color: 'text-indigo-600', labelHe: 'פיהוק גדול!' }
+    // Hebrew keywords
+    if (text.includes('צליל') || text.includes('שאגה') || text.includes('קול'))
+      return { emoji: '🔊', color: 'text-blue-600', labelHe: null }
+    if (text.includes('לחש') || text.includes('שקט') || text.includes('ששש'))
+      return { emoji: '🤫', color: 'text-purple-600', labelHe: null }
+    if (text.includes('חיבוק') || text.includes('לחבק'))
+      return { emoji: '🤗', color: 'text-pink-600', labelHe: null }
+    if (text.includes('איפה') || text.includes('מה') || text.includes('?'))
+      return { emoji: '❓', color: 'text-amber-600', labelHe: null }
+    if (text.includes('רקוד') || text.includes('קפוץ') || text.includes('מחיאות'))
+      return { emoji: '💃', color: 'text-green-600', labelHe: null }
+    if (text.includes('פיהוק') || text.includes('עייף') || text.includes('ישנ'))
+      return { emoji: '😴', color: 'text-indigo-600', labelHe: null }
+    return { emoji: '✨', color: 'text-purple-600', labelHe: null }
   }
 
   const style = getActionStyle(instruction)
@@ -97,7 +114,7 @@ const ActionCard = ({ instruction }) => {
 }
 
 // Parse and render story text with ACTION tags
-const renderStoryText = (text) => {
+const renderStoryText = (text, isHebrew = false) => {
   if (!text) return null
 
   // Split text by [ACTION: ...] patterns
@@ -106,7 +123,7 @@ const renderStoryText = (text) => {
   return parts.map((part, index) => {
     // Odd indices are the ACTION content (captured group)
     if (index % 2 === 1) {
-      return <ActionCard key={index} instruction={part.trim()} />
+      return <ActionCard key={index} instruction={part.trim()} isHebrew={isHebrew} />
     }
     // Even indices are regular text - skip empty parts
     if (!part.trim()) return null
@@ -2819,6 +2836,10 @@ function PlotWorldContent({ childId, child, initialCharacter, onCharacterUsed, u
           const totalSpreads = spreads.length
           const currentSpread = spreads[currentPage] || spreads[0]
 
+          // Story language determines text direction - use story's language, not UI language
+          // This ensures Hebrew books always read right-to-left, English books left-to-right
+          const storyIsRTL = currentStory.language === 'he'
+
           // Book uses 16:9 vertical (portrait) on mobile for more text space
           // On mobile: aspect-[9/16] gives tall portrait view
           // On tablet/desktop: fixed height for side-by-side layout
@@ -2826,11 +2847,11 @@ function PlotWorldContent({ childId, child, initialCharacter, onCharacterUsed, u
 
           // Font size levels - user can adjust with +/- buttons
           const FONT_SIZE_CLASSES = [
-            isRTL ? 'text-xs sm:text-sm md:text-base' : 'text-xs sm:text-xs md:text-sm',      // 0 - smallest
-            isRTL ? 'text-sm sm:text-base md:text-lg' : 'text-sm sm:text-sm md:text-base',    // 1 - small
-            isRTL ? 'text-base sm:text-lg md:text-xl' : 'text-sm sm:text-base md:text-lg',    // 2 - medium (default)
-            isRTL ? 'text-lg sm:text-xl md:text-2xl' : 'text-base sm:text-lg md:text-xl',     // 3 - large
-            isRTL ? 'text-xl sm:text-2xl md:text-3xl' : 'text-lg sm:text-xl md:text-2xl',     // 4 - largest
+            storyIsRTL ? 'text-xs sm:text-sm md:text-base' : 'text-xs sm:text-xs md:text-sm',      // 0 - smallest
+            storyIsRTL ? 'text-sm sm:text-base md:text-lg' : 'text-sm sm:text-sm md:text-base',    // 1 - small
+            storyIsRTL ? 'text-base sm:text-lg md:text-xl' : 'text-sm sm:text-base md:text-lg',    // 2 - medium (default)
+            storyIsRTL ? 'text-lg sm:text-xl md:text-2xl' : 'text-base sm:text-lg md:text-xl',     // 3 - large
+            storyIsRTL ? 'text-xl sm:text-2xl md:text-3xl' : 'text-lg sm:text-xl md:text-2xl',     // 4 - largest
           ]
           const bookFontSize = FONT_SIZE_CLASSES[fontSizeLevel] || FONT_SIZE_CLASSES[2]
 
@@ -2874,19 +2895,19 @@ function PlotWorldContent({ childId, child, initialCharacter, onCharacterUsed, u
             return (
               <div
                 className={`${isHalfWidth ? 'w-full md:w-1/2' : 'w-full h-full'} bg-gradient-to-br from-amber-50 to-orange-50 p-4 sm:p-5 md:p-8 flex flex-col justify-center`}
-                dir={isRTL ? 'rtl' : 'ltr'}
+                dir={storyIsRTL ? 'rtl' : 'ltr'}
               >
                 <div
                   className={`text-center leading-relaxed space-y-2 sm:space-y-2 md:space-y-3 ${bookFontSize} max-w-full`}
                   style={{
-                    fontFamily: isRTL ? '"David Libre", "Frank Ruhl Libre", Georgia, serif' : 'Georgia, "Times New Roman", serif',
-                    lineHeight: isRTL ? '1.6' : '1.5',
+                    fontFamily: storyIsRTL ? '"David Libre", "Frank Ruhl Libre", Georgia, serif' : 'Georgia, "Times New Roman", serif',
+                    lineHeight: storyIsRTL ? '1.6' : '1.5',
                     wordBreak: 'break-word',
                     overflowWrap: 'break-word'
                   }}
                 >
                   {textChunk.text.split('\n').map((line, idx) => (
-                    <p key={idx} className="text-gray-900 font-medium px-2">{renderStoryText(line)}</p>
+                    <p key={idx} className="text-gray-900 font-medium px-2">{renderStoryText(line, storyIsRTL)}</p>
                   ))}
                 </div>
               </div>
@@ -3094,7 +3115,7 @@ function PlotWorldContent({ childId, child, initialCharacter, onCharacterUsed, u
                   ) : (
                     /* Text-only spread */
                     <div className={`flex flex-col ${BOOK_CONTENT_HEIGHT}`}>
-                      <div className="flex-1 flex flex-col md:flex-row items-center justify-center" dir={isRTL ? 'rtl' : 'ltr'}>
+                      <div className={`flex-1 flex flex-col md:flex-row items-center justify-center ${storyIsRTL ? 'md:flex-row-reverse' : ''}`}>
                         <TextPage textChunk={currentSpread.leftText} isHalfWidth={true} />
                         <div className="hidden md:block w-0.5 bg-amber-200" />
                         <TextPage textChunk={currentSpread.rightText} isHalfWidth={true} />
@@ -3105,15 +3126,17 @@ function PlotWorldContent({ childId, child, initialCharacter, onCharacterUsed, u
                     </div>
                   )}
 
-                  {/* Navigation buttons */}
-                  <div className="bg-gradient-to-r from-amber-100 via-orange-100 to-amber-100 px-4 sm:px-6 py-2 sm:py-3 flex items-center justify-between border-t-2 border-amber-200 flex-shrink-0">
+                  {/* Navigation buttons - direction based on STORY language (like a real book) */}
+                  {/* Hebrew books: next page is on LEFT, previous on RIGHT */}
+                  {/* English books: next page is on RIGHT, previous on LEFT */}
+                  <div className={`bg-gradient-to-r from-amber-100 via-orange-100 to-amber-100 px-4 sm:px-6 py-2 sm:py-3 flex items-center justify-between border-t-2 border-amber-200 flex-shrink-0 ${storyIsRTL ? 'flex-row-reverse' : ''}`}>
                     <button
                       onClick={() => setCurrentPage(Math.max(0, currentPage - 1))}
                       disabled={currentPage === 0}
-                      className={`flex items-center gap-1 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 bg-purple-500 hover:bg-purple-600 text-white rounded-full font-bold text-sm transition-all disabled:opacity-30 disabled:cursor-not-allowed shadow-lg hover:shadow-xl ${isRTL ? 'flex-row-reverse' : ''}`}
+                      className="flex items-center gap-1 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 bg-purple-500 hover:bg-purple-600 text-white rounded-full font-bold text-sm transition-all disabled:opacity-30 disabled:cursor-not-allowed shadow-lg hover:shadow-xl"
                       style={{ fontFamily: '"Comic Sans MS", "Chalkboard", cursive' }}
                     >
-                      <svg className={`w-4 h-4 sm:w-5 sm:h-5 ${isRTL ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                      <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
                         <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
                       </svg>
                       <span className="hidden sm:inline">{t('common.buttons.previous')}</span>
@@ -3126,11 +3149,11 @@ function PlotWorldContent({ childId, child, initialCharacter, onCharacterUsed, u
                     <button
                       onClick={() => setCurrentPage(Math.min(totalSpreads - 1, currentPage + 1))}
                       disabled={currentPage >= totalSpreads - 1}
-                      className={`flex items-center gap-1 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 bg-purple-500 hover:bg-purple-600 text-white rounded-full font-bold text-sm transition-all disabled:opacity-30 disabled:cursor-not-allowed shadow-lg hover:shadow-xl ${isRTL ? 'flex-row-reverse' : ''}`}
+                      className="flex items-center gap-1 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 bg-purple-500 hover:bg-purple-600 text-white rounded-full font-bold text-sm transition-all disabled:opacity-30 disabled:cursor-not-allowed shadow-lg hover:shadow-xl"
                       style={{ fontFamily: '"Comic Sans MS", "Chalkboard", cursive' }}
                     >
                       <span className="hidden sm:inline">{t('common.buttons.next')}</span>
-                      <svg className={`w-4 h-4 sm:w-5 sm:h-5 ${isRTL ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                      <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
                         <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
                       </svg>
                     </button>
