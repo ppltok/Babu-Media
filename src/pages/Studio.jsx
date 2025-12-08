@@ -2700,34 +2700,41 @@ function PlotWorldContent({ childId, child, initialCharacter, onCharacterUsed, u
           })
 
           // Build spread configuration dynamically
-          // Pattern: Image1 + text, text pages, Image2 + text, ALL remaining text, Image3 + The End
-          // Note: Image 3 ONLY appears on "The End" page to avoid duplication
           const spreads = []
           let textIndex = 0
           const numImages = currentStory.images?.length || 3
 
-          // Add spreads for first 3 images (image 4 is reserved for The End)
-          const imagesForContent = Math.min(numImages - 1, 3) // Use images 0, 1, and 2 for content
+          // TODDLER MODE: Simpler structure - each image with its text, then The End
+          // Structure: Image1+text, Image2+text, Image3+text (middle), Image4+The End
+          if (isToddlerBook && numImages >= 4) {
+            // Toddler books: Show all 4 images spread throughout the book
+            // Image 1: Pages 1-2, Image 2: Pages 3-4, Image 3: Pages 5-6, Image 4: The End (Pages 7-8)
+            for (let imgIdx = 0; imgIdx < numImages - 1; imgIdx++) {
+              // Each image gets 2 text chunks (representing 2 pages each)
+              const chunk1 = textChunks[textIndex] || null
+              const chunk2 = textChunks[textIndex + 1] || null
 
-          for (let imgIdx = 0; imgIdx < imagesForContent; imgIdx++) {
-            // Image spread with one text chunk
-            if (textIndex < textChunks.length) {
-              spreads.push({
-                type: 'image-text',
-                imageIndex: imgIdx,
-                textChunk: textChunks[textIndex]
-              })
-              textIndex++
-            } else {
-              spreads.push({
-                type: 'image-only',
-                imageIndex: imgIdx
-              })
+              if (chunk1) {
+                spreads.push({
+                  type: 'image-text',
+                  imageIndex: imgIdx,
+                  textChunk: chunk1
+                })
+                textIndex++
+              }
+
+              if (chunk2) {
+                spreads.push({
+                  type: 'image-text',
+                  imageIndex: imgIdx,
+                  textChunk: chunk2
+                })
+                textIndex++
+              }
             }
 
-            // Add text-only spreads after each image (up to 2 spreads = 4 text chunks)
-            const textsAfterImage = Math.min(4, textChunks.length - textIndex)
-            for (let i = 0; i < textsAfterImage; i += 2) {
+            // Add any remaining text
+            while (textIndex < textChunks.length) {
               const leftText = textChunks[textIndex] || null
               const rightText = textChunks[textIndex + 1] || null
               if (leftText || rightText) {
@@ -2736,30 +2743,72 @@ function PlotWorldContent({ childId, child, initialCharacter, onCharacterUsed, u
                   leftText,
                   rightText
                 })
-                textIndex += 2
+              }
+              textIndex += 2
+            }
+
+            // Add "The End" with the 4th image
+            spreads.push({
+              type: 'end',
+              imageIndex: numImages - 1
+            })
+          } else {
+            // REGULAR MODE: Pattern: Image1 + text, text pages, Image2 + text, ALL remaining text, Image3 + The End
+            // Note: Image 3 ONLY appears on "The End" page to avoid duplication
+            const imagesForContent = Math.min(numImages - 1, 3) // Use images 0, 1, and 2 for content
+
+            for (let imgIdx = 0; imgIdx < imagesForContent; imgIdx++) {
+              // Image spread with one text chunk
+              if (textIndex < textChunks.length) {
+                spreads.push({
+                  type: 'image-text',
+                  imageIndex: imgIdx,
+                  textChunk: textChunks[textIndex]
+                })
+                textIndex++
+              } else {
+                spreads.push({
+                  type: 'image-only',
+                  imageIndex: imgIdx
+                })
+              }
+
+              // Add text-only spreads after each image (up to 2 spreads = 4 text chunks)
+              const textsAfterImage = Math.min(4, textChunks.length - textIndex)
+              for (let i = 0; i < textsAfterImage; i += 2) {
+                const leftText = textChunks[textIndex] || null
+                const rightText = textChunks[textIndex + 1] || null
+                if (leftText || rightText) {
+                  spreads.push({
+                    type: 'text-only',
+                    leftText,
+                    rightText
+                  })
+                  textIndex += 2
+                }
               }
             }
-          }
 
-          // Add ALL remaining text as text-only spreads BEFORE "The End"
-          while (textIndex < textChunks.length) {
-            const leftText = textChunks[textIndex] || null
-            const rightText = textChunks[textIndex + 1] || null
-            if (leftText || rightText) {
-              spreads.push({
-                type: 'text-only',
-                leftText,
-                rightText
-              })
+            // Add ALL remaining text as text-only spreads BEFORE "The End"
+            while (textIndex < textChunks.length) {
+              const leftText = textChunks[textIndex] || null
+              const rightText = textChunks[textIndex + 1] || null
+              if (leftText || rightText) {
+                spreads.push({
+                  type: 'text-only',
+                  leftText,
+                  rightText
+                })
+              }
+              textIndex += 2
             }
-            textIndex += 2
-          }
 
-          // Add "The End" as the final spread with IMAGE 3 (the last image)
-          spreads.push({
-            type: 'end',
-            imageIndex: numImages - 1 // Always use the last image (index 2 for 3 images)
-          })
+            // Add "The End" as the final spread with the last image
+            spreads.push({
+              type: 'end',
+              imageIndex: numImages - 1
+            })
+          }
 
           const totalSpreads = spreads.length
           const currentSpread = spreads[currentPage] || spreads[0]

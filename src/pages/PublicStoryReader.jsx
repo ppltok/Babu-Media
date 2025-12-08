@@ -283,17 +283,38 @@ export default function PublicStoryReader() {
   const numImages = story.images?.length || 0
   const spreads = []
   let textIndex = 0
+  const isToddlerBook = story.age_mode === 'toddler'
 
-  // Build spreads - use first 3 images for content, image 4 reserved for The End
-  for (let imgIdx = 0; imgIdx < Math.min(numImages - 1, 3); imgIdx++) {
-    spreads.push({
-      type: 'image-text',
-      imageIndex: imgIdx,
-      textChunk: textChunks[textIndex] || null
-    })
-    textIndex++
+  // TODDLER MODE: Simpler structure - each image with its text, then The End
+  if (isToddlerBook && numImages >= 4) {
+    // Toddler books: Show all 4 images spread throughout the book
+    // Image 1: Pages 1-2, Image 2: Pages 3-4, Image 3: Pages 5-6, Image 4: The End (Pages 7-8)
+    for (let imgIdx = 0; imgIdx < numImages - 1; imgIdx++) {
+      // Each image gets 2 text chunks (representing 2 pages each)
+      const chunk1 = textChunks[textIndex] || null
+      const chunk2 = textChunks[textIndex + 1] || null
 
-    if (textChunks[textIndex]) {
+      if (chunk1) {
+        spreads.push({
+          type: 'image-text',
+          imageIndex: imgIdx,
+          textChunk: chunk1
+        })
+        textIndex++
+      }
+
+      if (chunk2) {
+        spreads.push({
+          type: 'image-text',
+          imageIndex: imgIdx,
+          textChunk: chunk2
+        })
+        textIndex++
+      }
+    }
+
+    // Add any remaining text
+    while (textIndex < textChunks.length) {
       spreads.push({
         type: 'text-only',
         textChunk: textChunks[textIndex],
@@ -301,23 +322,48 @@ export default function PublicStoryReader() {
       })
       textIndex += 2
     }
-  }
 
-  // Add remaining text pages
-  while (textIndex < textChunks.length) {
+    // Add "The End" with the 4th image
     spreads.push({
-      type: 'text-only',
-      textChunk: textChunks[textIndex],
-      textChunk2: textChunks[textIndex + 1] || null
+      type: 'end',
+      imageIndex: numImages - 1
     })
-    textIndex += 2
-  }
+  } else {
+    // REGULAR MODE: Build spreads - use first 3 images for content, image 4 reserved for The End
+    for (let imgIdx = 0; imgIdx < Math.min(numImages - 1, 3); imgIdx++) {
+      spreads.push({
+        type: 'image-text',
+        imageIndex: imgIdx,
+        textChunk: textChunks[textIndex] || null
+      })
+      textIndex++
 
-  // Add "The End" spread
-  spreads.push({
-    type: 'end',
-    imageIndex: numImages - 1
-  })
+      if (textChunks[textIndex]) {
+        spreads.push({
+          type: 'text-only',
+          textChunk: textChunks[textIndex],
+          textChunk2: textChunks[textIndex + 1] || null
+        })
+        textIndex += 2
+      }
+    }
+
+    // Add remaining text pages
+    while (textIndex < textChunks.length) {
+      spreads.push({
+        type: 'text-only',
+        textChunk: textChunks[textIndex],
+        textChunk2: textChunks[textIndex + 1] || null
+      })
+      textIndex += 2
+    }
+
+    // Add "The End" spread
+    spreads.push({
+      type: 'end',
+      imageIndex: numImages - 1
+    })
+  }
 
   const totalSpreads = spreads.length
   const currentSpread = spreads[currentPage] || spreads[0]
