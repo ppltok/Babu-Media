@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { useLanguage } from '../contexts/LanguageContext'
+import { useTheme } from '../contexts/ThemeContext'
 import { supabase } from '../lib/supabase'
 import { canCreate, trackCreation, getUsageSummary } from '../lib/usageTracking'
 import { checkDevBypass } from '../lib/devBypass'
@@ -208,6 +209,7 @@ const CloseIcon = ({ className }) => (
 export default function Studio() {
   const { user, signOut } = useAuth()
   const { isRTL, t, language, localizedHref } = useLanguage()
+  const { theme, toggleTheme, isDark, themeColors } = useTheme()
   const navigate = useNavigate()
   const menuRef = useRef(null)
   const [showUserMenu, setShowUserMenu] = useState(false)
@@ -327,7 +329,7 @@ export default function Studio() {
   }
 
   return (
-    <div className="h-screen bg-[#0B0A16] text-white flex flex-col lg:flex-row overflow-hidden">
+    <div className={`h-screen flex flex-col lg:flex-row overflow-hidden transition-colors duration-300 ${isDark ? 'bg-[#0B0A16] text-white' : 'bg-gray-50 text-gray-900'}`}>
       {/* Delete Child Confirmation Modal */}
       {deleteChildConfirm && (
         <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
@@ -364,25 +366,25 @@ export default function Studio() {
       )}
 
       {/* Mobile Header */}
-      <header className="lg:hidden flex items-center justify-between p-4 bg-[#0d0c18] border-b border-white/10">
+      <header className={`lg:hidden flex items-center justify-between p-4 border-b transition-colors duration-300 ${isDark ? 'bg-[#0d0c18] border-white/10' : 'bg-white border-gray-200'}`}>
         <Link to={localizedHref('/')} className="flex items-center gap-3 hover:opacity-80 transition-opacity">
           <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl flex items-center justify-center shadow-lg shadow-purple-500/30">
             <SparklesIcon className="w-6 h-6 text-white" />
           </div>
           <span className="text-lg font-bold">Babu Media</span>
         </Link>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
           <button
             onClick={() => setChildMenuOpen(!childMenuOpen)}
-            className="flex items-center gap-2 px-3 py-2 bg-white/5 rounded-xl"
+            className={`flex items-center gap-2 px-3 py-2 rounded-xl ${isDark ? 'bg-white/5' : 'bg-gray-100'}`}
           >
             <span className="text-xl">{selectedChild?.avatar_emoji || '🧒'}</span>
             <span className="text-sm font-medium max-w-[80px] truncate">{selectedChild?.name}</span>
-            <ChevronDownIcon className={`w-4 h-4 text-gray-400 transition-transform ${childMenuOpen ? 'rotate-180' : ''}`} />
+            <ChevronDownIcon className={`w-4 h-4 transition-transform ${isDark ? 'text-gray-400' : 'text-gray-500'} ${childMenuOpen ? 'rotate-180' : ''}`} />
           </button>
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="p-2 hover:bg-white/10 rounded-xl transition-colors"
+            className={`p-2 rounded-xl transition-colors ${isDark ? 'hover:bg-white/10' : 'hover:bg-gray-100'}`}
           >
             {mobileMenuOpen ? <CloseIcon className="w-6 h-6" /> : <MenuIcon className="w-6 h-6" />}
           </button>
@@ -391,12 +393,14 @@ export default function Studio() {
 
       {/* Mobile Child Dropdown */}
       {childMenuOpen && (
-        <div className="lg:hidden absolute top-16 right-4 left-4 sm:left-auto sm:w-72 bg-slate-900 border border-white/10 rounded-xl overflow-hidden z-50 shadow-xl">
+        <div className={`lg:hidden absolute top-16 right-4 left-4 sm:left-auto sm:w-72 border rounded-xl overflow-hidden z-50 shadow-xl ${isDark ? 'bg-slate-900 border-white/10' : 'bg-white border-gray-200'}`}>
           {children.map((child) => (
             <div
               key={child.id}
-              className={`flex items-center gap-3 p-3 hover:bg-white/10 transition-colors ${
-                selectedChild?.id === child.id ? 'bg-purple-500/20' : ''
+              className={`flex items-center gap-3 p-3 transition-colors ${
+                selectedChild?.id === child.id
+                  ? 'bg-purple-500/20'
+                  : isDark ? 'hover:bg-white/10' : 'hover:bg-gray-100'
               }`}
             >
               <button
@@ -409,7 +413,7 @@ export default function Studio() {
                 <span className="text-xl">{child.avatar_emoji || '🧒'}</span>
                 <div className="text-left">
                   <div className="font-medium">{child.name}</div>
-                  <div className="text-xs text-gray-400">{child.age} {t('studio.sidebar.yearsOld')}</div>
+                  <div className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>{child.age} {t('studio.sidebar.yearsOld')}</div>
                 </div>
               </button>
               <button
@@ -431,7 +435,7 @@ export default function Studio() {
               setChildMenuOpen(false)
               handleAddChild()
             }}
-            className="w-full flex items-center gap-3 p-3 hover:bg-white/10 transition-colors border-t border-white/10 text-purple-400"
+            className={`w-full flex items-center gap-3 p-3 transition-colors border-t text-purple-400 ${isDark ? 'hover:bg-white/10 border-white/10' : 'hover:bg-gray-100 border-gray-200'}`}
           >
             <PlusIcon className="w-5 h-5" />
             <span>{t('studio.sidebar.addChild')}</span>
@@ -441,7 +445,7 @@ export default function Studio() {
 
       {/* Mobile Menu Overlay */}
       {mobileMenuOpen && (
-        <div className="lg:hidden fixed inset-0 top-16 bg-[#0d0c18] z-40 flex flex-col">
+        <div className={`lg:hidden fixed inset-0 top-16 z-40 flex flex-col ${isDark ? 'bg-[#0d0c18]' : 'bg-white'}`}>
           <nav className="flex-1 p-4 space-y-2">
             <button
               onClick={() => {
@@ -450,8 +454,12 @@ export default function Studio() {
               }}
               className={`w-full flex items-center gap-3 p-4 rounded-xl transition-all ${
                 activeSection === 'fusion-lab'
-                  ? 'bg-gradient-to-r from-purple-500/20 to-pink-500/20 border border-purple-500/30 text-purple-300'
-                  : 'hover:bg-white/5 text-gray-400 hover:text-white'
+                  ? isDark
+                    ? 'bg-gradient-to-r from-purple-500/20 to-pink-500/20 border border-purple-500/30 text-purple-300'
+                    : 'bg-gradient-to-r from-purple-100 to-pink-100 border border-purple-300 text-purple-700'
+                  : isDark
+                    ? 'hover:bg-white/5 text-gray-400 hover:text-white'
+                    : 'hover:bg-gray-100 text-gray-600 hover:text-gray-900'
               }`}
             >
               <PaletteIcon className="w-6 h-6 flex-shrink-0" />
@@ -465,8 +473,12 @@ export default function Studio() {
               }}
               className={`w-full flex items-center gap-3 p-4 rounded-xl transition-all ${
                 activeSection === 'plot-world'
-                  ? 'bg-gradient-to-r from-blue-500/20 to-cyan-500/20 border border-blue-500/30 text-blue-300'
-                  : 'hover:bg-white/5 text-gray-400 hover:text-white'
+                  ? isDark
+                    ? 'bg-gradient-to-r from-blue-500/20 to-cyan-500/20 border border-blue-500/30 text-blue-300'
+                    : 'bg-gradient-to-r from-blue-100 to-cyan-100 border border-blue-300 text-blue-700'
+                  : isDark
+                    ? 'hover:bg-white/5 text-gray-400 hover:text-white'
+                    : 'hover:bg-gray-100 text-gray-600 hover:text-gray-900'
               }`}
             >
               <BookIcon className="w-6 h-6 flex-shrink-0" />
@@ -474,14 +486,14 @@ export default function Studio() {
             </button>
           </nav>
 
-          <div className="p-4 border-t border-white/10">
+          <div className={`p-4 border-t ${isDark ? 'border-white/10' : 'border-gray-200'}`}>
             <div className="flex items-center gap-3 mb-4">
               <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-teal-500 rounded-full flex items-center justify-center">
-                <span className="text-sm font-bold">{user?.email?.[0]?.toUpperCase()}</span>
+                <span className="text-sm font-bold text-white">{user?.email?.[0]?.toUpperCase()}</span>
               </div>
               <div className="flex-1 min-w-0">
                 <div className="text-sm font-medium truncate">{user?.email}</div>
-                <div className="text-xs text-gray-500">{t('studio.sidebar.parentAccount')}</div>
+                <div className={`text-xs ${isDark ? 'text-gray-500' : 'text-gray-500'}`}>{t('studio.sidebar.parentAccount')}</div>
               </div>
             </div>
             <button
@@ -489,14 +501,14 @@ export default function Studio() {
                 navigate('/settings')
                 setMobileMenuOpen(false)
               }}
-              className="w-full flex items-center gap-3 p-3 rounded-xl text-gray-400 hover:text-white hover:bg-white/5 transition-colors"
+              className={`w-full flex items-center gap-3 p-3 rounded-xl transition-colors ${isDark ? 'text-gray-400 hover:text-white hover:bg-white/5' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'}`}
             >
               <SettingsIcon className="w-5 h-5" />
               <span>{t('studio.sidebar.settingsAndSubscription')}</span>
             </button>
             <button
               onClick={handleSignOut}
-              className="w-full flex items-center gap-3 p-3 rounded-xl text-red-400 hover:text-red-300 hover:bg-white/5 transition-colors"
+              className={`w-full flex items-center gap-3 p-3 rounded-xl text-red-400 transition-colors ${isDark ? 'hover:text-red-300 hover:bg-white/5' : 'hover:text-red-500 hover:bg-red-50'}`}
             >
               <LogoutIcon className="w-5 h-5" />
               <span>{t('studio.sidebar.signOut')}</span>
@@ -506,7 +518,7 @@ export default function Studio() {
       )}
 
       {/* Desktop Sidebar - Fixed height, doesn't scroll with content */}
-      <aside className={`hidden lg:flex ${sidebarCollapsed ? 'w-20' : 'w-72'} bg-[#0d0c18] border-r border-white/10 flex-col transition-all duration-300 relative h-full flex-shrink-0`}>
+      <aside className={`hidden lg:flex ${sidebarCollapsed ? 'w-20' : 'w-72'} border-r flex-col transition-all duration-300 relative h-full flex-shrink-0 ${isDark ? 'bg-[#0d0c18] border-white/10' : 'bg-white border-gray-200'}`}>
         {/* Collapse Button - positioned on outer edge (right in LTR, left in RTL) */}
         <button
           onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
@@ -521,7 +533,7 @@ export default function Studio() {
         </button>
 
         {/* Logo */}
-        <div className="p-4 border-b border-white/10">
+        <div className={`p-4 border-b ${isDark ? 'border-white/10' : 'border-gray-200'}`}>
           <Link to={localizedHref('/')} className="flex items-center gap-3 hover:opacity-80 transition-opacity">
             <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl flex items-center justify-center shadow-lg shadow-purple-500/30 flex-shrink-0">
               <SparklesIcon className="w-6 h-6 text-white" />
@@ -533,11 +545,11 @@ export default function Studio() {
         </div>
 
         {/* Child Selector */}
-        <div className="p-4 border-b border-white/10">
+        <div className={`p-4 border-b ${isDark ? 'border-white/10' : 'border-gray-200'}`}>
           <div className="relative">
             <button
               onClick={() => setChildMenuOpen(!childMenuOpen)}
-              className="w-full flex items-center gap-3 p-3 bg-white/5 hover:bg-white/10 rounded-xl transition-colors"
+              className={`w-full flex items-center gap-3 p-3 rounded-xl transition-colors ${isDark ? 'bg-white/5 hover:bg-white/10' : 'bg-gray-100 hover:bg-gray-200'}`}
             >
               <span className="text-2xl flex-shrink-0">{selectedChild?.avatar_emoji || '🧒'}</span>
               {!sidebarCollapsed && (
@@ -553,12 +565,14 @@ export default function Studio() {
 
             {/* Dropdown */}
             {childMenuOpen && !sidebarCollapsed && (
-              <div className="absolute top-full left-0 right-0 mt-2 bg-slate-900 border border-white/10 rounded-xl overflow-hidden z-50 shadow-xl">
+              <div className={`absolute top-full left-0 right-0 mt-2 border rounded-xl overflow-hidden z-50 shadow-xl ${isDark ? 'bg-slate-900 border-white/10' : 'bg-white border-gray-200'}`}>
                 {children.map((child) => (
                   <div
                     key={child.id}
-                    className={`flex items-center gap-3 p-3 hover:bg-white/10 transition-colors group ${
-                      selectedChild?.id === child.id ? 'bg-purple-500/20' : ''
+                    className={`flex items-center gap-3 p-3 transition-colors group ${
+                      selectedChild?.id === child.id
+                        ? 'bg-purple-500/20'
+                        : isDark ? 'hover:bg-white/10' : 'hover:bg-gray-100'
                     }`}
                   >
                     <button
@@ -571,7 +585,7 @@ export default function Studio() {
                       <span className="text-xl">{child.avatar_emoji || '🧒'}</span>
                       <div className="text-left">
                         <div className="font-medium">{child.name}</div>
-                        <div className="text-xs text-gray-400">{child.age} {t('studio.sidebar.yearsOld')}</div>
+                        <div className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>{child.age} {t('studio.sidebar.yearsOld')}</div>
                       </div>
                     </button>
                     <button
@@ -594,7 +608,7 @@ export default function Studio() {
                     setChildMenuOpen(false)
                     handleAddChild()
                   }}
-                  className="w-full flex items-center gap-3 p-3 hover:bg-white/10 transition-colors border-t border-white/10 text-purple-400"
+                  className={`w-full flex items-center gap-3 p-3 transition-colors border-t text-purple-400 ${isDark ? 'hover:bg-white/10 border-white/10' : 'hover:bg-gray-100 border-gray-200'}`}
                 >
                   <PlusIcon className="w-5 h-5" />
                   <span>{t('studio.sidebar.addChild')}</span>
@@ -610,8 +624,12 @@ export default function Studio() {
             onClick={() => setActiveSection('fusion-lab')}
             className={`w-full flex items-center gap-3 p-3 rounded-xl transition-all ${
               activeSection === 'fusion-lab'
-                ? 'bg-gradient-to-r from-purple-500/20 to-pink-500/20 border border-purple-500/30 text-purple-300'
-                : 'hover:bg-white/5 text-gray-400 hover:text-white'
+                ? isDark
+                  ? 'bg-gradient-to-r from-purple-500/20 to-pink-500/20 border border-purple-500/30 text-purple-300'
+                  : 'bg-gradient-to-r from-purple-100 to-pink-100 border border-purple-300 text-purple-700'
+                : isDark
+                  ? 'hover:bg-white/5 text-gray-400 hover:text-white'
+                  : 'hover:bg-gray-100 text-gray-600 hover:text-gray-900'
             }`}
           >
             <PaletteIcon className="w-5 h-5 flex-shrink-0" />
@@ -622,20 +640,25 @@ export default function Studio() {
             onClick={() => setActiveSection('plot-world')}
             className={`w-full flex items-center gap-3 p-3 rounded-xl transition-all ${
               activeSection === 'plot-world'
-                ? 'bg-gradient-to-r from-blue-500/20 to-cyan-500/20 border border-blue-500/30 text-blue-300'
-                : 'hover:bg-white/5 text-gray-400 hover:text-white'
+                ? isDark
+                  ? 'bg-gradient-to-r from-blue-500/20 to-cyan-500/20 border border-blue-500/30 text-blue-300'
+                  : 'bg-gradient-to-r from-blue-100 to-cyan-100 border border-blue-300 text-blue-700'
+                : isDark
+                  ? 'hover:bg-white/5 text-gray-400 hover:text-white'
+                  : 'hover:bg-gray-100 text-gray-600 hover:text-gray-900'
             }`}
           >
             <BookIcon className="w-5 h-5 flex-shrink-0" />
             {!sidebarCollapsed && <span className="font-medium">{t('studio.sidebar.plotWorld')}</span>}
           </button>
+
         </nav>
 
         {/* User Section */}
-        <div className="p-4 border-t border-white/10 relative" ref={menuRef}>
+        <div className={`p-4 border-t relative ${isDark ? 'border-white/10' : 'border-gray-200'}`} ref={menuRef}>
           <button
             onClick={() => setShowUserMenu(!showUserMenu)}
-            className="w-full flex items-center gap-3 p-2 rounded-xl hover:bg-white/10 transition-colors"
+            className={`w-full flex items-center gap-3 p-2 rounded-xl transition-colors ${isDark ? 'hover:bg-white/10' : 'hover:bg-gray-100'}`}
           >
             <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-teal-500 rounded-full flex items-center justify-center flex-shrink-0">
               <span className="text-sm font-bold">{user?.email?.[0]?.toUpperCase()}</span>
@@ -652,15 +675,15 @@ export default function Studio() {
           </button>
 
           {showUserMenu && (
-            <div className={`absolute bottom-full mb-2 left-4 ${sidebarCollapsed ? 'left-14' : 'right-4'} w-64 bg-[#1a1825] border border-white/10 rounded-xl shadow-xl overflow-hidden z-50`}>
-              <div className="px-4 py-3 border-b border-white/10">
-                <p className="text-sm text-gray-400 truncate">{user?.email}</p>
+            <div className={`absolute bottom-full mb-2 left-4 ${sidebarCollapsed ? 'left-14' : 'right-4'} w-64 border rounded-xl shadow-xl overflow-hidden z-50 ${isDark ? 'bg-[#1a1825] border-white/10' : 'bg-white border-gray-200'}`}>
+              <div className={`px-4 py-3 border-b ${isDark ? 'border-white/10' : 'border-gray-200'}`}>
+                <p className={`text-sm truncate ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>{user?.email}</p>
               </div>
 
               {/* Settings */}
               <button
                 onClick={() => navigate(localizedHref('/settings'))}
-                className="w-full px-4 py-3 text-left text-sm text-gray-300 hover:bg-white/5 transition-colors flex items-center gap-2"
+                className={`w-full px-4 py-3 text-left text-sm transition-colors flex items-center gap-2 ${isDark ? 'text-gray-300 hover:bg-white/5' : 'text-gray-700 hover:bg-gray-100'}`}
               >
                 <SettingsIcon className="w-4 h-4" />
                 {t('studio.sidebar.settingsAndSubscription')}
@@ -669,7 +692,7 @@ export default function Studio() {
               {/* Sign Out */}
               <button
                 onClick={handleSignOut}
-                className="w-full px-4 py-3 text-left text-sm text-red-400 hover:bg-white/5 transition-colors flex items-center gap-2 border-t border-white/10"
+                className={`w-full px-4 py-3 text-left text-sm text-red-400 transition-colors flex items-center gap-2 border-t ${isDark ? 'hover:bg-white/5 border-white/10' : 'hover:bg-red-50 border-gray-200'}`}
               >
                 <LogoutIcon className="w-4 h-4" />
                 {t('studio.sidebar.signOut')}
@@ -679,8 +702,31 @@ export default function Studio() {
         </div>
       </aside>
 
+      {/* Floating Theme Toggle - Top Right */}
+      <button
+        onClick={toggleTheme}
+        className={`fixed top-4 z-40 w-10 h-10 rounded-full flex items-center justify-center shadow-lg transition-all hover:scale-110 ${
+          isRTL ? 'left-4' : 'right-4'
+        } ${
+          isDark
+            ? 'bg-slate-800 border border-white/20 hover:bg-slate-700'
+            : 'bg-white border border-gray-300 hover:bg-gray-50'
+        }`}
+        title={isDark ? (isRTL ? 'מצב בהיר' : 'Light Mode') : (isRTL ? 'מצב כהה' : 'Dark Mode')}
+      >
+        {isDark ? (
+          <svg className="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M12 2.25a.75.75 0 01.75.75v2.25a.75.75 0 01-1.5 0V3a.75.75 0 01.75-.75zM7.5 12a4.5 4.5 0 119 0 4.5 4.5 0 01-9 0zM18.894 6.166a.75.75 0 00-1.06-1.06l-1.591 1.59a.75.75 0 101.06 1.061l1.591-1.59zM21.75 12a.75.75 0 01-.75.75h-2.25a.75.75 0 010-1.5H21a.75.75 0 01.75.75zM17.834 18.894a.75.75 0 001.06-1.06l-1.59-1.591a.75.75 0 10-1.061 1.06l1.59 1.591zM12 18a.75.75 0 01.75.75V21a.75.75 0 01-1.5 0v-2.25A.75.75 0 0112 18zM7.758 17.303a.75.75 0 00-1.061-1.06l-1.591 1.59a.75.75 0 001.06 1.061l1.591-1.59zM6 12a.75.75 0 01-.75.75H3a.75.75 0 010-1.5h2.25A.75.75 0 016 12zM6.697 7.757a.75.75 0 001.06-1.06l-1.59-1.591a.75.75 0 00-1.061 1.06l1.59 1.591z" />
+          </svg>
+        ) : (
+          <svg className="w-5 h-5 text-indigo-600" fill="currentColor" viewBox="0 0 24 24">
+            <path fillRule="evenodd" d="M9.528 1.718a.75.75 0 01.162.819A8.97 8.97 0 009 6a9 9 0 009 9 8.97 8.97 0 003.463-.69.75.75 0 01.981.98 10.503 10.503 0 01-9.694 6.46c-5.799 0-10.5-4.701-10.5-10.5 0-4.368 2.667-8.112 6.46-9.694a.75.75 0 01.818.162z" clipRule="evenodd" />
+          </svg>
+        )}
+      </button>
+
       {/* Main Content - Scrollable area */}
-      <main className="flex-1 overflow-y-auto h-full">
+      <main className="flex-1 overflow-y-auto h-full relative">
         {activeSection === 'fusion-lab' && selectedChild && (
           <FusionLabContent childId={selectedChild.id} child={selectedChild} onGoToStory={goToPlotWorldWithCharacter} user={user} />
         )}
@@ -701,6 +747,7 @@ export default function Studio() {
 // Embedded Fusion Lab Content (without the full page wrapper)
 function FusionLabContent({ childId, child, onGoToStory, user }) {
   const { t, language, isRTL } = useLanguage()
+  const { isDark } = useTheme()
   const [characters, setCharacters] = useState([])
   const [loading, setLoading] = useState(true)
 
@@ -1219,13 +1266,13 @@ function FusionLabContent({ childId, child, onGoToStory, user }) {
           <span className="text-3xl sm:text-4xl">🧬</span>
           <span className="truncate">{child?.name}{t('studio.fusionLab.title')}</span>
         </h1>
-        <p className="text-gray-400 mt-2 text-sm sm:text-base">{t('studio.fusionLab.subtitle')}</p>
+        <p className={`mt-2 text-sm sm:text-base ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>{t('studio.fusionLab.subtitle')}</p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
         {/* Character Creator */}
         <div className="lg:col-span-2 order-1">
-          <div className="bg-white/5 border border-white/10 rounded-2xl p-4 sm:p-6 lg:p-8">
+          <div className={`rounded-2xl p-4 sm:p-6 lg:p-8 ${isDark ? 'bg-white/5 border border-white/10' : 'bg-white border border-gray-300'}`}>
             <h2 className="text-lg sm:text-xl font-bold mb-4 sm:mb-6">{t('studio.fusionLab.createNewCharacter')}</h2>
 
             {/* Step Indicator */}
@@ -1234,7 +1281,7 @@ function FusionLabContent({ childId, child, onGoToStory, user }) {
                 <div
                   key={s}
                   className={`h-1.5 sm:h-2 flex-1 rounded-full transition-colors ${
-                    s <= step ? 'bg-purple-500' : 'bg-white/10'
+                    s <= step ? 'bg-purple-500' : isDark ? 'bg-white/10' : 'bg-gray-200'
                   }`}
                 />
               ))}
@@ -1244,19 +1291,19 @@ function FusionLabContent({ childId, child, onGoToStory, user }) {
             {step === 1 && (
               <div className="space-y-4 sm:space-y-6">
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">{t('studio.fusionLab.step1.characterName')}</label>
+                  <label className={`block text-sm font-medium mb-2 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>{t('studio.fusionLab.step1.characterName')}</label>
                   <input
                     type="text"
                     value={characterName}
                     onChange={(e) => setCharacterName(e.target.value)}
-                    className={`w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 transition-colors text-sm sm:text-base ${isRTL ? 'text-right' : ''}`}
+                    className={`w-full px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl focus:outline-none focus:border-purple-500 transition-colors text-sm sm:text-base ${isRTL ? 'text-right' : ''} ${isDark ? 'bg-white/5 border border-white/10 text-white placeholder-gray-500' : 'bg-gray-50 border border-gray-300 text-gray-900 placeholder-gray-400'}`}
                     placeholder={t('studio.fusionLab.step1.characterNamePlaceholder')}
                     dir={isRTL ? 'rtl' : 'ltr'}
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2 sm:mb-3">{t('studio.fusionLab.step1.chooseAnimalType')}</label>
+                  <label className={`block text-sm font-medium mb-2 sm:mb-3 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>{t('studio.fusionLab.step1.chooseAnimalType')}</label>
                   <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2 sm:gap-3">
                     {ANIMAL_TYPES.map((animal) => (
                       <button
@@ -1268,7 +1315,7 @@ function FusionLabContent({ childId, child, onGoToStory, user }) {
                         className={`p-2 sm:p-3 rounded-xl text-center transition-all ${
                           selectedAnimal?.id === animal.id && !customAnimalName.trim()
                             ? 'bg-purple-500/30 border-2 border-purple-500'
-                            : 'bg-white/5 border-2 border-transparent hover:bg-white/10'
+                            : isDark ? 'bg-white/5 border-2 border-transparent hover:bg-white/10' : 'bg-gray-100 border-2 border-transparent hover:bg-gray-200'
                         }`}
                       >
                         <div className="text-2xl sm:text-3xl mb-0.5 sm:mb-1">{animal.emoji}</div>
@@ -1278,13 +1325,13 @@ function FusionLabContent({ childId, child, onGoToStory, user }) {
                   </div>
 
                   {/* Custom animal input - always visible */}
-                  <div className="mt-4 pt-4 border-t border-white/10">
+                  <div className={`mt-4 pt-4 border-t ${isDark ? 'border-white/10' : 'border-gray-200'}`}>
                     <div className="relative">
                       <div className="absolute inset-0 flex items-center">
-                        <div className="w-full border-t border-white/10"></div>
+                        <div className={`w-full border-t ${isDark ? 'border-white/10' : 'border-gray-200'}`}></div>
                       </div>
                       <div className="relative flex justify-center text-sm">
-                        <span className="px-2 bg-[#0B0A16] text-gray-500">{t('studio.fusionLab.step1.orTypeYourOwn')}</span>
+                        <span className={`px-2 text-gray-500 ${isDark ? 'bg-[#0B0A16]' : 'bg-white'}`}>{t('studio.fusionLab.step1.orTypeYourOwn')}</span>
                       </div>
                     </div>
                     <input
@@ -1297,7 +1344,7 @@ function FusionLabContent({ childId, child, onGoToStory, user }) {
                           setSelectedAnimal(null)
                         }
                       }}
-                      className={`w-full mt-3 px-3 sm:px-4 py-2.5 sm:py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 transition-colors text-sm sm:text-base ${isRTL ? 'text-right' : ''}`}
+                      className={`w-full mt-3 px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl focus:outline-none focus:border-purple-500 transition-colors text-sm sm:text-base ${isRTL ? 'text-right' : ''} ${isDark ? 'bg-white/5 border border-white/10 text-white placeholder-gray-500' : 'bg-gray-50 border border-gray-300 text-gray-900 placeholder-gray-400'}`}
                       placeholder={t('studio.fusionLab.step1.customAnimalPlaceholder')}
                       dir={isRTL ? 'rtl' : 'ltr'}
                     />
@@ -1321,8 +1368,8 @@ function FusionLabContent({ childId, child, onGoToStory, user }) {
             {step === 2 && (
               <div className="space-y-4 sm:space-y-6">
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2 sm:mb-3">{t('studio.fusionLab.step2.chooseArtStyle')}</label>
-                  <p className="text-gray-500 text-xs sm:text-sm mb-3 sm:mb-4">{t('studio.fusionLab.step2.artStyleHint')}</p>
+                  <label className={`block text-sm font-medium mb-2 sm:mb-3 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>{t('studio.fusionLab.step2.chooseArtStyle')}</label>
+                  <p className={`text-xs sm:text-sm mb-3 sm:mb-4 ${isDark ? 'text-gray-500' : 'text-gray-600'}`}>{t('studio.fusionLab.step2.artStyleHint')}</p>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
                     {VISUAL_STYLES.map((style) => (
                       <button
@@ -1331,20 +1378,20 @@ function FusionLabContent({ childId, child, onGoToStory, user }) {
                         className={`p-3 sm:p-4 rounded-xl ${isRTL ? 'text-right' : 'text-left'} transition-all ${
                           selectedStyle === style.id
                             ? 'bg-purple-500/30 border-2 border-purple-500'
-                            : 'bg-white/5 border-2 border-transparent hover:bg-white/10'
+                            : isDark ? 'bg-white/5 border-2 border-transparent hover:bg-white/10' : 'bg-gray-100 border-2 border-transparent hover:bg-gray-200'
                         }`}
                       >
                         <div className={`text-xs sm:text-sm font-bold mb-0.5 sm:mb-1 bg-gradient-to-r ${style.color} bg-clip-text text-transparent`}>
                           {style.name}
                         </div>
-                        <div className="text-[10px] sm:text-xs text-gray-400 line-clamp-1">{style.shows}</div>
+                        <div className={`text-[10px] sm:text-xs line-clamp-1 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>{style.shows}</div>
                       </button>
                     ))}
                   </div>
                 </div>
 
                 <div className={`flex gap-2 sm:gap-3 ${isRTL ? 'flex-row-reverse' : ''}`}>
-                  <button onClick={() => setStep(1)} className="flex-1 py-3 sm:py-4 border border-white/20 rounded-xl font-semibold text-sm sm:text-base hover:bg-white/5 transition-all">
+                  <button onClick={() => setStep(1)} className={`flex-1 py-3 sm:py-4 border rounded-xl font-semibold text-sm sm:text-base transition-all ${isDark ? 'border-white/20 hover:bg-white/5' : 'border-gray-400 hover:bg-gray-100'}`}>
                     {t('studio.fusionLab.step2.back')}
                   </button>
                   <button
@@ -1362,8 +1409,8 @@ function FusionLabContent({ childId, child, onGoToStory, user }) {
             {step === 3 && (
               <div className="space-y-4 sm:space-y-6">
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">{t('studio.fusionLab.step3.chooseTraits')}</label>
-                  <p className="text-gray-500 text-xs sm:text-sm mb-3 sm:mb-4">{t('studio.fusionLab.step3.traitsHint')}</p>
+                  <label className={`block text-sm font-medium mb-2 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>{t('studio.fusionLab.step3.chooseTraits')}</label>
+                  <p className={`text-xs sm:text-sm mb-3 sm:mb-4 ${isDark ? 'text-gray-500' : 'text-gray-600'}`}>{t('studio.fusionLab.step3.traitsHint')}</p>
                   <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-1.5 sm:gap-2">
                     {PERSONALITY_TRAITS.map((trait) => (
                       <button
@@ -1372,7 +1419,7 @@ function FusionLabContent({ childId, child, onGoToStory, user }) {
                         className={`py-2 sm:py-3 px-2 sm:px-3 rounded-xl text-xs sm:text-sm font-medium transition-all flex items-center justify-center gap-1 sm:gap-2 ${
                           selectedTraits.includes(trait.id)
                             ? 'bg-purple-500 text-white'
-                            : 'bg-white/5 hover:bg-white/10'
+                            : isDark ? 'bg-white/5 hover:bg-white/10' : 'bg-gray-100 hover:bg-gray-200'
                         }`}
                       >
                         <span>{trait.emoji}</span>
@@ -1384,7 +1431,7 @@ function FusionLabContent({ childId, child, onGoToStory, user }) {
                 </div>
 
                 <div className={`flex gap-2 sm:gap-3 ${isRTL ? 'flex-row-reverse' : ''}`}>
-                  <button onClick={() => setStep(2)} className="flex-1 py-3 sm:py-4 border border-white/20 rounded-xl font-semibold text-sm sm:text-base hover:bg-white/5 transition-all">
+                  <button onClick={() => setStep(2)} className={`flex-1 py-3 sm:py-4 border rounded-xl font-semibold text-sm sm:text-base transition-all ${isDark ? 'border-white/20 hover:bg-white/5' : 'border-gray-400 hover:bg-gray-100'}`}>
                     {t('studio.fusionLab.step3.back')}
                   </button>
                   <button
@@ -1425,7 +1472,7 @@ function FusionLabContent({ childId, child, onGoToStory, user }) {
                     <div className="space-y-4">
                       {/* Gender Selection */}
                       <div>
-                        <label className="block text-sm font-medium text-gray-300 mb-2 sm:mb-3">{t('studio.fusionLab.step4.chooseGender')}</label>
+                        <label className={`block text-sm font-medium mb-2 sm:mb-3 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>{t('studio.fusionLab.step4.chooseGender')}</label>
                         <div className={`grid grid-cols-3 gap-2 sm:gap-3 ${isRTL ? 'direction-rtl' : ''}`}>
                           {/* Male */}
                           <button
@@ -1433,7 +1480,7 @@ function FusionLabContent({ childId, child, onGoToStory, user }) {
                             className={`p-3 sm:p-4 rounded-xl text-center transition-all ${
                               selectedGender === 'male'
                                 ? 'bg-blue-500/30 border-2 border-blue-500'
-                                : 'bg-white/5 border-2 border-transparent hover:bg-white/10'
+                                : isDark ? 'bg-white/5 border-2 border-transparent hover:bg-white/10' : 'bg-gray-100 border-2 border-transparent hover:bg-gray-200'
                             }`}
                           >
                             <div className="flex flex-col items-center gap-1">
@@ -1452,7 +1499,7 @@ function FusionLabContent({ childId, child, onGoToStory, user }) {
                             className={`p-3 sm:p-4 rounded-xl text-center transition-all ${
                               selectedGender === 'female'
                                 ? 'bg-pink-500/30 border-2 border-pink-500'
-                                : 'bg-white/5 border-2 border-transparent hover:bg-white/10'
+                                : isDark ? 'bg-white/5 border-2 border-transparent hover:bg-white/10' : 'bg-gray-100 border-2 border-transparent hover:bg-gray-200'
                             }`}
                           >
                             <div className="flex flex-col items-center gap-1">
@@ -1471,7 +1518,7 @@ function FusionLabContent({ childId, child, onGoToStory, user }) {
                             className={`p-3 sm:p-4 rounded-xl text-center transition-all ${
                               selectedGender === null
                                 ? 'bg-purple-500/30 border-2 border-purple-500'
-                                : 'bg-white/5 border-2 border-transparent hover:bg-white/10'
+                                : isDark ? 'bg-white/5 border-2 border-transparent hover:bg-white/10' : 'bg-gray-100 border-2 border-transparent hover:bg-gray-200'
                             }`}
                           >
                             <div className="flex flex-col items-center gap-1">
@@ -1486,7 +1533,7 @@ function FusionLabContent({ childId, child, onGoToStory, user }) {
                       </div>
 
                       <div>
-                        <label className="block text-sm font-medium text-gray-300 mb-2 sm:mb-3">{t('studio.fusionLab.step4.chooseOutfit')}</label>
+                        <label className={`block text-sm font-medium mb-2 sm:mb-3 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>{t('studio.fusionLab.step4.chooseOutfit')}</label>
                         <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5 sm:gap-2 mb-3 sm:mb-4">
                           {OUTFIT_PRESETS.map((outfit) => (
                             <button
@@ -1498,7 +1545,7 @@ function FusionLabContent({ childId, child, onGoToStory, user }) {
                               className={`p-2 sm:p-3 rounded-xl ${isRTL ? 'text-right' : 'text-left'} transition-all ${
                                 selectedOutfit === outfit.id && !customOutfit
                                   ? 'bg-purple-500/30 border-2 border-purple-500'
-                                  : 'bg-white/5 border-2 border-transparent hover:bg-white/10'
+                                  : isDark ? 'bg-white/5 border-2 border-transparent hover:bg-white/10' : 'bg-gray-100 border-2 border-transparent hover:bg-gray-200'
                               }`}
                             >
                               <div className={`flex items-center gap-1.5 sm:gap-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
@@ -1511,10 +1558,10 @@ function FusionLabContent({ childId, child, onGoToStory, user }) {
 
                         <div className="relative my-3 sm:my-4">
                           <div className="absolute inset-0 flex items-center">
-                            <div className="w-full border-t border-white/10"></div>
+                            <div className={`w-full border-t ${isDark ? 'border-white/10' : 'border-gray-200'}`}></div>
                           </div>
                           <div className="relative flex justify-center text-xs sm:text-sm">
-                            <span className="px-2 bg-[#0B0A16] text-gray-500">{t('studio.fusionLab.step4.orDescribeOwn')}</span>
+                            <span className={`px-2 text-gray-500 ${isDark ? 'bg-[#0B0A16]' : 'bg-white'}`}>{t('studio.fusionLab.step4.orDescribeOwn')}</span>
                           </div>
                         </div>
 
@@ -1525,7 +1572,7 @@ function FusionLabContent({ childId, child, onGoToStory, user }) {
                             setCustomOutfit(e.target.value)
                             if (e.target.value) setSelectedOutfit(null)
                           }}
-                          className={`w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 transition-colors text-sm sm:text-base ${isRTL ? 'text-right' : ''}`}
+                          className={`w-full px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl focus:outline-none focus:border-purple-500 transition-colors text-sm sm:text-base ${isRTL ? 'text-right' : ''} ${isDark ? 'bg-white/5 border border-white/10 text-white placeholder-gray-500' : 'bg-gray-50 border border-gray-300 text-gray-900 placeholder-gray-400'}`}
                           placeholder={t('studio.fusionLab.step4.customOutfitPlaceholder')}
                           dir={isRTL ? 'rtl' : 'ltr'}
                         />
@@ -1562,7 +1609,7 @@ function FusionLabContent({ childId, child, onGoToStory, user }) {
                         >
                           <span>✨</span> <span>{t('studio.fusionLab.step4.bringToLife')}</span>
                         </button>
-                        <button onClick={() => setStep(3)} className="w-full py-3 sm:py-4 border border-white/20 rounded-xl font-semibold text-sm sm:text-base hover:bg-white/5 transition-all">
+                        <button onClick={() => setStep(3)} className={`w-full py-3 sm:py-4 border rounded-xl font-semibold text-sm sm:text-base transition-all ${isDark ? 'border-white/20 hover:bg-white/5' : 'border-gray-400 hover:bg-gray-100'}`}>
                           {t('studio.fusionLab.step4.back')}
                         </button>
                       </div>
@@ -1615,7 +1662,7 @@ function FusionLabContent({ childId, child, onGoToStory, user }) {
           </h3>
 
           {characters.length === 0 ? (
-            <div className="bg-white/5 border border-white/10 rounded-xl p-4 sm:p-6 text-center text-gray-400 text-sm sm:text-base">
+            <div className={`rounded-xl p-4 sm:p-6 text-center text-sm sm:text-base ${isDark ? 'bg-white/5 border border-white/10 text-gray-400' : 'bg-white border border-gray-300 text-gray-500'}`}>
               {t('studio.fusionLab.noCharactersYet')}
             </div>
           ) : (
@@ -1626,7 +1673,7 @@ function FusionLabContent({ childId, child, onGoToStory, user }) {
                   <div
                     key={char.id}
                     onClick={() => setSelectedCharacter(char)}
-                    className="relative bg-white/5 border border-white/10 rounded-xl p-3 sm:p-4 hover:bg-white/10 transition-colors group cursor-pointer"
+                    className={`relative rounded-xl p-3 sm:p-4 transition-colors group cursor-pointer ${isDark ? 'bg-white/5 border border-white/10 hover:bg-white/10' : 'bg-white border border-gray-300 hover:bg-gray-50'}`}
                   >
                     <div className={`flex flex-col lg:flex-row items-center gap-2 lg:gap-3 ${isRTL ? 'lg:flex-row-reverse' : ''}`}>
                       {char.image_url ? (
@@ -1640,7 +1687,7 @@ function FusionLabContent({ childId, child, onGoToStory, user }) {
                       )}
                       <div className={`flex-1 min-w-0 text-center ${isRTL ? 'lg:text-right' : 'lg:text-left'}`}>
                         <div className="font-semibold text-sm sm:text-base truncate hover:text-purple-400 transition-colors">{char.name}</div>
-                        <div className="text-xs sm:text-sm text-gray-400 truncate hidden sm:block">
+                        <div className={`text-xs sm:text-sm truncate hidden sm:block ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
                           {char.personality_trait}
                         </div>
                       </div>
@@ -1671,6 +1718,7 @@ function FusionLabContent({ childId, child, onGoToStory, user }) {
 // Plot World Content - Story Creation Wizard
 function PlotWorldContent({ childId, child, initialCharacter, onCharacterUsed, user }) {
   const { t, language, isRTL } = useLanguage()
+  const { isDark } = useTheme()
   const [characters, setCharacters] = useState([])
   const [stories, setStories] = useState([])
   const [loading, setLoading] = useState(true)
@@ -1708,6 +1756,7 @@ function PlotWorldContent({ childId, child, initialCharacter, onCharacterUsed, u
   const [currentStory, setCurrentStory] = useState(null)
   const [currentPage, setCurrentPage] = useState(0)
   const [fontSizeLevel, setFontSizeLevel] = useState(2) // 0=smallest, 1=small, 2=medium, 3=large, 4=largest
+  const [isStoryMode, setIsStoryMode] = useState(false) // Full-screen distraction-free reading mode
 
   // Delete story state
   const [deleteStoryConfirm, setDeleteStoryConfirm] = useState(null)
@@ -2195,10 +2244,10 @@ function PlotWorldContent({ childId, child, initialCharacter, onCharacterUsed, u
       </div>
 
       {characters.length === 0 ? (
-        <div className="bg-white/5 border border-white/10 rounded-2xl p-6 sm:p-12 text-center">
+        <div className={`rounded-2xl p-6 sm:p-12 text-center ${isDark ? 'bg-white/5 border border-white/10' : 'bg-white border border-gray-300'}`}>
           <div className="text-5xl sm:text-6xl mb-4 sm:mb-6">🎭</div>
           <h2 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4">{t('studio.plotWorld.noCharacters.title')}</h2>
-          <p className="text-gray-400 text-sm sm:text-base mb-4 sm:mb-6 max-w-md mx-auto">
+          <p className={`text-sm sm:text-base mb-4 sm:mb-6 max-w-md mx-auto ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
             {t('studio.plotWorld.noCharacters.description')}
           </p>
         </div>
@@ -2214,10 +2263,10 @@ function PlotWorldContent({ childId, child, initialCharacter, onCharacterUsed, u
           </button>
 
           {stories.length === 0 ? (
-            <div className="bg-white/5 border border-white/10 rounded-2xl p-6 sm:p-12 text-center">
+            <div className={`rounded-2xl p-6 sm:p-12 text-center ${isDark ? 'bg-white/5 border border-white/10' : 'bg-white border border-gray-300'}`}>
               <div className="text-5xl sm:text-6xl mb-4 sm:mb-6">📚</div>
               <h2 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4">{t('studio.plotWorld.noStories.title')}</h2>
-              <p className="text-gray-400 text-sm sm:text-base max-w-md mx-auto">
+              <p className={`text-sm sm:text-base max-w-md mx-auto ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
                 {t('studio.plotWorld.noStories.description')}
               </p>
             </div>
@@ -2226,7 +2275,7 @@ function PlotWorldContent({ childId, child, initialCharacter, onCharacterUsed, u
               {stories.map((story) => (
                 <div
                   key={story.id}
-                  className="relative bg-white/5 border border-white/10 rounded-2xl overflow-hidden hover:bg-white/10 transition-colors group"
+                  className={`relative rounded-2xl overflow-hidden transition-colors group ${isDark ? 'bg-white/5 border border-white/10 hover:bg-white/10' : 'bg-white border border-gray-300 hover:bg-gray-50'}`}
                 >
                   {/* Toddler mode badge */}
                   {story.age_mode === 'toddler' && (
@@ -2302,11 +2351,11 @@ function PlotWorldContent({ childId, child, initialCharacter, onCharacterUsed, u
       ) : step === 1 ? (
         /* Step 1: Choose Your Hero - with sticky button */
         <div className="max-w-4xl mx-auto px-2 sm:px-0 flex flex-col" style={{ maxHeight: 'calc(100vh - 180px)' }}>
-          <div className="bg-white/5 border border-white/10 rounded-2xl p-4 sm:p-6 lg:p-8 flex flex-col flex-1 overflow-hidden">
+          <div className={`rounded-2xl p-4 sm:p-6 lg:p-8 flex flex-col flex-1 overflow-hidden ${isDark ? 'bg-white/5 border border-white/10' : 'bg-white border border-gray-300'}`}>
             <div className="text-center mb-4 sm:mb-6 flex-shrink-0">
               <span className="text-4xl sm:text-5xl mb-2 sm:mb-3 block">🦸</span>
               <h2 className="text-xl sm:text-2xl font-bold mb-1">{t('studio.plotWorld.step1.title')}</h2>
-              <p className="text-gray-400 text-sm sm:text-base">{t('studio.plotWorld.step1.subtitle')}</p>
+              <p className={`text-sm sm:text-base ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>{t('studio.plotWorld.step1.subtitle')}</p>
             </div>
 
             <div className="flex-1 overflow-y-auto pb-4">
@@ -2318,7 +2367,7 @@ function PlotWorldContent({ childId, child, initialCharacter, onCharacterUsed, u
                     className={`p-2 sm:p-4 rounded-xl text-center transition-all ${
                       selectedCharacter?.id === char.id
                         ? 'bg-blue-500/30 border-2 border-blue-500 shadow-lg shadow-blue-500/20'
-                        : 'bg-white/5 border-2 border-transparent hover:bg-white/10'
+                        : isDark ? 'bg-white/5 border-2 border-transparent hover:bg-white/10' : 'bg-gray-100 border-2 border-transparent hover:bg-gray-200'
                     }`}
                   >
                     {char.image_url ? (
@@ -2428,11 +2477,18 @@ function PlotWorldContent({ childId, child, initialCharacter, onCharacterUsed, u
       ) : step === 3 ? (
         /* Step 3: Moral/Lesson Selection (Parent Question) - with sticky buttons */
         <div className="max-w-4xl mx-auto px-2 sm:px-0 flex flex-col" style={{ maxHeight: 'calc(100vh - 180px)' }}>
-          <div className="bg-white/5 border border-white/10 rounded-2xl p-4 sm:p-6 lg:p-8 flex flex-col flex-1 overflow-hidden">
+          <div className="bg-gradient-to-br from-amber-900/20 to-orange-900/10 border border-amber-500/30 rounded-2xl p-4 sm:p-6 lg:p-8 flex flex-col flex-1 overflow-hidden relative">
+            {/* Parent Zone Badge */}
+            <div className="absolute top-3 right-3 sm:top-4 sm:right-4 flex items-center gap-1.5 px-2.5 py-1 bg-amber-500/20 border border-amber-500/40 rounded-full">
+              <svg className="w-3.5 h-3.5 text-amber-400" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" />
+              </svg>
+              <span className="text-[10px] sm:text-xs font-medium text-amber-300 uppercase tracking-wide">Parent</span>
+            </div>
             <div className="text-center mb-4 sm:mb-6 flex-shrink-0">
               <span className="text-4xl sm:text-5xl mb-2 sm:mb-3 block">🎓</span>
               <h2 className="text-xl sm:text-2xl font-bold mb-1">{t('studio.plotWorld.step3.title')}</h2>
-              <p className="text-gray-400 text-sm sm:text-base">{t('studio.plotWorld.step3.subtitle')}</p>
+              <p className="text-amber-200/70 text-sm sm:text-base">{t('studio.plotWorld.step3.subtitle')}</p>
             </div>
 
             <div className="flex-1 overflow-y-auto pb-4">
@@ -2491,10 +2547,10 @@ function PlotWorldContent({ childId, child, initialCharacter, onCharacterUsed, u
 
                   <div className="relative my-4 sm:my-6">
                     <div className="absolute inset-0 flex items-center">
-                      <div className="w-full border-t border-white/10"></div>
+                      <div className="w-full border-t border-amber-500/20"></div>
                     </div>
                     <div className="relative flex justify-center text-xs sm:text-sm">
-                      <span className="px-2 bg-[#0B0A16] text-gray-500">{t('studio.plotWorld.step3.orDescribeOwn')}</span>
+                      <span className="px-2 bg-[#0B0A16] text-amber-400/60">{t('studio.plotWorld.step3.orDescribeOwn')}</span>
                     </div>
                   </div>
 
@@ -2505,7 +2561,7 @@ function PlotWorldContent({ childId, child, initialCharacter, onCharacterUsed, u
                       setCustomMoral(e.target.value)
                       if (e.target.value) setSelectedMoral(null)
                     }}
-                    className={`w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-emerald-500 transition-colors text-sm sm:text-base ${isRTL ? 'text-right' : ''}`}
+                    className={`w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-black/20 border border-amber-500/20 rounded-xl text-white placeholder-amber-300/40 focus:outline-none focus:border-amber-500/50 transition-colors text-sm sm:text-base ${isRTL ? 'text-right' : ''}`}
                     placeholder={t('studio.plotWorld.step3.customLessonPlaceholder')}
                     dir={isRTL ? 'rtl' : 'ltr'}
                   />
@@ -2513,17 +2569,17 @@ function PlotWorldContent({ childId, child, initialCharacter, onCharacterUsed, u
               )}
             </div>
 
-            <div className={`flex-shrink-0 pt-4 border-t border-white/10 flex gap-2 sm:gap-3 ${isRTL ? 'flex-row-reverse' : ''}`}>
+            <div className={`flex-shrink-0 pt-4 border-t border-amber-500/20 flex gap-2 sm:gap-3 ${isRTL ? 'flex-row-reverse' : ''}`}>
               <button
                 onClick={() => setStep(2)}
-                className="flex-1 py-3 sm:py-4 border border-white/20 rounded-xl font-semibold text-sm sm:text-base hover:bg-white/5 transition-all"
+                className="flex-1 py-3 sm:py-4 border border-amber-500/30 rounded-xl font-semibold text-sm sm:text-base hover:bg-amber-500/10 transition-all"
               >
                 {t('studio.plotWorld.step3.back')}
               </button>
               <button
                 onClick={() => setStep(4)}
                 disabled={wantsMoral && !selectedMoral && !customMoral}
-                className="flex-1 py-3 sm:py-4 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-xl font-bold text-sm sm:text-base disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-lg hover:shadow-blue-500/30 transition-all"
+                className="flex-1 py-3 sm:py-4 bg-gradient-to-r from-amber-500 to-orange-500 rounded-xl font-bold text-sm sm:text-base disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-lg hover:shadow-amber-500/30 transition-all"
               >
                 {t('studio.plotWorld.step3.nextButton')}
               </button>
@@ -2967,36 +3023,54 @@ function PlotWorldContent({ childId, child, initialCharacter, onCharacterUsed, u
             : 'bg-gradient-to-br from-amber-50 to-orange-50'
           const toddlerTitleGradient = 'from-pink-400 via-purple-400 to-pink-400'
 
-          return (
-            <div className="w-full max-w-5xl mx-auto px-2 sm:px-4 md:min-h-[500px] md:flex md:items-center md:justify-center">
-              <div className={`relative ${bookFrameClass} rounded-3xl p-2 sm:p-3 shadow-2xl border-4 w-full`}>
+          // Book content component - extracted so it can be rendered in both normal and fullscreen modes
+          const BookContent = () => (
+            <div className={`relative ${bookFrameClass} rounded-3xl p-2 sm:p-3 shadow-2xl border-4 w-full`}>
 
-                {/* Toddler badge on book */}
-                {isToddlerBook && (
-                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-20">
-                    <span className="px-3 py-1 bg-gradient-to-r from-pink-500 to-purple-500 rounded-full text-xs font-bold text-white shadow-lg flex items-center gap-1">
-                      👶 {isRTL ? 'ספר לפעוטות' : 'Toddler Book'}
-                    </span>
-                  </div>
-                )}
+              {/* Toddler badge on book */}
+              {isToddlerBook && (
+                <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-20">
+                  <span className="px-3 py-1 bg-gradient-to-r from-pink-500 to-purple-500 rounded-full text-xs font-bold text-white shadow-lg flex items-center gap-1">
+                    👶 {isRTL ? 'ספר לפעוטות' : 'Toddler Book'}
+                  </span>
+                </div>
+              )}
 
-                {/* Close button */}
-                <button
-                  onClick={resetWizard}
-                  className="absolute -top-3 -left-3 sm:-top-4 sm:-left-4 z-20 w-10 h-10 sm:w-12 sm:h-12 bg-red-500 hover:bg-red-600 rounded-full flex items-center justify-center shadow-lg transition-all hover:scale-110"
-                >
-                  <svg className="w-5 h-5 sm:w-6 sm:h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+              {/* Close button - shows different action based on mode */}
+              <button
+                onClick={() => isStoryMode ? setIsStoryMode(false) : resetWizard()}
+                className="absolute -top-3 -left-3 sm:-top-4 sm:-left-4 z-20 w-10 h-10 sm:w-12 sm:h-12 bg-red-500 hover:bg-red-600 rounded-full flex items-center justify-center shadow-lg transition-all hover:scale-110"
+                title={isStoryMode ? (isRTL ? 'יציאה ממסך מלא' : 'Exit fullscreen') : (isRTL ? 'סגור' : 'Close')}
+              >
+                <svg className="w-5 h-5 sm:w-6 sm:h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                  {isStoryMode ? (
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 9V4.5M9 9H4.5M9 9L3.75 3.75M9 15v4.5M9 15H4.5M9 15l-5.25 5.25M15 9h4.5M15 9V4.5M15 9l5.25-5.25M15 15h4.5M15 15v4.5m0-4.5l5.25 5.25" />
+                  ) : (
                     <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                  )}
+                </svg>
+              </button>
+
+              {/* Font size controls and Story Mode button - top right */}
+              <div className="absolute -top-3 -right-3 sm:-top-4 sm:-right-4 z-20 flex items-center gap-2">
+                <button
+                  onClick={() => setIsStoryMode(!isStoryMode)}
+                  className={`w-9 h-9 sm:w-10 sm:h-10 ${isStoryMode ? 'bg-amber-500 hover:bg-amber-600' : 'bg-purple-500 hover:bg-purple-600'} rounded-full flex items-center justify-center shadow-lg transition-all hover:scale-110`}
+                  title={isStoryMode ? (isRTL ? 'יציאה ממסך מלא' : 'Exit fullscreen') : (isRTL ? 'מסך מלא' : 'Fullscreen')}
+                >
+                  <svg className="w-4 h-4 sm:w-5 sm:h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    {isStoryMode ? (
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M9 9V4.5M9 9H4.5M9 9L3.75 3.75M9 15v4.5M9 15H4.5M9 15l-5.25 5.25M15 9h4.5M15 9V4.5M15 9l5.25-5.25M15 15h4.5M15 15v4.5m0-4.5l5.25 5.25" />
+                    ) : (
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
+                    )}
                   </svg>
                 </button>
+                <FontSizeControls />
+              </div>
 
-                {/* Font size controls - top right */}
-                <div className="absolute -top-3 -right-3 sm:-top-4 sm:-right-4 z-20">
-                  <FontSizeControls />
-                </div>
-
-                {/* Inner book pages */}
-                <div className={`${bookInnerClass} rounded-2xl overflow-hidden shadow-inner flex flex-col`}>
+              {/* Inner book pages */}
+              <div className={`${bookInnerClass} rounded-2xl overflow-hidden shadow-inner flex flex-col`}>
                   {/* Story Title - gradient varies per story (toddler books get pink theme) */}
                   <div className={`bg-gradient-to-r ${isToddlerBook ? toddlerTitleGradient : getStoryGradient(currentStory?.id)} py-2 sm:py-3 px-4 sm:px-6 flex-shrink-0`}>
                     <h1
@@ -3144,9 +3218,23 @@ function PlotWorldContent({ childId, child, initialCharacter, onCharacterUsed, u
                         <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
                       </svg>
                     </button>
-                  </div>
                 </div>
               </div>
+            </div>
+          )
+
+          // Render the book - either in fullscreen mode or inline
+          return isStoryMode ? (
+            // Fullscreen mode - same book UI but in a fixed overlay
+            <div className="fixed inset-0 bg-[#0B0A16] z-50 flex items-center justify-center p-4 sm:p-6 md:p-8 overflow-auto">
+              <div className="w-full max-w-6xl mx-auto">
+                <BookContent />
+              </div>
+            </div>
+          ) : (
+            // Normal inline mode
+            <div className="w-full max-w-5xl mx-auto px-2 sm:px-4 md:min-h-[500px] md:flex md:items-center md:justify-center">
+              <BookContent />
             </div>
           )
         })()

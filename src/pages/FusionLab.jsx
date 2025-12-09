@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { useLanguage } from '../contexts/LanguageContext'
+import { useTheme } from '../contexts/ThemeContext'
 
 // Art style images from public folder (using BASE_URL for production compatibility)
 const baseUrl = import.meta.env.BASE_URL
@@ -83,6 +84,7 @@ export default function FusionLab() {
   const { childId } = useParams()
   const navigate = useNavigate()
   const { localizedHref } = useLanguage()
+  const { isDark } = useTheme()
 
   const [child, setChild] = useState(null)
   const [characters, setCharacters] = useState([])
@@ -274,27 +276,27 @@ export default function FusionLab() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#0B0A16] flex items-center justify-center">
+      <div className={`min-h-screen flex items-center justify-center ${isDark ? 'bg-[#0B0A16]' : 'bg-gray-50'}`}>
         <div className="w-8 h-8 border-2 border-purple-500 border-t-transparent rounded-full animate-spin" />
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-[#0B0A16] text-white">
+    <div className={`min-h-screen ${isDark ? 'bg-[#0B0A16] text-white' : 'bg-gray-50 text-gray-900'}`}>
       {/* Delete Confirmation Modal */}
       {deleteConfirm && (
         <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
-          <div className="bg-slate-900 border border-white/10 rounded-2xl p-6 max-w-sm w-full">
+          <div className={`rounded-2xl p-6 max-w-sm w-full ${isDark ? 'bg-slate-900 border border-white/10' : 'bg-white border border-gray-300'}`}>
             <h3 className="text-xl font-bold mb-2">Delete Character?</h3>
-            <p className="text-gray-400 mb-6">
-              Are you sure you want to delete <span className="text-white font-medium">{deleteConfirm.name}</span>? This action cannot be undone.
+            <p className={`mb-6 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+              Are you sure you want to delete <span className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>{deleteConfirm.name}</span>? This action cannot be undone.
             </p>
             <div className="flex gap-3">
               <button
                 onClick={() => setDeleteConfirm(null)}
                 disabled={isDeleting}
-                className="flex-1 py-3 border border-white/20 rounded-xl font-semibold hover:bg-white/5 transition-all"
+                className={`flex-1 py-3 border rounded-xl font-semibold transition-all ${isDark ? 'border-white/20 hover:bg-white/5' : 'border-gray-400 hover:bg-gray-100'}`}
               >
                 Cancel
               </button>
@@ -315,11 +317,11 @@ export default function FusionLab() {
       )}
 
       {/* Header */}
-      <header className="border-b border-white/10 bg-white/[0.02]">
+      <header className={`border-b ${isDark ? 'border-white/10 bg-white/[0.02]' : 'border-gray-300 bg-white'}`}>
         <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
           <button
             onClick={() => navigate(localizedHref('/dashboard'))}
-            className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors"
+            className={`flex items-center gap-2 transition-colors ${isDark ? 'text-gray-400 hover:text-white' : 'text-gray-600 hover:text-gray-900'}`}
           >
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
@@ -340,7 +342,7 @@ export default function FusionLab() {
         <div className="grid lg:grid-cols-3 gap-8">
           {/* Left: Character Creator */}
           <div className="lg:col-span-2">
-            <div className="bg-white/5 border border-white/10 rounded-2xl p-8">
+            <div className={`rounded-2xl p-8 ${isDark ? 'bg-white/5 border border-white/10' : 'bg-white border border-gray-300'}`}>
               <h2 className="text-2xl font-bold mb-6 flex items-center gap-3">
                 <span className="text-3xl">🧬</span>
                 Create New Character
@@ -362,20 +364,20 @@ export default function FusionLab() {
               {step === 1 && (
                 <div className="space-y-6">
                   <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                    <label className={`block text-sm font-medium mb-2 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
                       Character Name
                     </label>
                     <input
                       type="text"
                       value={characterName}
                       onChange={(e) => setCharacterName(e.target.value)}
-                      className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 transition-colors"
+                      className={`w-full px-4 py-3 rounded-xl focus:outline-none focus:border-purple-500 transition-colors ${isDark ? 'bg-white/5 border border-white/10 text-white placeholder-gray-500' : 'bg-gray-50 border border-gray-300 text-gray-900 placeholder-gray-400'}`}
                       placeholder="Detective Dash, Captain Whiskers..."
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-3">
+                    <label className={`block text-sm font-medium mb-3 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
                       Choose Animal Type
                     </label>
                     <div className="grid grid-cols-4 sm:grid-cols-6 gap-3">
@@ -389,7 +391,7 @@ export default function FusionLab() {
                           className={`p-3 rounded-xl text-center transition-all ${
                             selectedAnimal?.id === animal.id
                               ? 'bg-purple-500/30 border-2 border-purple-500'
-                              : 'bg-white/5 border-2 border-transparent hover:bg-white/10'
+                              : isDark ? 'bg-white/5 border-2 border-transparent hover:bg-white/10' : 'bg-gray-100 border-2 border-transparent hover:bg-gray-200'
                           }`}
                         >
                           <div className="text-3xl mb-1">{animal.emoji}</div>
@@ -399,13 +401,13 @@ export default function FusionLab() {
                     </div>
 
                     {/* Custom animal input - always visible */}
-                    <div className="mt-4 pt-4 border-t border-white/10">
+                    <div className={`mt-4 pt-4 border-t ${isDark ? 'border-white/10' : 'border-gray-200'}`}>
                       <div className="relative">
                         <div className="absolute inset-0 flex items-center">
-                          <div className="w-full border-t border-white/10"></div>
+                          <div className={`w-full border-t ${isDark ? 'border-white/10' : 'border-gray-200'}`}></div>
                         </div>
                         <div className="relative flex justify-center text-sm">
-                          <span className="px-2 bg-[#0B0A16] text-gray-500">or type your own</span>
+                          <span className={`px-2 text-gray-500 ${isDark ? 'bg-[#0B0A16]' : 'bg-white'}`}>or type your own</span>
                         </div>
                       </div>
                       <input
@@ -419,7 +421,7 @@ export default function FusionLab() {
                             if (customAnimal) setSelectedAnimal(customAnimal)
                           }
                         }}
-                        className="w-full mt-3 px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 transition-colors"
+                        className={`w-full mt-3 px-4 py-3 rounded-xl focus:outline-none focus:border-purple-500 transition-colors ${isDark ? 'bg-white/5 border border-white/10 text-white placeholder-gray-500' : 'bg-gray-50 border border-gray-300 text-gray-900 placeholder-gray-400'}`}
                         placeholder="Border Collie, Dinosaur, Phoenix, Penguin..."
                       />
                       <p className="text-xs text-gray-500 mt-2">
@@ -442,10 +444,10 @@ export default function FusionLab() {
               {step === 2 && (
                 <div className="space-y-6">
                   <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-3">
+                    <label className={`block text-sm font-medium mb-3 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
                       Choose Your Favorite Art Style
                     </label>
-                    <p className="text-gray-500 text-sm mb-4">Pick the style that reminds you of your favorite shows!</p>
+                    <p className={`text-sm mb-4 ${isDark ? 'text-gray-500' : 'text-gray-600'}`}>Pick the style that reminds you of your favorite shows!</p>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       {VISUAL_STYLES.map((style) => (
                         <button
@@ -453,8 +455,8 @@ export default function FusionLab() {
                           onClick={() => setSelectedStyle(style.id)}
                           className={`rounded-xl text-left transition-all overflow-hidden ${
                             selectedStyle === style.id
-                              ? 'ring-2 ring-purple-500 ring-offset-2 ring-offset-[#0B0A16]'
-                              : 'hover:bg-white/10'
+                              ? isDark ? 'ring-2 ring-purple-500 ring-offset-2 ring-offset-[#0B0A16]' : 'ring-2 ring-purple-500 ring-offset-2 ring-offset-white'
+                              : isDark ? 'hover:bg-white/10' : 'hover:bg-gray-100'
                           }`}
                         >
                           <div className="flex">
@@ -472,11 +474,11 @@ export default function FusionLab() {
                               />
                             </div>
                             {/* Style info */}
-                            <div className={`flex-1 p-3 bg-white/5 ${selectedStyle === style.id ? 'bg-purple-500/20' : ''}`}>
+                            <div className={`flex-1 p-3 ${selectedStyle === style.id ? 'bg-purple-500/20' : isDark ? 'bg-white/5' : 'bg-gray-100'}`}>
                               <div className={`text-sm font-bold mb-1 bg-gradient-to-r ${style.color} bg-clip-text text-transparent`}>
                                 {style.name}
                               </div>
-                              <div className="text-xs text-gray-400 line-clamp-2">{style.shows}</div>
+                              <div className={`text-xs line-clamp-2 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>{style.shows}</div>
                             </div>
                           </div>
                         </button>
@@ -487,7 +489,7 @@ export default function FusionLab() {
                   <div className="flex gap-3">
                     <button
                       onClick={() => setStep(1)}
-                      className="flex-1 py-4 border border-white/20 rounded-xl font-semibold hover:bg-white/5 transition-all"
+                      className={`flex-1 py-4 border rounded-xl font-semibold transition-all ${isDark ? 'border-white/20 hover:bg-white/5' : 'border-gray-400 hover:bg-gray-100'}`}
                     >
                       Back
                     </button>
@@ -506,10 +508,10 @@ export default function FusionLab() {
               {step === 3 && (
                 <div className="space-y-6">
                   <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                    <label className={`block text-sm font-medium mb-2 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
                       Choose Personality Traits
                     </label>
-                    <p className="text-gray-500 text-sm mb-4">Select up to 4 traits that describe your character</p>
+                    <p className={`text-sm mb-4 ${isDark ? 'text-gray-500' : 'text-gray-600'}`}>Select up to 4 traits that describe your character</p>
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                       {PERSONALITY_TRAITS.map((trait) => (
                         <button
@@ -518,7 +520,7 @@ export default function FusionLab() {
                           className={`py-3 px-3 rounded-xl text-sm font-medium transition-all flex items-center justify-center gap-2 ${
                             selectedTraits.includes(trait.id)
                               ? 'bg-purple-500 text-white'
-                              : 'bg-white/5 hover:bg-white/10'
+                              : isDark ? 'bg-white/5 hover:bg-white/10' : 'bg-gray-100 hover:bg-gray-200'
                           }`}
                         >
                           <span>{trait.emoji}</span>
@@ -534,7 +536,7 @@ export default function FusionLab() {
                   <div className="flex gap-3">
                     <button
                       onClick={() => setStep(2)}
-                      className="flex-1 py-4 border border-white/20 rounded-xl font-semibold hover:bg-white/5 transition-all"
+                      className={`flex-1 py-4 border rounded-xl font-semibold transition-all ${isDark ? 'border-white/20 hover:bg-white/5' : 'border-gray-400 hover:bg-gray-100'}`}
                     >
                       Back
                     </button>
@@ -553,7 +555,7 @@ export default function FusionLab() {
               {step === 4 && (
                 <div className="space-y-6">
                   <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-3">
+                    <label className={`block text-sm font-medium mb-3 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
                       Choose an Outfit
                     </label>
                     <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mb-4">
@@ -567,7 +569,7 @@ export default function FusionLab() {
                           className={`p-3 rounded-xl text-left transition-all ${
                             selectedOutfit === outfit.id && !customOutfit
                               ? 'bg-purple-500/30 border-2 border-purple-500'
-                              : 'bg-white/5 border-2 border-transparent hover:bg-white/10'
+                              : isDark ? 'bg-white/5 border-2 border-transparent hover:bg-white/10' : 'bg-gray-100 border-2 border-transparent hover:bg-gray-200'
                           }`}
                         >
                           <div className="flex items-center gap-2 mb-1">
@@ -580,10 +582,10 @@ export default function FusionLab() {
 
                     <div className="relative">
                       <div className="absolute inset-0 flex items-center">
-                        <div className="w-full border-t border-white/10"></div>
+                        <div className={`w-full border-t ${isDark ? 'border-white/10' : 'border-gray-200'}`}></div>
                       </div>
                       <div className="relative flex justify-center text-sm">
-                        <span className="px-2 bg-[#0B0A16] text-gray-500">or describe your own</span>
+                        <span className={`px-2 text-gray-500 ${isDark ? 'bg-[#0B0A16]' : 'bg-white'}`}>or describe your own</span>
                       </div>
                     </div>
 
@@ -594,14 +596,14 @@ export default function FusionLab() {
                         setCustomOutfit(e.target.value)
                         if (e.target.value) setSelectedOutfit(null)
                       }}
-                      className="w-full mt-4 px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 transition-colors"
+                      className={`w-full mt-4 px-4 py-3 rounded-xl focus:outline-none focus:border-purple-500 transition-colors ${isDark ? 'bg-white/5 border border-white/10 text-white placeholder-gray-500' : 'bg-gray-50 border border-gray-300 text-gray-900 placeholder-gray-400'}`}
                       placeholder="Describe a custom outfit..."
                     />
                   </div>
 
                   {/* Preview */}
-                  <div className="bg-black/20 rounded-xl p-6">
-                    <h3 className="text-sm font-medium text-gray-400 mb-4">Character Preview</h3>
+                  <div className={`rounded-xl p-6 ${isDark ? 'bg-black/20' : 'bg-gray-100'}`}>
+                    <h3 className={`text-sm font-medium mb-4 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>Character Preview</h3>
                     <div className="flex items-center gap-4">
                       <div className="text-center">
                         <div className="text-6xl">{selectedAnimal?.emoji}</div>
@@ -609,14 +611,14 @@ export default function FusionLab() {
                       </div>
                       <div>
                         <div className="text-xl font-bold">{characterName}</div>
-                        <div className="text-gray-400 text-sm">
+                        <div className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
                           {selectedTraits.map(t => PERSONALITY_TRAITS.find(p => p.id === t)?.label).join(', ')}
                         </div>
-                        <div className="text-purple-400 text-sm mt-1">
+                        <div className="text-purple-500 text-sm mt-1">
                           {VISUAL_STYLES.find(s => s.id === selectedStyle)?.name} Style
                         </div>
                         {getOutfitDescription() && (
-                          <div className="text-emerald-400 text-sm mt-1">
+                          <div className="text-emerald-500 text-sm mt-1">
                             Outfit: {getOutfitDescription()}
                           </div>
                         )}
@@ -627,7 +629,7 @@ export default function FusionLab() {
                   <div className="flex gap-3">
                     <button
                       onClick={() => setStep(3)}
-                      className="flex-1 py-4 border border-white/20 rounded-xl font-semibold hover:bg-white/5 transition-all"
+                      className={`flex-1 py-4 border rounded-xl font-semibold transition-all ${isDark ? 'border-white/20 hover:bg-white/5' : 'border-gray-400 hover:bg-gray-100'}`}
                     >
                       Back
                     </button>
@@ -666,7 +668,7 @@ export default function FusionLab() {
                     <div className="text-8xl mb-6">{selectedAnimal?.emoji}</div>
                   )}
                   <h3 className="text-2xl font-bold mb-2">{generatedCharacter.name} is Ready!</h3>
-                  <p className="text-gray-400 mb-8">
+                  <p className={`mb-8 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
                     {generatedCharacter.image_url
                       ? "Your character has been created with AI magic!"
                       : "Your character has been saved. Image generation may take a moment."}
@@ -689,7 +691,7 @@ export default function FusionLab() {
             </h3>
 
             {characters.length === 0 ? (
-              <div className="bg-white/5 border border-white/10 rounded-xl p-6 text-center text-gray-400">
+              <div className={`rounded-xl p-6 text-center ${isDark ? 'bg-white/5 border border-white/10 text-gray-400' : 'bg-white border border-gray-300 text-gray-500'}`}>
                 No characters yet. Create your first one!
               </div>
             ) : (
@@ -699,7 +701,7 @@ export default function FusionLab() {
                   return (
                     <div
                       key={char.id}
-                      className="bg-white/5 border border-white/10 rounded-xl p-4 hover:bg-white/10 transition-colors group"
+                      className={`rounded-xl p-4 transition-colors group ${isDark ? 'bg-white/5 border border-white/10 hover:bg-white/10' : 'bg-white border border-gray-300 hover:bg-gray-50'}`}
                     >
                       <div className="flex items-center gap-3">
                         {char.image_url ? (
@@ -713,7 +715,7 @@ export default function FusionLab() {
                         )}
                         <div className="flex-1 min-w-0">
                           <div className="font-semibold truncate">{char.name}</div>
-                          <div className="text-sm text-gray-400 truncate">
+                          <div className={`text-sm truncate ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
                             {char.personality_trait}
                           </div>
                         </div>

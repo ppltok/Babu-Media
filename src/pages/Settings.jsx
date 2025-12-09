@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { useLanguage } from '../contexts/LanguageContext'
+import { useTheme } from '../contexts/ThemeContext'
 import { supabase } from '../lib/supabase'
 import { getUsageSummary, TIER_LIMITS } from '../lib/usageTracking'
 
@@ -14,6 +15,7 @@ export default function Settings() {
   const { user, signOut } = useAuth()
   const navigate = useNavigate()
   const { t, language, setLanguage, isRTL, localizedHref } = useLanguage()
+  const { theme, toggleTheme, isDark } = useTheme()
 
   const [loading, setLoading] = useState(true)
   const [usageSummary, setUsageSummary] = useState(null)
@@ -72,13 +74,13 @@ export default function Settings() {
   const tierDisplay = tierName.charAt(0).toUpperCase() + tierName.slice(1)
 
   return (
-    <div className="min-h-screen bg-[#0B0A16] text-white">
+    <div className={`min-h-screen ${isDark ? 'bg-[#0B0A16] text-white' : 'bg-gray-50 text-gray-900'}`}>
       {/* Header */}
-      <header className="border-b border-white/10 px-6 py-4">
+      <header className={`border-b px-6 py-4 ${isDark ? 'border-white/10' : 'border-gray-300'}`}>
         <div className="max-w-4xl mx-auto flex items-center justify-between">
           <button
             onClick={() => navigate(localizedHref('/dashboard'))}
-            className={`flex items-center gap-2 text-gray-400 hover:text-white transition-colors ${isRTL ? 'flex-row-reverse' : ''}`}
+            className={`flex items-center gap-2 transition-colors ${isRTL ? 'flex-row-reverse' : ''} ${isDark ? 'text-gray-400 hover:text-white' : 'text-gray-600 hover:text-gray-900'}`}
           >
             <svg className={`w-5 h-5 ${isRTL ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
@@ -92,31 +94,33 @@ export default function Settings() {
 
       <main className="max-w-4xl mx-auto px-6 py-8 space-y-8">
         {/* Account Section */}
-        <section className="bg-white/5 border border-white/10 rounded-2xl p-6">
-          <h2 className="text-lg font-semibold mb-4">{t('settings.account.title')}</h2>
+        <section className={`${isDark ? 'bg-white/5 border-white/10' : 'bg-white border-gray-300'} border rounded-2xl p-6`}>
+          <h2 className={`text-lg font-semibold mb-4 ${isDark ? '' : 'text-gray-900'}`}>{t('settings.account.title')}</h2>
           <div className="space-y-4">
-            <div className="flex justify-between items-center py-3 border-b border-white/10">
-              <span className="text-gray-400">{t('settings.account.email')}</span>
+            <div className={`flex justify-between items-center py-3 border-b ${isDark ? 'border-white/10' : 'border-gray-300'}`}>
+              <span className={isDark ? 'text-gray-400' : 'text-gray-600'}>{t('settings.account.email')}</span>
               <span>{user?.email}</span>
             </div>
             <div className="flex justify-between items-center py-3">
-              <span className="text-gray-400">{t('settings.account.memberSince')}</span>
+              <span className={isDark ? 'text-gray-400' : 'text-gray-600'}>{t('settings.account.memberSince')}</span>
               <span>{new Date(user?.created_at).toLocaleDateString(language === 'he' ? 'he-IL' : 'en-US')}</span>
             </div>
           </div>
         </section>
 
         {/* Language Section */}
-        <section className="bg-white/5 border border-white/10 rounded-2xl p-6">
-          <h2 className="text-lg font-semibold mb-2">{t('settings.language.title')}</h2>
-          <p className="text-sm text-gray-400 mb-4">{t('settings.language.description')}</p>
+        <section className={`${isDark ? 'bg-white/5 border-white/10' : 'bg-gray-100 border-gray-300'} border rounded-2xl p-6`}>
+          <h2 className={`text-lg font-semibold mb-2 ${isDark ? '' : 'text-gray-900'}`}>{t('settings.language.title')}</h2>
+          <p className={`text-sm mb-4 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>{t('settings.language.description')}</p>
           <div className="flex gap-3">
             <button
               onClick={() => setLanguage('en')}
               className={`flex-1 py-3 px-4 rounded-xl font-semibold transition-all ${
                 language === 'en'
                   ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white'
-                  : 'bg-white/5 border border-white/10 text-gray-400 hover:bg-white/10'
+                  : isDark
+                    ? 'bg-white/5 border border-white/10 text-gray-400 hover:bg-white/10'
+                    : 'bg-white border border-gray-400 text-gray-600 hover:bg-gray-50'
               }`}
             >
               {t('settings.language.english')}
@@ -126,7 +130,9 @@ export default function Settings() {
               className={`flex-1 py-3 px-4 rounded-xl font-semibold transition-all ${
                 language === 'he'
                   ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white'
-                  : 'bg-white/5 border border-white/10 text-gray-400 hover:bg-white/10'
+                  : isDark
+                    ? 'bg-white/5 border border-white/10 text-gray-400 hover:bg-white/10'
+                    : 'bg-white border border-gray-400 text-gray-600 hover:bg-gray-50'
               }`}
             >
               {t('settings.language.hebrew')}
@@ -134,9 +140,43 @@ export default function Settings() {
           </div>
         </section>
 
+        {/* Display Settings Section */}
+        <section className={`${isDark ? 'bg-white/5 border-white/10' : 'bg-gray-100 border-gray-300'} border rounded-2xl p-6`}>
+          <h2 className={`text-lg font-semibold mb-2 ${isDark ? '' : 'text-gray-900'}`}>{isRTL ? 'הגדרות תצוגה' : 'Display Settings'}</h2>
+          <p className={`text-sm mb-4 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>{isRTL ? 'התאם את המראה של האפליקציה' : 'Customize the appearance of the app'}</p>
+          <div className="flex gap-3">
+            <button
+              onClick={() => !isDark && toggleTheme()}
+              className={`flex-1 py-3 px-4 rounded-xl font-semibold transition-all flex items-center justify-center gap-2 ${
+                isDark
+                  ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white'
+                  : 'bg-white border border-gray-400 text-gray-600 hover:bg-gray-50'
+              }`}
+            >
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+              </svg>
+              {isRTL ? 'מצב כהה' : 'Dark Mode'}
+            </button>
+            <button
+              onClick={() => isDark && toggleTheme()}
+              className={`flex-1 py-3 px-4 rounded-xl font-semibold transition-all flex items-center justify-center gap-2 ${
+                !isDark
+                  ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white'
+                  : 'bg-white/5 border border-white/10 text-gray-400 hover:bg-white/10'
+              }`}
+            >
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+              </svg>
+              {isRTL ? 'מצב בהיר' : 'Light Mode'}
+            </button>
+          </div>
+        </section>
+
         {/* Subscription Section */}
-        <section className="bg-white/5 border border-white/10 rounded-2xl p-6">
-          <h2 className="text-lg font-semibold mb-4">{t('settings.subscription.title')}</h2>
+        <section className={`${isDark ? 'bg-white/5 border-white/10' : 'bg-white border-gray-300'} border rounded-2xl p-6`}>
+          <h2 className={`text-lg font-semibold mb-4 ${isDark ? '' : 'text-gray-900'}`}>{t('settings.subscription.title')}</h2>
 
           {/* Current Plan */}
           <div className="mb-6 p-4 rounded-xl bg-gradient-to-r from-purple-500/20 to-pink-500/20 border border-purple-500/30">
@@ -168,27 +208,27 @@ export default function Settings() {
           {/* Usage Stats */}
           {usageSummary && (
             <div className="mb-6 space-y-3">
-              <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wide">{t('settings.subscription.yourUsage')}</h3>
+              <h3 className={`text-sm font-semibold uppercase tracking-wide ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>{t('settings.subscription.yourUsage')}</h3>
 
               <div className="grid grid-cols-3 gap-4">
-                <div className="bg-white/5 rounded-xl p-4">
+                <div className={`${isDark ? 'bg-white/5' : 'bg-gray-100'} rounded-xl p-4`}>
                   <div className="text-2xl font-bold">
                     {usageSummary.children.current}
-                    <span className="text-sm font-normal text-gray-400">
+                    <span className={`text-sm font-normal ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
                       /{usageSummary.children.limit === Infinity ? '∞' : usageSummary.children.limit}
                     </span>
                   </div>
-                  <div className="text-sm text-gray-400">{t('settings.subscription.children')}</div>
+                  <div className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>{t('settings.subscription.children')}</div>
                 </div>
 
-                <div className="bg-white/5 rounded-xl p-4">
+                <div className={`${isDark ? 'bg-white/5' : 'bg-gray-100'} rounded-xl p-4`}>
                   <div className="text-2xl font-bold">
                     {usageSummary.characters.current}
-                    <span className="text-sm font-normal text-gray-400">
+                    <span className={`text-sm font-normal ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
                       /{usageSummary.characters.limit === Infinity ? '∞' : usageSummary.characters.limit}
                     </span>
                   </div>
-                  <div className="text-sm text-gray-400">
+                  <div className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
                     {t('settings.subscription.characters')}
                     {usageSummary.characters.period !== 'lifetime' && (
                       <span className="text-xs"> ({usageSummary.characters.period === 'monthly' ? t('settings.subscription.monthly') : t('settings.subscription.weekly')})</span>
@@ -196,14 +236,14 @@ export default function Settings() {
                   </div>
                 </div>
 
-                <div className="bg-white/5 rounded-xl p-4">
+                <div className={`${isDark ? 'bg-white/5' : 'bg-gray-100'} rounded-xl p-4`}>
                   <div className="text-2xl font-bold">
                     {usageSummary.stories.current}
-                    <span className="text-sm font-normal text-gray-400">
+                    <span className={`text-sm font-normal ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
                       /{usageSummary.stories.limit === Infinity ? '∞' : usageSummary.stories.limit}
                     </span>
                   </div>
-                  <div className="text-sm text-gray-400">
+                  <div className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
                     {t('settings.subscription.stories')}
                     {usageSummary.stories.period !== 'lifetime' && (
                       <span className="text-xs"> ({usageSummary.stories.period === 'weekly' ? t('settings.subscription.weekly') : t('settings.subscription.monthly')})</span>
@@ -241,7 +281,7 @@ export default function Settings() {
                 </button>
                 <button
                   onClick={handleManageSubscription}
-                  className="w-full py-3 border border-white/20 rounded-xl font-semibold hover:bg-white/5 transition-all"
+                  className={`w-full py-3 border rounded-xl font-semibold transition-all ${isDark ? 'border-white/20 hover:bg-white/5' : 'border-gray-400 hover:bg-gray-50'}`}
                 >
                   {t('settings.subscription.manageSubscription')}
                 </button>
@@ -249,7 +289,7 @@ export default function Settings() {
             ) : (
               <button
                 onClick={handleManageSubscription}
-                className="w-full py-3 border border-white/20 rounded-xl font-semibold hover:bg-white/5 transition-all"
+                className={`w-full py-3 border rounded-xl font-semibold transition-all ${isDark ? 'border-white/20 hover:bg-white/5' : 'border-gray-400 hover:bg-gray-50'}`}
               >
                 {t('settings.subscription.manageSubscription')}
               </button>
@@ -265,20 +305,20 @@ export default function Settings() {
         </section>
 
         {/* Plan Comparison */}
-        <section className="bg-white/5 border border-white/10 rounded-2xl p-6">
-          <h2 className="text-lg font-semibold mb-4">{t('settings.planComparison.title')}</h2>
+        <section className={`${isDark ? 'bg-white/5 border-white/10' : 'bg-white border-gray-300'} border rounded-2xl p-6`}>
+          <h2 className={`text-lg font-semibold mb-4 ${isDark ? '' : 'text-gray-900'}`}>{t('settings.planComparison.title')}</h2>
 
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-white/10">
-                  <th className={`${isRTL ? 'text-right' : 'text-left'} py-3 text-gray-400 font-medium`}>{t('settings.planComparison.feature')}</th>
-                  <th className="text-center py-3 text-gray-400 font-medium">{t('settings.planComparison.explorer')}</th>
+                <tr className={`border-b ${isDark ? 'border-white/10' : 'border-gray-300'}`}>
+                  <th className={`${isRTL ? 'text-right' : 'text-left'} py-3 font-medium ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>{t('settings.planComparison.feature')}</th>
+                  <th className={`text-center py-3 font-medium ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>{t('settings.planComparison.explorer')}</th>
                   <th className="text-center py-3 text-purple-400 font-medium">{t('settings.planComparison.creator')}</th>
                   <th className="text-center py-3 text-amber-400 font-medium">{t('settings.planComparison.pro')}</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-white/5">
+              <tbody className={`divide-y ${isDark ? 'divide-white/5' : 'divide-gray-200'}`}>
                 <tr>
                   <td className="py-3">{t('settings.planComparison.childProfiles')}</td>
                   <td className="text-center py-3">1</td>
