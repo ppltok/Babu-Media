@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom/client'
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import { AuthProvider, useAuth } from './src/contexts/AuthContext'
 import { LanguageProvider, getLocaleFromPath, buildLocalizedPath } from './src/contexts/LanguageContext'
+import { ThemeProvider } from './src/contexts/ThemeContext'
 
 // Pages
 import BabuMediaLanding from './index.jsx'
@@ -196,7 +197,9 @@ function App() {
     <BrowserRouter basename={basename}>
       <AuthProvider>
         <LanguageProvider>
-          <AppRoutes />
+          <ThemeProvider>
+            <AppRoutes />
+          </ThemeProvider>
         </LanguageProvider>
       </AuthProvider>
     </BrowserRouter>

@@ -3,8 +3,8 @@ import react from '@vitejs/plugin-react'
 
 export default defineConfig({
   plugins: [react()],
-  // Use '/Babu-Media/' for GitHub Pages, '/' for local dev
-  base: process.env.NODE_ENV === 'production' ? '/Babu-Media/' : '/',
+  // Use '/' for custom domain (babumedia.ai)
+  base: '/',
   server: {
     port: 5003
   }

@@ -386,7 +386,7 @@ export default function BabuMediaLanding() {
         <div className="max-w-6xl mx-auto px-6 py-10">
           <div className="grid grid-cols-3 gap-8 text-center divide-x divide-white/10">
             <div>
-              <div className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">20m min</div>
+              <div className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">20m</div>
               <div className="text-gray-400 text-sm mt-1">{t('homepage.stats.bondingTime')}</div>
             </div>
             <div>

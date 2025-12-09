@@ -2,7 +2,7 @@
 
 > Transform passive screen time into active, creative bonding sessions.
 
-Babu Media is a next-generation "Edutainment" platform that empowers children (ages 5–12) and their parents to create personalized characters and stories together using cutting-edge Generative AI.
+Babu Media is a next-generation "Edutainment" platform that empowers children (ages 3-10) and their parents to create personalized characters and stories together using cutting-edge Generative AI.
 
 ## 🎯 Vision
 
