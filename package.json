@@ -2,7 +2,7 @@
   "name": "babu-media",
   "version": "1.0.0",
   "type": "module",
-  "homepage": "https://ppltok.github.io/Babu-Media/",
+  "homepage": "https://babumedia.ai/",
   "scripts": {
     "dev": "vite --port 5003",
     "build": "vite build",
