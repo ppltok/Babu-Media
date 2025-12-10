@@ -2422,11 +2422,11 @@ function PlotWorldContent({ childId, child, initialCharacter, onCharacterUsed, u
       ) : step === 2 ? (
         /* Step 2: What's Today's Adventure? - with sticky buttons */
         <div className="max-w-4xl mx-auto px-2 sm:px-0 flex flex-col" style={{ maxHeight: 'calc(100vh - 180px)' }}>
-          <div className="bg-white/5 border border-white/10 rounded-2xl p-4 sm:p-6 lg:p-8 flex flex-col flex-1 overflow-hidden">
+          <div className={`rounded-2xl p-4 sm:p-6 lg:p-8 flex flex-col flex-1 overflow-hidden ${isDark ? 'bg-white/5 border border-white/10' : 'bg-white border border-gray-300'}`}>
             <div className="text-center mb-4 sm:mb-6 flex-shrink-0">
               <span className="text-4xl sm:text-5xl mb-2 sm:mb-3 block">🗺️</span>
               <h2 className="text-xl sm:text-2xl font-bold mb-1">{t('studio.plotWorld.step2.title')}</h2>
-              <p className="text-gray-400 text-sm sm:text-base">{t('studio.plotWorld.step2.subtitle')} {selectedCharacter?.name}</p>
+              <p className={`text-sm sm:text-base ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>{t('studio.plotWorld.step2.subtitle')} {selectedCharacter?.name}</p>
             </div>
 
             <div className="flex-1 overflow-y-auto pb-4">
@@ -2441,7 +2441,7 @@ function PlotWorldContent({ childId, child, initialCharacter, onCharacterUsed, u
                     className={`p-2 sm:p-4 rounded-xl text-center transition-all ${
                       adventureTheme === theme.id && !customTheme
                         ? 'bg-blue-500/30 border-2 border-blue-500'
-                        : 'bg-white/5 border-2 border-transparent hover:bg-white/10'
+                        : isDark ? 'bg-white/5 border-2 border-transparent hover:bg-white/10' : 'bg-gray-100 border-2 border-transparent hover:bg-gray-200'
                     }`}
                   >
                     <span className="text-2xl sm:text-3xl block mb-1 sm:mb-2">{theme.emoji}</span>
@@ -2452,10 +2452,10 @@ function PlotWorldContent({ childId, child, initialCharacter, onCharacterUsed, u
 
               <div className="relative my-4">
                 <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-white/10"></div>
+                  <div className={`w-full border-t ${isDark ? 'border-white/10' : 'border-gray-200'}`}></div>
                 </div>
                 <div className="relative flex justify-center text-xs sm:text-sm">
-                  <span className="px-2 bg-[#0B0A16] text-gray-500">{t('studio.plotWorld.step2.orDescribeOwn')}</span>
+                  <span className={`px-2 text-gray-500 ${isDark ? 'bg-[#0B0A16]' : 'bg-white'}`}>{t('studio.plotWorld.step2.orDescribeOwn')}</span>
                 </div>
               </div>
 
@@ -2466,16 +2466,16 @@ function PlotWorldContent({ childId, child, initialCharacter, onCharacterUsed, u
                   setCustomTheme(e.target.value)
                   if (e.target.value) setAdventureTheme('')
                 }}
-                className={`w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 transition-colors text-sm sm:text-base ${isRTL ? 'text-right' : ''}`}
+                className={`w-full px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl focus:outline-none focus:border-blue-500 transition-colors text-sm sm:text-base ${isRTL ? 'text-right' : ''} ${isDark ? 'bg-white/5 border border-white/10 text-white placeholder-gray-500' : 'bg-gray-50 border border-gray-300 text-gray-900 placeholder-gray-400'}`}
                 placeholder={t('studio.plotWorld.step2.customAdventurePlaceholder')}
                 dir={isRTL ? 'rtl' : 'ltr'}
               />
             </div>
 
-            <div className={`flex-shrink-0 pt-4 border-t border-white/10 flex gap-2 sm:gap-3 ${isRTL ? 'flex-row-reverse' : ''}`}>
+            <div className={`flex-shrink-0 pt-4 flex gap-2 sm:gap-3 ${isRTL ? 'flex-row-reverse' : ''} ${isDark ? 'border-t border-white/10' : 'border-t border-gray-200'}`}>
               <button
                 onClick={() => setStep(1)}
-                className="flex-1 py-3 sm:py-4 border border-white/20 rounded-xl font-semibold text-sm sm:text-base hover:bg-white/5 transition-all"
+                className={`flex-1 py-3 sm:py-4 border rounded-xl font-semibold text-sm sm:text-base transition-all ${isDark ? 'border-white/20 hover:bg-white/5' : 'border-gray-400 hover:bg-gray-100'}`}
               >
                 {t('studio.plotWorld.step2.back')}
               </button>
@@ -2492,18 +2492,18 @@ function PlotWorldContent({ childId, child, initialCharacter, onCharacterUsed, u
       ) : step === 3 ? (
         /* Step 3: Moral/Lesson Selection (Parent Question) - with sticky buttons */
         <div className="max-w-4xl mx-auto px-2 sm:px-0 flex flex-col" style={{ maxHeight: 'calc(100vh - 180px)' }}>
-          <div className="bg-gradient-to-br from-amber-900/20 to-orange-900/10 border border-amber-500/30 rounded-2xl p-4 sm:p-6 lg:p-8 flex flex-col flex-1 overflow-hidden relative">
+          <div className={`rounded-2xl p-4 sm:p-6 lg:p-8 flex flex-col flex-1 overflow-hidden relative ${isDark ? 'bg-gradient-to-br from-amber-900/20 to-orange-900/10 border border-amber-500/30' : 'bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-300'}`}>
             {/* Parent Zone Badge */}
-            <div className="absolute top-3 right-3 sm:top-4 sm:right-4 flex items-center gap-1.5 px-2.5 py-1 bg-amber-500/20 border border-amber-500/40 rounded-full">
-              <svg className="w-3.5 h-3.5 text-amber-400" fill="currentColor" viewBox="0 0 20 20">
+            <div className={`absolute top-3 right-3 sm:top-4 sm:right-4 flex items-center gap-1.5 px-2.5 py-1 rounded-full ${isDark ? 'bg-amber-500/20 border border-amber-500/40' : 'bg-amber-100 border border-amber-400'}`}>
+              <svg className={`w-3.5 h-3.5 ${isDark ? 'text-amber-400' : 'text-amber-600'}`} fill="currentColor" viewBox="0 0 20 20">
                 <path d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" />
               </svg>
-              <span className="text-[10px] sm:text-xs font-medium text-amber-300 uppercase tracking-wide">Parent</span>
+              <span className={`text-[10px] sm:text-xs font-medium uppercase tracking-wide ${isDark ? 'text-amber-300' : 'text-amber-700'}`}>Parent</span>
             </div>
             <div className="text-center mb-4 sm:mb-6 flex-shrink-0">
               <span className="text-4xl sm:text-5xl mb-2 sm:mb-3 block">🎓</span>
               <h2 className="text-xl sm:text-2xl font-bold mb-1">{t('studio.plotWorld.step3.title')}</h2>
-              <p className="text-amber-200/70 text-sm sm:text-base">{t('studio.plotWorld.step3.subtitle')}</p>
+              <p className={`text-sm sm:text-base ${isDark ? 'text-amber-200/70' : 'text-amber-700'}`}>{t('studio.plotWorld.step3.subtitle')}</p>
             </div>
 
             <div className="flex-1 overflow-y-auto pb-4">
@@ -2513,7 +2513,7 @@ function PlotWorldContent({ childId, child, initialCharacter, onCharacterUsed, u
                   className={`px-5 sm:px-8 py-3 sm:py-4 rounded-xl font-semibold text-sm sm:text-base transition-all ${
                     wantsMoral
                       ? 'bg-emerald-500/30 border-2 border-emerald-500'
-                      : 'bg-white/5 border-2 border-transparent hover:bg-white/10'
+                      : isDark ? 'bg-white/5 border-2 border-transparent hover:bg-white/10' : 'bg-white border-2 border-gray-300 hover:bg-gray-100'
                   }`}
                 >
                   {t('studio.plotWorld.step3.yesAddLesson')}
@@ -2527,7 +2527,7 @@ function PlotWorldContent({ childId, child, initialCharacter, onCharacterUsed, u
                   className={`px-5 sm:px-8 py-3 sm:py-4 rounded-xl font-semibold text-sm sm:text-base transition-all ${
                     !wantsMoral
                       ? 'bg-blue-500/30 border-2 border-blue-500'
-                      : 'bg-white/5 border-2 border-transparent hover:bg-white/10'
+                      : isDark ? 'bg-white/5 border-2 border-transparent hover:bg-white/10' : 'bg-white border-2 border-gray-300 hover:bg-gray-100'
                   }`}
                 >
                   {t('studio.plotWorld.step3.noJustFun')}
@@ -2538,7 +2538,7 @@ function PlotWorldContent({ childId, child, initialCharacter, onCharacterUsed, u
                 <>
                   <div className="text-center mb-4">
                     <h3 className="text-lg font-semibold mb-1">{t('studio.plotWorld.step3.chooseLessonTitle')}</h3>
-                    <p className="text-gray-400 text-sm">{t('studio.plotWorld.step3.chooseLessonSubtitle')}</p>
+                    <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>{t('studio.plotWorld.step3.chooseLessonSubtitle')}</p>
                   </div>
                   <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2 sm:gap-3 mb-4 sm:mb-6">
                     {MORAL_LESSONS.map((moral) => (
@@ -2551,7 +2551,7 @@ function PlotWorldContent({ childId, child, initialCharacter, onCharacterUsed, u
                         className={`p-2 sm:p-3 rounded-xl text-center transition-all ${
                           selectedMoral === moral.id && !customMoral
                             ? 'bg-emerald-500/30 border-2 border-emerald-500'
-                            : 'bg-white/5 border-2 border-transparent hover:bg-white/10'
+                            : isDark ? 'bg-white/5 border-2 border-transparent hover:bg-white/10' : 'bg-white border-2 border-gray-300 hover:bg-gray-100'
                         }`}
                       >
                         <span className="text-xl sm:text-2xl block mb-0.5 sm:mb-1">{moral.emoji}</span>
@@ -2562,10 +2562,10 @@ function PlotWorldContent({ childId, child, initialCharacter, onCharacterUsed, u
 
                   <div className="relative my-4 sm:my-6">
                     <div className="absolute inset-0 flex items-center">
-                      <div className="w-full border-t border-amber-500/20"></div>
+                      <div className={`w-full border-t ${isDark ? 'border-amber-500/20' : 'border-amber-300'}`}></div>
                     </div>
                     <div className="relative flex justify-center text-xs sm:text-sm">
-                      <span className="px-2 bg-[#0B0A16] text-amber-400/60">{t('studio.plotWorld.step3.orDescribeOwn')}</span>
+                      <span className={`px-2 ${isDark ? 'bg-[#0B0A16] text-amber-400/60' : 'bg-amber-50 text-amber-600'}`}>{t('studio.plotWorld.step3.orDescribeOwn')}</span>
                     </div>
                   </div>
 
@@ -2576,7 +2576,7 @@ function PlotWorldContent({ childId, child, initialCharacter, onCharacterUsed, u
                       setCustomMoral(e.target.value)
                       if (e.target.value) setSelectedMoral(null)
                     }}
-                    className={`w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-black/20 border border-amber-500/20 rounded-xl text-white placeholder-amber-300/40 focus:outline-none focus:border-amber-500/50 transition-colors text-sm sm:text-base ${isRTL ? 'text-right' : ''}`}
+                    className={`w-full px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl focus:outline-none transition-colors text-sm sm:text-base ${isRTL ? 'text-right' : ''} ${isDark ? 'bg-black/20 border border-amber-500/20 text-white placeholder-amber-300/40 focus:border-amber-500/50' : 'bg-white border border-amber-300 text-gray-900 placeholder-amber-400 focus:border-amber-500'}`}
                     placeholder={t('studio.plotWorld.step3.customLessonPlaceholder')}
                     dir={isRTL ? 'rtl' : 'ltr'}
                   />
@@ -2584,10 +2584,10 @@ function PlotWorldContent({ childId, child, initialCharacter, onCharacterUsed, u
               )}
             </div>
 
-            <div className={`flex-shrink-0 pt-4 border-t border-amber-500/20 flex gap-2 sm:gap-3 ${isRTL ? 'flex-row-reverse' : ''}`}>
+            <div className={`flex-shrink-0 pt-4 flex gap-2 sm:gap-3 ${isRTL ? 'flex-row-reverse' : ''} ${isDark ? 'border-t border-amber-500/20' : 'border-t border-amber-300'}`}>
               <button
                 onClick={() => setStep(2)}
-                className="flex-1 py-3 sm:py-4 border border-amber-500/30 rounded-xl font-semibold text-sm sm:text-base hover:bg-amber-500/10 transition-all"
+                className={`flex-1 py-3 sm:py-4 border rounded-xl font-semibold text-sm sm:text-base transition-all ${isDark ? 'border-amber-500/30 hover:bg-amber-500/10' : 'border-amber-400 hover:bg-amber-100'}`}
               >
                 {t('studio.plotWorld.step3.back')}
               </button>
@@ -2604,15 +2604,15 @@ function PlotWorldContent({ childId, child, initialCharacter, onCharacterUsed, u
       ) : step === 4 ? (
         /* Step 4: Preview & Generate - with sticky buttons */
         <div className="max-w-4xl mx-auto px-2 sm:px-0 flex flex-col" style={{ maxHeight: 'calc(100vh - 180px)' }}>
-          <div className="bg-white/5 border border-white/10 rounded-2xl p-4 sm:p-6 lg:p-8 flex flex-col flex-1 overflow-hidden">
+          <div className={`rounded-2xl p-4 sm:p-6 lg:p-8 flex flex-col flex-1 overflow-hidden ${isDark ? 'bg-white/5 border border-white/10' : 'bg-white border border-gray-300'}`}>
             <div className="text-center mb-4 sm:mb-6 flex-shrink-0">
               <span className="text-4xl sm:text-5xl mb-2 sm:mb-3 block">✨</span>
               <h2 className="text-xl sm:text-2xl font-bold mb-1">{t('studio.plotWorld.step4.title')}</h2>
-              <p className="text-gray-400 text-sm sm:text-base">{t('studio.plotWorld.step4.subtitle')}</p>
+              <p className={`text-sm sm:text-base ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>{t('studio.plotWorld.step4.subtitle')}</p>
             </div>
 
             <div className="flex-1 overflow-y-auto pb-4">
-              <div className="bg-black/20 rounded-xl p-4 sm:p-6">
+              <div className={`rounded-xl p-4 sm:p-6 ${isDark ? 'bg-black/20' : 'bg-gray-100 border border-gray-200'}`}>
                 <div className={`flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-6 ${isRTL ? 'sm:flex-row-reverse' : ''}`}>
                   {selectedCharacter?.image_url ? (
                     <img
@@ -2621,18 +2621,18 @@ function PlotWorldContent({ childId, child, initialCharacter, onCharacterUsed, u
                       className="w-20 h-20 sm:w-24 sm:h-24 rounded-xl object-cover"
                     />
                   ) : (
-                    <div className="w-20 h-20 sm:w-24 sm:h-24 bg-white/10 rounded-xl flex items-center justify-center text-4xl sm:text-5xl">
+                    <div className={`w-20 h-20 sm:w-24 sm:h-24 rounded-xl flex items-center justify-center text-4xl sm:text-5xl ${isDark ? 'bg-white/10' : 'bg-gray-200'}`}>
                       🎭
                     </div>
                   )}
                   <div className={`flex-1 text-center ${isRTL ? 'sm:text-right' : 'sm:text-left'}`}>
                     <h3 className="text-lg sm:text-xl font-bold mb-1">{t('studio.plotWorld.step4.hero')}: {selectedCharacter?.name}</h3>
                     <div className="space-y-1 sm:space-y-2 text-xs sm:text-sm">
-                      <p className="text-gray-400">
-                        <span className="text-blue-400">{t('studio.plotWorld.step4.adventure')}:</span> {getThemeLabel()}
+                      <p className={isDark ? 'text-gray-400' : 'text-gray-600'}>
+                        <span className={isDark ? 'text-blue-400' : 'text-blue-600'}>{t('studio.plotWorld.step4.adventure')}:</span> {getThemeLabel()}
                       </p>
-                      <p className="text-gray-400">
-                        <span className="text-emerald-400">{t('studio.plotWorld.step4.lesson')}:</span> {wantsMoral ? getMoralLabel() : t('studio.plotWorld.step4.noLesson')}
+                      <p className={isDark ? 'text-gray-400' : 'text-gray-600'}>
+                        <span className={isDark ? 'text-emerald-400' : 'text-emerald-600'}>{t('studio.plotWorld.step4.lesson')}:</span> {wantsMoral ? getMoralLabel() : t('studio.plotWorld.step4.noLesson')}
                       </p>
                     </div>
                   </div>
@@ -2640,16 +2640,16 @@ function PlotWorldContent({ childId, child, initialCharacter, onCharacterUsed, u
               </div>
             </div>
 
-            <div className={`flex-shrink-0 pt-4 border-t border-white/10 flex gap-2 sm:gap-3 ${isRTL ? 'flex-row-reverse' : ''}`}>
+            <div className={`flex-shrink-0 pt-4 border-t flex gap-2 sm:gap-3 ${isDark ? 'border-white/10' : 'border-gray-200'} ${isRTL ? 'flex-row-reverse' : ''}`}>
               <button
                 onClick={() => setStep(3)}
-                className="flex-1 py-3 sm:py-4 border border-white/20 rounded-xl font-semibold text-sm sm:text-base hover:bg-white/5 transition-all"
+                className={`flex-1 py-3 sm:py-4 border rounded-xl font-semibold text-sm sm:text-base transition-all ${isDark ? 'border-white/20 hover:bg-white/5' : 'border-gray-300 hover:bg-gray-100'}`}
               >
                 {t('studio.plotWorld.step4.back')}
               </button>
               <button
                 onClick={handleCreateStory}
-                className="flex-1 py-3 sm:py-4 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-xl font-bold text-sm sm:text-base hover:shadow-lg hover:shadow-blue-500/30 transition-all flex items-center justify-center gap-1.5 sm:gap-2"
+                className="flex-1 py-3 sm:py-4 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-xl font-bold text-sm sm:text-base text-white hover:shadow-lg hover:shadow-blue-500/30 transition-all flex items-center justify-center gap-1.5 sm:gap-2"
               >
                 <span>✨</span> <span>{t('studio.plotWorld.step4.createButton')}</span>
               </button>
