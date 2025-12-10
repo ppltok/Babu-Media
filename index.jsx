@@ -4,9 +4,9 @@ import { useAuth } from './src/contexts/AuthContext';
 import { useLanguage } from './src/contexts/LanguageContext';
 import Confetti from './src/components/Confetti';
 
-// Lemon Squeezy Payment URLs
-const LEMON_SQUEEZY_CREATOR_URL = 'https://babumedia.lemonsqueezy.com/buy/870ca6c4-80e6-440f-8bb4-a795be72ce39';
-const LEMON_SQUEEZY_PRO_URL = 'https://babumedia.lemonsqueezy.com/buy/a1a0c205-5ab5-49d4-b628-c2f3d43101b3';
+// Lemon Squeezy Payment URLs (Production)
+const LEMON_SQUEEZY_CREATOR_URL = 'https://babumedia.lemonsqueezy.com/buy/4640a90d-a41b-4db3-9782-50d3e6949536';
+const LEMON_SQUEEZY_PRO_URL = 'https://babumedia.lemonsqueezy.com/buy/1be0d26c-370b-4b2f-94db-8922a798c9f1';
 
 import fusionLabImage from './Images/Fusion lab.jpg';
 import raccoonImage from './Images/Racoon having fun.png';
