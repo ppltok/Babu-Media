@@ -9,7 +9,8 @@
       // This script takes the current url and converts the path and query
       // string into just a query string, and then redirects the browser
       // to the new url with only a query string and hash fragment.
-      var pathSegmentsToKeep = 1;
+      // Set to 0 for custom domain (babumedia.ai), use 1 for github.io/repo-name/
+      var pathSegmentsToKeep = 0;
 
       var l = window.location;
       l.replace(
