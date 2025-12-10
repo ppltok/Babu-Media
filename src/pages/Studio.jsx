@@ -875,6 +875,19 @@ function FusionLabContent({ childId, child, onGoToStory, user }) {
     return !!selectedAnimal
   }
 
+  // Helper to get clean animal type name from stored animal_type
+  // Handles both regular IDs (e.g., "fox") and custom format (e.g., "custom:dragon")
+  const getCleanAnimalType = (animalType) => {
+    if (!animalType) return ''
+    // Check if it's a custom animal (format: "custom:animalName")
+    if (animalType.startsWith('custom:')) {
+      return animalType.substring(7) // Remove "custom:" prefix
+    }
+    // For regular animals, try to find the translated name
+    const animal = ANIMAL_TYPES.find(a => a.id === animalType)
+    return animal?.name || animalType
+  }
+
   const VISUAL_STYLES = [
     { id: 'pixar', name: t('studio.fusionLab.styles.pixar'), shows: 'Toy Story, Finding Nemo, Coco', color: 'from-blue-500 to-cyan-500' },
     { id: 'dreamworks', name: t('studio.fusionLab.styles.dreamworks'), shows: 'Shrek, Kung Fu Panda, How to Train Your Dragon', color: 'from-green-500 to-emerald-500' },
@@ -1197,7 +1210,7 @@ function FusionLabContent({ childId, child, onGoToStory, user }) {
                   <div>
                     <div className="text-sm text-gray-400">{t('studio.fusionLab.characterDetail.animalType')}</div>
                     <div className="font-medium">
-                      {ANIMAL_TYPES.find(a => a.id === selectedCharacter.animal_type)?.name || selectedCharacter.animal_type}
+                      {getCleanAnimalType(selectedCharacter.animal_type)}
                     </div>
                   </div>
                 </div>
@@ -2009,7 +2022,7 @@ function PlotWorldContent({ childId, child, initialCharacter, onCharacterUsed, u
           adventureTheme: getThemeLabel(),
           moralLesson: wantsMoral ? getMoralLabel() : null,
           visualStyle: visualStyle,
-          animalType: selectedCharacter.animal_type, // Pass animal type so Claude knows the character is an animal
+          animalType: getCleanAnimalType(selectedCharacter.animal_type), // Pass clean animal type (handles "custom:xyz" format)
           gender: selectedCharacter.gender, // Pass gender for proper pronoun usage (he/she, הוא/היא)
           language: language, // Pass language for story generation (en/he)
           childAge: child?.age || 5 // Pass child's age for age-appropriate content (Toddler Mode for under 3)
@@ -2045,7 +2058,7 @@ function PlotWorldContent({ childId, child, initialCharacter, onCharacterUsed, u
             prompt: imagePrompt.prompt,
             characterImageUrl: selectedCharacter.image_url,
             visualStyle: visualStyle,
-            animalType: selectedCharacter.animal_type
+            animalType: getCleanAnimalType(selectedCharacter.animal_type)
           }
         }).then(response => {
           if (response.error) {
@@ -2694,7 +2707,7 @@ function PlotWorldContent({ childId, child, initialCharacter, onCharacterUsed, u
             <WaitingGames
               characterName={selectedCharacter?.name}
               characterImage={selectedCharacter?.image_url}
-              animalType={selectedCharacter?.animal_type}
+              animalType={getCleanAnimalType(selectedCharacter?.animal_type)}
               theme={adventureTheme}
               isRTL={isRTL}
             />
